@@ -1,0 +1,731 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../global.css" />
+  <title>Test Static</title>
+  <script src="../index.iife.js"></script>
+
+  <awc-icon-loader size="16" src="../sprites/icon-16.symbol.svg"></awc-icon-loader>
+  <awc-icon-loader size="24" src="../sprites/icon-24.symbol.svg"></awc-icon-loader>
+  <awc-icon-loader size="20" type="module" src="../sprites/modules-20.symbol.svg"></awc-icon-loader>
+  <awc-icon-loader size="24" type="module" src="../sprites/modules-24.symbol.svg"></awc-icon-loader>
+  <awc-icon-loader size="32" type="module" src="../sprites/modules-32.symbol.svg"></awc-icon-loader>
+  <awc-icon-loader size="40" type="module" src="../sprites/modules-40.symbol.svg"></awc-icon-loader>
+</head>
+
+<body class="page__content-wrapper">
+  <div id="root">
+    <awc-switcher id="theme-toggler">Включить темную тему ?</awc-switcher>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        function onChangeTheme(e) {
+          const pageContent = document.querySelector(".page__content-wrapper");
+
+          if (!pageContent) return;
+
+          const isChecked = e.detail;
+
+          switch (isChecked) {
+            case true:
+              pageContent.setAttribute("data-theme", "dark");
+              pageContent.style.backgroundColor = "#1E2029"
+              break;
+
+            default:
+              pageContent.setAttribute("data-theme", "light");
+              pageContent.style.backgroundColor = "white"
+              break;
+          }
+        }
+
+        const switcher = document.querySelector("#theme-toggler");
+
+        switcher.addEventListener("awc-switcher-toggle", (e) => onChangeTheme(e))
+      });
+    </script>
+    <br>
+    <br>
+    <form id="awc-test-form" action="send" style="
+          font: var(--awc-font-h3-medium);
+          border-radius: 8px;
+          border: 1px solid black;
+          padding: 20px;
+          display: flex;
+          flex-direction: column;
+          gap: 20px;
+        ">
+      <p style="text-align: center">Форма</p>
+
+      <awc-input name="input-test" required type="text" placeholder="Введите текст"></awc-input>
+
+      <awc-checkbox-group label="Выберите модуль">
+        <awc-checkbox name="fast" label="Agile" value="Agile"></awc-checkbox>
+        <awc-checkbox required name="test" label="Базовый" value="Базовый"></awc-checkbox>
+        <awc-checkbox name="rest" label="База знаний" value="База знаний"></awc-checkbox>
+      </awc-checkbox-group>
+
+      <script>
+        document
+          .querySelectorAll("awc-checkbox")
+          .forEach((item) =>
+            item.addEventListener("awc-checkbox-change", (e) =>
+              console.log(`onchange:`, e.target)
+            )
+          );
+      </script>
+
+      <awc-radio-group @awc-radio-change="onChange" tabindex="0" name="name" label="Заголовок группы">
+        <awc-radio required label="Agile" value="agile"></awc-radio>
+        <awc-radio label="Базовый" value="base"></awc-radio>
+        <awc-radio label="База знаний" value="know-base"></awc-radio>
+      </awc-radio-group>
+
+      <script>
+        document
+          .querySelector("awc-radio-group")
+          .addEventListener("awc-radio-change", (e) => {
+            console.log("Выбрано:", event);
+          });
+      </script>
+
+      <br />
+
+      <awc-textarea name="awc-textarea"></awc-textarea>
+
+      <script>
+        document
+          .querySelectorAll("awc-textarea")
+          .forEach((item) =>
+            item.addEventListener("change", (e) =>
+              console.log(`onchange:`, e.target)
+            )
+          );
+      </script>
+
+      <p>Multiple select</p>
+
+      <awc-select input-placeholder="Поиск" required autoselect-off multiple search custom-error name="select"
+        placeholder="Выберите продукт">
+        <awc-select-item value="Аспро.Cloud">
+          <awc-avatar size="32" rounded="circle" status="none" color="global-red-2-600" icon="none"
+            title="Аспро.Cloud"></awc-avatar>
+          Аспро.Cloud
+        </awc-select-item>
+        <awc-select-item value="Аспро.Agile">Аспро.Тайм-трекер</awc-select-item>
+        <awc-select-group label="Группа">
+          <awc-select-item value="Аспро.Agile">Аспро.Agile</awc-select-item>
+          <awc-select-item value="Аспро.Телефония">Аспро.Телефония</awc-select-item>
+          <awc-select-item value="Аспро.CRM">Аспро.CRM</awc-select-item>
+        </awc-select-group>
+        <awc-select-item value="Аспро.Финансы">Аспро.Финансы</awc-select-item>
+        <awc-select-group label="Группа 2">
+          <awc-select-item value="Аспро.Agile">Аспро.Agile</awc-select-item>
+          <awc-select-item value="Аспро.Телефония">Аспро.Телефония</awc-select-item>
+          <awc-select-item value="Аспро.CRM">Аспро.CRM</awc-select-item>
+        </awc-select-group>
+        <awc-select-button dynamic-button slot="awc-button" icon label="Создать"></awc-select-button>
+      </awc-select>
+
+      <script>
+        document
+          .querySelectorAll("awc-select")
+          .forEach((item) =>
+            item.addEventListener("change", (e) =>
+              console.log(`onchange:`, e.target)
+            )
+          );
+      </script>
+
+      <p>Single select</p>
+
+      <awc-select required search name="select-test" placeholder="Hello">
+        <awc-select-item value="Аспро.Cloud">Аспро.Agile</awc-select-item>
+        <awc-select-item value="Аспро.Cloud 2">
+          <awc-avatar size="24" rounded="circle" status="none" color="global-red-2-600"
+            title="Аспро.Cloud"></awc-avatar>
+          Аспро.Cloud
+        </awc-select-item>
+        <awc-select-item>Аспро.Телефония</awc-select-item>
+        <awc-select-item>Тест 1</awc-select-item>
+        <awc-select-item value="Тест 2">Тест 2</awc-select-item>
+        <awc-select-button dynamic-button slot="awc-button" icon label="Создать"></awc-select-button>
+      </awc-select>
+
+      <p>Метод createSelectItem</p>
+
+      <awc-select html class="awc-select-dynamic" required search name="select-test" placeholder="Hello">
+        <awc-select-button dynamic-button slot="awc-button" icon label="Создать"></awc-select-button>
+      </awc-select>
+
+      <script>
+        document.addEventListener("DOMContentLoaded", () => {
+          const select = document.querySelector(".awc-select-dynamic");
+
+          const names = [
+            "Иван",
+            "Петр",
+            "Александр",
+            "Дмитрий",
+            "Андрей",
+            "Елена",
+            "Ольга",
+            "Татьяна",
+            "Анастасия",
+            "Ирина",
+          ];
+
+          const surnames = [
+            "Иванов",
+            "Петров",
+            "Сидоров",
+            "Козлов",
+            "Морозов",
+            "Васильева",
+            "Павлова",
+            "Смирнова",
+            "Кузнецова",
+            "Николаева",
+          ];
+
+          for (let i = 0; i < 20; i++) {
+            const randomName =
+              names[Math.floor(Math.random() * names.length)];
+            const randomSurname =
+              surnames[Math.floor(Math.random() * surnames.length)];
+            const content = `<awc-avatar size="24" rounded="circle" status="none" color="global-red-2-600" title="Аспро.Cloud"></awc-avatar> ${randomName}`;
+
+            const selected = i === 3 ? true : false;
+
+            select.createSelectItem(content, i, selected);
+          }
+        });
+      </script>
+
+      <awc-range label="Значение" marker step="25" name="range" max="100">
+        <awc-range-item value="0">0</awc-range-item>
+        <awc-range-item value="25">25</awc-range-item>
+        <awc-range-item value="50">50</awc-range-item>
+        <awc-range-item value="75">75</awc-range-item>
+        <awc-range-item value="100">100</awc-range-item>
+      </awc-range>
+
+      <div style="display: flex; align-items: center; gap: 8px">
+        <awc-button type="submit">Отправить</awc-button>
+        <awc-button background="red" type="reset">Сбросить</awc-button>
+      </div>
+    </form>
+
+    <div style="
+          display: flex;
+          flex-direction: column;
+          gap: 30px;
+          margin-top: 20px;
+        ">
+      <awc-switcher name="switcher" value="value-1">Label</awc-switcher>
+      <script>
+        document
+          .querySelectorAll("awc-switcher")
+          .forEach((item) =>
+            item.addEventListener("awc-switcher-toggle", (e) =>
+              console.log(`awc-switcher-toggle:`, e)
+            )
+          );
+      </script>
+
+      <awc-steps id="step-1" report='["Авторизация", "Получение данных", "Готово!"]' status="2"></awc-steps>
+
+      <awc-divider label="Разделитель с текстом"></awc-divider>
+
+      <awc-icon size="16" name="arrow_up2" stroke="colors-light-primary"></awc-icon>
+      <awc-icon size="24" name="account" color="colors-light-success"></awc-icon>
+
+      <awc-button type="button">
+        Button
+        <awc-icon id="btn1" color="colors-light-white" size="16" name="act2"></awc-icon>
+      </awc-button>
+
+      <awc-tabs-group>
+        <awc-tab>
+          <awc-icon size="16" name="rpa_information"></awc-icon>Таб 1</awc-tab>
+        <awc-tab active>Таб 2</awc-tab>
+        <awc-tab>Таб 3</awc-tab>
+      </awc-tabs-group>
+
+      <div style="display: flex; flex-direction: row-reverse">
+        <awc-dropdown id="dropdown" width="300" position="bottom-start" strategy="absolute">
+          <awc-button slot="awc-dropdown-toggle" background="blue" size="regular" variant="primary" type="submit">
+            Открыть
+          </awc-button>
+          <awc-dropdown-group divider="" label="Группа">
+            <awc-dropdown-item>
+              <awc-icon type="icon" size="16" name="external_link"></awc-icon>
+              Открыть в новой вкладке
+            </awc-dropdown-item>
+            <awc-dropdown-item>
+              <awc-icon type="icon" size="16" name="flag"></awc-icon>
+              Скопировать ссылку
+            </awc-dropdown-item>
+            <awc-dropdown-item>
+              <awc-icon type="icon" size="16" name="delegate_sm"></awc-icon>
+              Убрать высокий приоритет
+            </awc-dropdown-item>
+          </awc-dropdown-group>
+          <awc-dropdown-group>
+            <awc-dropdown-item>
+              <awc-icon type="icon" size="16" name="calendar_week"></awc-icon>
+              Календарь
+            </awc-dropdown-item>
+            <awc-dropdown-item>
+              <awc-icon type="icon" size="16" name="opportunity"></awc-icon>
+              Чек-лист
+            </awc-dropdown-item>
+          </awc-dropdown-group>
+          <awc-dropdown-item>
+            <awc-icon type="icon" size="16" name="edit"></awc-icon>
+            Редактировать
+          </awc-dropdown-item>
+        </awc-dropdown>
+      </div>
+
+      <script>
+        const dropdown = document.querySelector("#dropdown");
+
+        dropdown.addEventListener("change", (e) => {
+          console.log(e);
+        });
+      </script>
+
+      <awc-dropdown selected-mode width="300" position="bottom-start" strategy="absolute">
+        <awc-button slot="awc-dropdown-toggle" background="blue" size="regular" variant="primary" type="submit">
+          Открыть
+        </awc-button>
+        <awc-dropdown-group divider="" label="Группа">
+          <awc-dropdown-item>
+            <awc-icon type="icon" size="16" name="external_link"></awc-icon>
+            Открыть в новой вкладке
+          </awc-dropdown-item>
+          <awc-dropdown-item>
+            <awc-icon type="icon" size="16" name="flag"></awc-icon>
+            Скопировать ссылку
+          </awc-dropdown-item>
+          <awc-dropdown-item>
+            <awc-icon type="icon" size="16" name="delegate_sm"></awc-icon>
+            Убрать высокий приоритет
+          </awc-dropdown-item>
+        </awc-dropdown-group>
+        <awc-dropdown-group>
+          <awc-dropdown-item>
+            <awc-icon type="icon" size="16" name="calendar_week"></awc-icon>
+            Календарь
+          </awc-dropdown-item>
+          <awc-dropdown-item>
+            <awc-icon type="icon" size="16" name="opportunity"></awc-icon>
+            Чек-лист
+          </awc-dropdown-item>
+        </awc-dropdown-group>
+        <awc-dropdown-item>
+          <awc-icon type="icon" size="16" name="edit"></awc-icon>
+          Редактировать
+        </awc-dropdown-item>
+      </awc-dropdown>
+
+      <awc-counter value="100"></awc-counter>
+
+      <awc-badge></awc-badge>
+
+      <awc-alert color="primary">Сумма транзакций не может быть больше общей суммы
+        документа</awc-alert>
+
+      <awc-alert color="warning">Сумма транзакций не может быть больше общей суммы
+        документа</awc-alert>
+
+      <awc-alert color="success">Сумма транзакций не может быть больше общей суммы
+        документа</awc-alert>
+
+      <awc-alert color="attention">Сумма транзакций не может быть больше общей суммы
+        документа</awc-alert>
+
+      <awc-avatar-group counter-rounded="circle" display-users="6" counter-size="32" total-users="21">
+        <awc-avatar size="32" rounded="circle" status="none" color="global-light-green-600" icon="none"
+          title="Андрей"></awc-avatar>
+        <awc-avatar size="32" rounded="circle" status="none" color="global-red-500" icon="none"
+          title="Светлана"></awc-avatar>
+        <awc-avatar size="32" rounded="circle" status="none" color="global-blue-400" icon="none"
+          title="Петр"></awc-avatar>
+        <awc-avatar size="32" rounded="circle" status="none" color="global-purple-400" icon="none"
+          title="Роман"></awc-avatar>
+        <awc-avatar size="32" rounded="circle" status="none" color="global-blue-400" icon="none"
+          title="Оксана"></awc-avatar>
+        <awc-avatar image-link="https://rootcloud.asprodev.ru/static/photos/175557/300.jpg?mtime=1674646089" size="32"
+          rounded="circle" status="none" color="global-blue-400" icon="none" title="Олег"></awc-avatar>
+      </awc-avatar-group>
+
+      <awc-avatar size="160" status="online" color="global-red-500" title="Аспро.Cloud"></awc-avatar>
+      <awc-avatar size="128" status="offline" color="global-red-500" title="Аспро.Cloud"></awc-avatar>
+      <awc-avatar size="48" status="complete" color="global-red-500" title="Аспро.Cloud"></awc-avatar>
+      <awc-avatar icon="robot" size="40"></awc-avatar>
+      <awc-avatar size="36" status="online" color="global-red-500" title="Аспро.Cloud"></awc-avatar>
+      <awc-avatar size="32" status="online" color="global-red-500" title="Аспро.Cloud"></awc-avatar>
+      <awc-avatar size="24" status="online" color="global-red-500" title="Аспро.Cloud"></awc-avatar>
+
+      <awc-segment-switcher>
+        <awc-segment-switcher-item>Месяц</awc-segment-switcher-item>
+        <awc-segment-switcher-item>Неделя</awc-segment-switcher-item>
+        <awc-segment-switcher-item active>День</awc-segment-switcher-item>
+        <awc-segment-switcher-item>Список</awc-segment-switcher-item>
+      </awc-segment-switcher>
+
+      <script>
+        document
+          .querySelector("awc-segment-switcher")
+          .addEventListener("change", (e) =>
+            console.log(`onChange:`, e.target)
+          );
+      </script>
+
+      <awc-tooltip position="top"><awc-button size="large">Tooltip Top</awc-button></awc-tooltip>
+      <awc-tooltip position="bottom"><awc-button size="large">Tooltip Bottom</awc-button></awc-tooltip>
+      <awc-tooltip position="left"><awc-button size="large">Tooltip Left</awc-button></awc-tooltip>
+      <awc-tooltip position="right"><awc-button size="large">Tooltip Right</awc-button></awc-tooltip>
+
+      <awc-die placeholder="Название стадии" text="Согласование руководителем">
+        <awc-icon icon-scale="32px" size="16" name="edit" stroke="colors-light-primary"></awc-icon>
+        <awc-icon size="16" name="act" color="colors-light-success"></awc-icon>
+      </awc-die>
+
+      <awc-die placeholder="Название стадии" text="Согласование руководителем">
+        <awc-toolbar-group>
+          <awc-toolbar-button><awc-icon size="16" name="edit"></awc-icon></awc-toolbar-button>
+          <awc-toolbar-button><awc-icon size="16" name="act"
+              color="colors-light-success"></awc-icon></awc-toolbar-button>
+        </awc-toolbar-group>
+      </awc-die>
+
+      <awc-stager step-color="#1C4ADE" steps="5" current="2"></awc-stager>
+
+      <awc-button-group>
+        <awc-button-group-item class="awc-button-group__item--first">
+          <awc-icon class="awc-icon" type="icon" size="24" name="minus_small"></awc-icon>
+        </awc-button-group-item>
+        <awc-button-group-item class="awc-button-group__item--inner awc-button-group__item--last-inner">
+          100%
+        </awc-button-group-item>
+        <awc-button-group-item class="awc-button-group__item--last">
+          <awc-icon type="icon" size="24" name="add_small"></awc-icon>
+        </awc-button-group-item>
+      </awc-button-group>
+    </div>
+
+    <awc-range label="Значение" marker step="25" name="range" max="100">
+      <awc-range-item value="0">0</awc-range-item>
+      <awc-range-item value="25">25</awc-range-item>
+      <awc-range-item value="50">50</awc-range-item>
+      <awc-range-item value="75">75</awc-range-item>
+      <awc-range-item value="100">100</awc-range-item>
+    </awc-range>
+
+    <br />
+    <awc-accordion>
+      <awc-accordion-item title="Заголовок 1">Я в своем познании настолько преисполнился...</awc-accordion-item>
+      <awc-accordion-item title="Заголовок 2">Что я как будто бы уже сто триллионов миллиардов лет проживаю на
+        триллионах и триллионах таких же планет, как эта Земля, мне этот мир
+        абсолютно понятен, и я здесь ищу только одного - покоя, умиротворения
+        и вот этой гармонии, от слияния с бесконечно вечным, от созерцания
+        великого фрактального подобия и от вот этого замечательного
+        всеединства существа, бесконечно вечного, куда ни посмотри, хоть
+        вглубь - бесконечно малое, хоть ввысь - бесконечное большое,
+        понимаешь?</awc-accordion-item>
+      <awc-accordion-item title="Заголовок 3">
+        <div style="
+              padding: 40px;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              background-color: #f6f7fd;
+            ">
+          <img style="max-width: 100%" src="https://aspro.cloud/images/projects/developers/developer-head.png"
+            alt="img" />
+        </div>
+      </awc-accordion-item>
+    </awc-accordion>
+
+    <div style="margin-top: 30px">
+      <awc-progress-bar label="Обработано файлов" value="50" max="100"></awc-progress-bar>
+    </div>
+
+    <script>
+      document
+        .querySelector("awc-progress-bar")
+        .addEventListener("awc-progress-bar-success", (e) =>
+          console.log(`succes:`, e.target)
+        );
+    </script>
+
+    <div style="margin-top: 30px">
+      <awc-empty-state size="large" head="Выставите первый счет!">
+        <awc-icon slot="icon" type="module" size="40" name="invoice_acts"></awc-icon>
+        <awc-button slot="button">Выставить счет</awc-button>
+        <awc-button slot="button">Выставить счет</awc-button>
+        <awc-button slot="button">Выставить счет</awc-button>
+        <awc-empty-state-link slot="link">Добавить прайс-лист</awc-empty-state-link>
+        <awc-empty-state-link slot="link">Настроить печатные формы</awc-empty-state-link>
+        <awc-empty-state-link slot="link">Настроить организацию</awc-empty-state-link>
+        <awc-empty-state-link slot="link">Настроить организацию</awc-empty-state-link>
+        <awc-empty-state-link slot="link">Настроить организацию</awc-empty-state-link>
+        Здесь будет выводиться список счетов, их суммы, статусы оплат. Для
+        того, чтобы начать выставлять красивые счета, заполните данные по
+        своей организации, настройте печатную форму или используйте
+        существующую.
+      </awc-empty-state>
+    </div>
+
+    <div style="margin-top: 30px">
+      <awc-tag base-color="global-blue-600" variant="square">Прогул</awc-tag>
+      <awc-tag variant="circle" custom-color="#ff0000"> Прогул </awc-tag>
+      <awc-tag variant="bullet" custom-color="#d400ff"> Прогул </awc-tag>
+    </div>
+
+    <form style="
+          display: flex;
+          flex-direction: column;
+          gap: 32px;
+          margin-top: 30px;
+        ">
+      <awc-color-picker reset="" name="favcolor" value="#ed3a3a">
+        <awc-tabs-group>
+          <awc-tab active="">Палитра</awc-tab>
+          <awc-tab>Свой цвет</awc-tab>
+        </awc-tabs-group>
+      </awc-color-picker>
+      <awc-button background="blue" size="regular" variant="primary" type="submit">
+        Отправить
+      </awc-button>
+    </form>
+
+    <div style="
+          margin-top: 30px;
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(155px, 1fr));
+          gap: 10px;
+        ">
+      <awc-card icon-color="#3761E9" title="Название" subtitle="Подзаголовок"><awc-icon slot="icon" type="module"
+          size="24" name="agile"></awc-icon></awc-card><awc-card icon-color="#3761E9" title="Название"
+        subtitle="Не следует, однако забывать, что дальнейшее развитие различных форм деятельности обеспечивает широкому кругу (специалистов) участие в формировании форм развития. Товарищи! сложившаяся структура организации требуют определения и уточнения дальнейших направлений развития. "><awc-icon
+          slot="icon" type="icon" size="24" name="heart"></awc-icon></awc-card><awc-card icon-color="#00ff91"
+        title="Задача организации, в особенности же укрепление и развитие структуры позволяет оценить значение существенных финансовых и административных условий. "
+        subtitle="Товарищи! постоянное информационно-пропагандистское обеспечение нашей деятельности позволяет выполнять важные задания по разработке новых предложений. Задача организации, в особенности же дальнейшее развитие различных форм деятельности обеспечивает широкому кругу (специалистов) участие в формировании систем массового участия."><awc-icon
+          slot="icon" type="icon" size="24" name="heart"></awc-icon><awc-toolbar-group
+          slot="toolbar"><awc-toolbar-button><awc-icon type="icon" size="24"
+              name="star"></awc-icon></awc-toolbar-button><awc-toolbar-button><awc-icon type="icon" size="24"
+              name="more_vert"></awc-icon></awc-toolbar-button></awc-toolbar-group><!-- common slot content -->
+        <div style="
+              display: flex;
+              margin: 12px 0px 0px;
+              align-items: center;
+              justify-content: space-between;
+            ">
+          <awc-user-info avatar-color="global-red-2-600" avatar-custom-color="" avatar-status="none"
+            name="Иван Иванов"></awc-user-info>
+          <p style="
+                margin: 0px;
+                gap: 20px;
+                font: var(--awc-font-caption-1-regular);
+                color: var(--colors-light-secondary);
+              ">
+            год назад
+          </p>
+        </div>
+      </awc-card><awc-card icon-color="#00ff91" arrow=""
+        title="Задача организации, в особенности же укрепление и развитие структуры позволяет оценить значение существенных финансовых и административных условий. "
+        subtitle="Товарищи! постоянное информационно-пропагандистское обеспечение нашей деятельности позволяет выполнять важные задания по разработке новых предложений. Задача организации, в особенности же дальнейшее развитие различных форм деятельности обеспечивает широкому кругу (специалистов) участие в формировании систем массового участия."><awc-icon
+          slot="icon" type="icon" size="24" name="heart"></awc-icon></awc-card>
+    </div>
+
+    <div style="margin-top: 30px">
+      <awc-pagination total-items-count="50" active-page="1" items-per-page="1" first last></awc-pagination>
+    </div>
+
+    <br />
+
+    <awc-modal heading="Выберите область" description="Возможнен дополнительный текст">
+      <awc-button slot="awc-modal-button" background="gray" size="regular" variant="transparent" type="submit">
+        Отменить
+      </awc-button>
+      <awc-button slot="awc-modal-button" background="blue" size="regular" variant="primary" type="submit">
+        Сохранить
+      </awc-button>
+      <form action="send" style="display: flex; flex-direction: column; gap: 20px">
+        <awc-input placeholder="Введите текст" name="input-test" type="text" size="medium" autocomplete="off"
+          required></awc-input>
+        <awc-checkbox-group tabindex="0" value="[]" label="Выберите модуль" hint="">
+          <awc-checkbox label="Agile" name="fast" custom-error="" value="Agile"></awc-checkbox>
+          <awc-checkbox label="Базовый" name="test" required="" custom-error="" value="Базовый"></awc-checkbox>
+          <awc-checkbox label="База знаний" name="rest" custom-error="" value="База знаний"></awc-checkbox>
+        </awc-checkbox-group>
+        <awc-radio-group tabindex="0" name="name" label="Заголовок группы" hint="">
+          <awc-radio custom-error="" required="" label="Agile" value="agile"></awc-radio>
+          <awc-radio custom-error="" label="Базовый" value="base"></awc-radio>
+          <awc-radio custom-error="" label="База знаний" value="know-base"></awc-radio>
+        </awc-radio-group>
+      </form>
+    </awc-modal>
+    <awc-button id="open-modal" background="blue" size="regular" variant="primary" type="submit">
+      Открыть
+    </awc-button>
+
+    <script>
+      const button = document.querySelector("#open-modal");
+      button.addEventListener("click", () =>
+        document.querySelector("awc-modal").open()
+      );
+    </script>
+    <br />
+    <br />
+    <awc-dialog variant="info" heading="Есть несохранённые данные" description="Внесенные изменения не сохранятся">
+      <awc-button slot="awc-dialog-button" background="blue" size="regular" variant="primary" type="submit">
+        Ок
+      </awc-button>
+      <awc-button slot="awc-dialog-button" background="red" size="regular" variant="transparent" type="submit">
+        Отменить
+      </awc-button>
+    </awc-dialog>
+
+    <awc-button id="dialog-button" background="blue" size="regular" variant="primary" type="submit">
+      Hello
+    </awc-button>
+
+    <script>
+      const dialogBtn = document.querySelector("#dialog-button");
+
+      if (dialogBtn) {
+        dialogBtn.addEventListener("click", () => {
+          const awcDialog = document.querySelector("awc-dialog");
+          awcDialog.open();
+        });
+      }
+    </script>
+
+    <br />
+
+    <awc-table-wrapper>
+      <table>
+        <thead>
+          <tr>
+            <th>Customer ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Description</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>001</td>
+            <td>John Doe</td>
+            <td>johndoe@example.com</td>
+            <td>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. A,
+              saepe! Quo cupiditate doloribus a sed. Consectetur ipsum vel
+              est, amet molestiae tempore ratione quisquam delectus illo quo
+              officiis deserunt nesciunt.
+            </td>
+            <td>
+              <awc-tag base-color="global-blue-600" custom-color="" variant="circle">
+                Active
+              </awc-tag>
+            </td>
+          </tr>
+          <tr>
+            <td>002</td>
+            <td>Jane Smith</td>
+            <td>janesmith@example.com</td>
+            <td>
+              Lorem ipsum dolor sit, amet consectetur adipisicing elit.
+              Aperiam molestiae corporis nesciunt iste eos, quisquam id? Ab,
+              maxime ducimus ratione autem eaque saepe aperiam, voluptate
+              explicabo qui, minima praesentium maiores.
+            </td>
+            <td>
+              <awc-tag base-color="global-blue-600" custom-color="" variant="circle">
+                Active
+              </awc-tag>
+            </td>
+          </tr>
+          <tr>
+            <td>003</td>
+            <td>Michael Brown</td>
+            <td>michaelbrown@example.com</td>
+            <td>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Ex
+              laudantium deserunt iste recusandae voluptatibus provident animi
+              dolorum obcaecati atque? Reprehenderit nostrum officiis laborum
+              repudiandae est dolorem omnis maxime porro quis!
+            </td>
+            <td>
+              <awc-tag base-color="global-red-500" custom-color="" variant="circle">
+                Inactive
+              </awc-tag>
+            </td>
+          </tr>
+          <tr>
+            <td>004</td>
+            <td>Emily Davis</td>
+            <td>emilydavis@example.com</td>
+            <td>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Iure
+              perferendis cumque eius enim. Porro nisi recusandae ipsam atque
+              libero, quasi optio! Excepturi culpa minima laborum at sit? Ad,
+              impedit culpa!
+            </td>
+            <td>
+              <awc-tag base-color="global-red-500" custom-color="" variant="circle">
+                Inactive
+              </awc-tag>
+            </td>
+          </tr>
+          <tr>
+            <td>005</td>
+            <td>David Wilson</td>
+            <td>davidwilson@example.com</td>
+            <td>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit. Eaque
+              ipsum provident autem totam cupiditate, fugiat quos. Consectetur
+              enim quisquam omnis corporis sunt a velit molestiae dolorem in.
+              Impedit, reiciendis atque!
+            </td>
+            <td>
+              <awc-tag base-color="global-blue-600" custom-color="" variant="circle">
+                Active
+              </awc-tag>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </awc-table-wrapper>
+
+    <br />
+
+    <awc-split-button>
+      <awc-button slot="awc-split-button" background="blue" size="regular" variant="primary" type="submit">
+        Создать
+      </awc-button>
+      <awc-dropdown-item>
+        <awc-icon type="icon" size="16" name="external_link"></awc-icon>
+        Открыть в новой вкладке
+      </awc-dropdown-item>
+      <awc-dropdown-item>
+        <awc-icon type="icon" size="16" name="flag"></awc-icon>
+        Скопировать ссылку
+      </awc-dropdown-item>
+      <awc-dropdown-item>
+        <awc-icon type="icon" size="16" name="delegate_sm"></awc-icon>
+        Убрать высокий приоритет
+      </awc-dropdown-item>
+    </awc-split-button>
+  </div>
+</body>
+
+</html>

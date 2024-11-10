@@ -1,0 +1,31 @@
+import AwcFileUpload from "./awc-file-upload/awc-file-upload";
+
+// providers
+import AwcFileUploadProviderLocal from "./awc-file-upload/providers/awc-file-upload-provider-local/awc-file-upload-provider-local";
+import AwcFileUploadProviderYandexDisk from "./awc-file-upload/providers/awc-file-upload-provider-yandex-disk/awc-file-upload-provider-yandex-disk";
+
+// views
+import AwcFileUploadAuth from "./awc-file-upload/views/awc-file-upload-auth/awc-file-upload-auth";
+import AwcFileUploadHome from "./awc-file-upload/views/awc-file-upload-home/awc-file-upload-home";
+import AwcFileUploadList from "./awc-file-upload/views/awc-file-upload-list/awc-file-upload-list";
+import AwcFileUploadSelected from "./awc-file-upload/views/awc-file-upload-selected/awc-file-upload-selected";
+
+// components
+import AwcFileUploadViewWrapper from "./awc-file-upload/components/awc-file-upload-view-wrapper/awc-file-upload-view-wrapper";
+import AwcFileUploadExplorer from "./awc-file-upload/components/awc-file-upload-explorer/awc-file-upload-explorer";
+import AwcFileUploadBreadcrumbs from "./awc-file-upload/components/awc-file-upload-breadcumbs/awc-file-upload-breadcumbs";
+
+export default {
+    AwcFileUpload,
+    AwcFileUploadProviderLocal,
+    AwcFileUploadProviderYandexDisk,
+
+    AwcFileUploadAuth,
+    AwcFileUploadHome,
+    AwcFileUploadList,
+    AwcFileUploadSelected,
+
+    AwcFileUploadViewWrapper,
+    AwcFileUploadExplorer,
+    AwcFileUploadBreadcrumbs
+}
