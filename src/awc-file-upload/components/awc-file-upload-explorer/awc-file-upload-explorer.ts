@@ -1,7 +1,7 @@
 import { LitElement, html, TemplateResult, CSSResult, svg } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { Provider } from "../../providers/Provider";
-import { ProviderFile, ProviderData } from "../../interfaces/ProviderFile";
+import { ProviderFile } from "../../interfaces/ProviderFile";
 import { RequestOptions } from "../../interfaces/ProviderInfo";
 import { awcFileUploadExplorerStyles } from "./awc-file-upload-explorer.style";
 import { SelectedFileManager } from "../../SelectedFileManager";
@@ -17,7 +17,7 @@ export default class AwcFileUploadExplorer extends LitElement {
     @state() private selectedFiles: Set<string> = new Set();
     @state() private offset: number = 0;
     @state() private limit: number = 20;
-    @state() private allItemsLoaded: boolean = false;
+    //@state() private allItemsLoaded: boolean = false;
     @state() private isLoading: boolean = false;
     @state() private errorMessage: string | null = null;
     @state() private isGridView: boolean = false;
@@ -55,7 +55,7 @@ export default class AwcFileUploadExplorer extends LitElement {
             if (reset) {
                 this.items = [];
                 this.offset = 0;
-                this.allItemsLoaded = false;
+                // this.allItemsLoaded = false;
             }
 
             const options: RequestOptions = {
@@ -68,7 +68,7 @@ export default class AwcFileUploadExplorer extends LitElement {
             this.offset += this.limit;
 
             if (!nextPagePath) {
-                this.allItemsLoaded = true;
+                // this.allItemsLoaded = true;
             }
         } catch (error) {
             console.error("Error loading items:", error);
@@ -102,19 +102,25 @@ export default class AwcFileUploadExplorer extends LitElement {
 
     private toggleFileSelection(file: ProviderFile) {
         const manager = SelectedFileManager.getInstance();
-        if (this.selectedFiles.has(file.id)) {
+        const updatedSelectedFiles = new Set(this.selectedFiles);
+    
+        if (updatedSelectedFiles.has(file.id)) {
             manager.removeFile(file.id);
-            this.selectedFiles.delete(file.id);
+            updatedSelectedFiles.delete(file.id);
         } else {
             manager.addFile(file, this.provider?.getProviderInfo().provider || 'Unknown', this.provider?.getProviderInfo().icon!);
-            this.selectedFiles.add(file.id);
+            updatedSelectedFiles.add(file.id);
         }
+    
+        this.selectedFiles = updatedSelectedFiles;
+        
+        this.dispatchEvent(new CustomEvent("file-selection-changed", {
+            detail: { selectedFiles: updatedSelectedFiles },
+            bubbles: true,
+            composed: true
+        }));
+        
         this.requestUpdate();
-    }
-
-    private handleConfirmSelection() {
-        const event = new CustomEvent("confirm-selection", { bubbles: true, composed: true });
-        this.dispatchEvent(event);
     }
 
     private toggleView() {
@@ -133,8 +139,8 @@ export default class AwcFileUploadExplorer extends LitElement {
 
     private renderListItems(): TemplateResult[] {
         return this.items.map(item => html`
-            <div class="file-explorer__item file-explorer__item--list ${item.isFolder ? 'folder' : 'file'} ${this.selectedFiles.has(item.id) ? 'file-explorer__item--selected' : ''}"
-                 @click="${() => this.navigateTo(item)}">
+           <div class="file-explorer__item file-explorer__item--list ${item.isFolder ? 'folder' : 'file'} ${this.selectedFiles.has(item.id) ? 'file-explorer__item--selected' : ''}"
+                @click="${() => this.navigateTo(item)}">
                 <awc-checkbox 
                     ?checked="${this.selectedFiles.has(item.id)}"
                     @click="${(e: Event) => { e.stopPropagation(); this.toggleFileSelection(item); }}">
@@ -212,20 +218,6 @@ export default class AwcFileUploadExplorer extends LitElement {
                 ${this.isGridView ? this.renderGridItems() : this.renderListItems()}
                 ${this.isLoading ? html`<div class="file-explorer__loading"><awc-spinner size="l" variant="primary"></awc-spinner></div>` : ''}
                 ${this.errorMessage ? html`<div class="file-explorer__error">${this.errorMessage}</div>` : ''}
-            </div>
-
-            <!-- Вынести в главный компонент  -->
-            <div class="file-explorer__footer">
-                <div class="file-explorer__user-info"></div>
-                <div class="file-explorer__buttons">
-                    <awc-button 
-                    background="gray"
-                    size="regular"
-                    variant="transparent"
-                    type="button"
-                    @click=${() => this.selectedFiles.clear()}>Отменить</awc-button>
-                    <awc-button @click=${this.handleConfirmSelection}>Выбрать ${this.selectedFiles.size === 0 ? null : this.selectedFiles.size}</awc-button>
-                </div>
             </div>
         `;
     }

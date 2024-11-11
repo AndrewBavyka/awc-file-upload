@@ -156,15 +156,4 @@ export const awcFileUploadExplorerStyles = css`
         padding: 8px;
         text-align: center;
     }
-
-    .file-explorer__footer{
-        border-top: 1px solid var(--colors-light-stroke);
-        padding: 16px 20px 20px 20px;
-    }
-
-    .file-explorer__buttons{
-        display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
-    }
 `;

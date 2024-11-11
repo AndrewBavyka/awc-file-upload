@@ -5350,7 +5350,6 @@ var index=function(exports){"use strict";/**
          width: 100%;
          max-height: 600px;
          max-width: 610px;
-         overflow: hidden;
          top: 50%;
          left: 50%;
          background-color: var(--colors-light-white);

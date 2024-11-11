@@ -15,6 +15,15 @@ export const awcFileUploadStyles = css`
         min-height: calc(509px - 40px);
     }
 
+    .awc-file-upload__content awc-file-upload-auth {
+        display: flex;
+        position: absolute;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        width: 100%;
+    }
+
     .awc-file-upload-btn__cancel {
         padding: 0;
         background: none;
@@ -53,5 +62,16 @@ export const awcFileUploadStyles = css`
 
     awc-modal {
         --awc-modal-padding: 0px;
+    }
+
+    .file-explorer__footer{
+        border-top: 1px solid var(--colors-light-stroke);
+        padding: 16px 20px 20px 20px;
+    }
+
+    .file-explorer__buttons{
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-sm);
     }
 `;

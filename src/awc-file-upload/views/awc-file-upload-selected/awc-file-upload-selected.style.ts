@@ -2,6 +2,10 @@ import { css } from "lit";
 
 
 export const awcFileUploadSelectedStyles = css`
+    :host {
+        display: block;
+        min-height: 420px;
+    }
 
     .awc-file-upload-selected {
         padding: 12px;

@@ -1,4 +1,4 @@
-import { CSSResult, html, LitElement, TemplateResult } from "lit";
+import { html, LitElement, TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
 import { Provider } from "../../providers/Provider";

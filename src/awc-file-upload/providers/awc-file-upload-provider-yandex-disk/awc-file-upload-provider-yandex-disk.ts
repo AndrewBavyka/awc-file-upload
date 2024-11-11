@@ -1,3 +1,4 @@
+import axios from "axios";
 import { CSSResult, html, TemplateResult, svg, SVGTemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { awcFileUploadProviderStyles } from "../styles/awc-file-upload-provider.style";
@@ -10,8 +11,9 @@ export const awcFileUploadProviderYandexDiskTag = "awc-file-upload-provider-yand
 @customElement(awcFileUploadProviderYandexDiskTag)
 export default class AwcFileUploadProviderYandexDisk extends Provider {
     @property({ type: String, attribute: "name" }) providerName = "Яндекс Диск";
-    @property({ type: String, attribute: "auth-url" }) authUrl = "http://localhost:3000/connect/yandexdisk";
-    @property({ type: String, attribute: "list-url" }) listUrl = "http://localhost:3000/list/yandexdisk";
+    // Проблема что свойство переопределяется, поправить чтобы ссылки можно было из вне задавать
+    @property({ type: String, attribute: "auth-url", reflect: true }) authUrl = "/_module/system/rest/yandexdisk/auth";
+    @property({ type: String, attribute: "list-url", reflect: true  }) listUrl = "/_module/system/rest/yandexdisk/list";
 
     name = this.providerName;
     provider = "yandexdisk";
@@ -51,41 +53,44 @@ export default class AwcFileUploadProviderYandexDisk extends Provider {
             this.authToken = localStorage.getItem(this.provider);
         }
 
-        const response = await fetch(
-            `${this.listUrl}?path=${encodeURIComponent(directory ?? "/")}&offset=${options.qs?.offset ?? 0}&limit=${options.qs?.limit ?? 20}`,
-            {
+        try {
+            const response = await axios.get(this.listUrl, {
+                params: {
+                    path: directory ?? "/",
+                    offset: options.qs?.offset ?? 0,
+                    limit: options.qs?.limit ?? 20,
+                },
                 headers: {
                     Authorization: `Bearer ${this.authToken}`,
                 },
-            }
-        );
+            });
 
-        if (!response.ok) {
+            const data = response.data;
+
+            console.log(data)
+
+            // Перенести на серверную часть
+            return {
+                username: "Yandex User",
+                nextPagePath: data._embedded?.nextPagePath ?? null,
+                items: data._embedded.items.map((item: any) => ({
+                    id: item.resource_id,
+                    name: item.name,
+                    file: item.file || "", 
+                    isFolder: item.type === "dir",
+                    path: item.path,
+                    thumbnail: item.preview || "",
+                    icon: item.type === "dir" ? "" : "",
+                    mimeType: item.mime_type,
+                    modifiedDate: item.modified,
+                    size: item.size,
+                    requestPath: item.path,
+                })),
+            };
+        } catch (error) {
+            console.error("Error loading items:", error);
             throw new Error("Не удалось получить данные от Яндекс Диска");
         }
-
-        const data = await response.json();
-
-        console.log(data)
-
-        return {
-            username: "Yandex User",
-            nextPagePath: data._embedded?.nextPagePath ?? null,
-            items: data._embedded.items.map((item: any) => ({
-                id: item.resource_id,
-                name: item.name,
-                file: item.file || "", 
-                isFolder: item.type === "dir",
-                path: item.path,
-                thumbnail: item.preview || "",
-                icon: item.type === "dir" ? "" : "",
-                mimeType: item.mime_type,
-                modifiedDate: item.modified,
-                size: item.size,
-                requestPath: item.path,
-            })),
-            
-        };
     }
 
     protected render(): TemplateResult {
