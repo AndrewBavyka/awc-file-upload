@@ -17,7 +17,7 @@ export default class AwcFileUploadExplorer extends LitElement {
     @state() private selectedFiles: Set<string> = new Set();
     @state() private offset: number = 0;
     @state() private limit: number = 20;
-    //@state() private allItemsLoaded: boolean = false;
+    @state() private allItemsLoaded: boolean = false;
     @state() private isLoading: boolean = false;
     @state() private errorMessage: string | null = null;
     @state() private isGridView: boolean = false;
@@ -32,6 +32,7 @@ export default class AwcFileUploadExplorer extends LitElement {
     async connectedCallback() {
         super.connectedCallback();
         this.loadViewMode();
+
         await this.loadItems(this.currentPath, true);
     }
 
@@ -55,20 +56,23 @@ export default class AwcFileUploadExplorer extends LitElement {
             if (reset) {
                 this.items = [];
                 this.offset = 0;
-                // this.allItemsLoaded = false;
+                this.allItemsLoaded = false;
             }
 
             const options: RequestOptions = {
                 qs: { offset: this.offset.toString(), limit: this.limit.toString() },
             };
 
-            const { items: newItems, nextPagePath } = await this.provider.list(path, options);
+            const { items: newItems, username: username, nextPagePath: nextPagePath } = await this.provider.list(path, options);
+
+            console.log(newItems)
+
 
             this.items = [...this.items, ...newItems];
             this.offset += this.limit;
 
             if (!nextPagePath) {
-                // this.allItemsLoaded = true;
+                this.allItemsLoaded = true;
             }
         } catch (error) {
             console.error("Error loading items:", error);
@@ -85,7 +89,7 @@ export default class AwcFileUploadExplorer extends LitElement {
 
         const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
         // Временно не работает c (&& !this.isLoading && !this.allItemsLoaded)
-        if (scrollTop + clientHeight >= scrollHeight - 5) {
+        if (scrollTop + clientHeight >= scrollHeight - 5 && !this.isLoading && !this.allItemsLoaded) {
             this.loadItems(this.currentPath);
         }
     }
@@ -183,7 +187,7 @@ export default class AwcFileUploadExplorer extends LitElement {
         `;
 
         return item.thumbnail
-            ? html`<img src="${item.thumbnail}" class="file-explorer__thumbnail" alt="${item.name}">`
+            ? html`<img src="${item.thumbnail}"  referrerpolicy="no-referrer" class="file-explorer__thumbnail" alt="${item.name}">`
             : html`<span class="file-explorer__file-type">${getFileFormat === "zip" ? zipIcon : ""}</span>`;
     }
 

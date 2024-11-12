@@ -2,7 +2,7 @@ import axios from "axios";
 import { CSSResult, html, TemplateResult, svg, SVGTemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { awcFileUploadProviderStyles } from "../styles/awc-file-upload-provider.style";
-import {ProviderData } from "../../interfaces/ProviderFile";
+import { ProviderData, ProviderFile } from "../../interfaces/ProviderFile";
 import { RequestOptions } from "../../interfaces/ProviderInfo";
 import { Provider } from "../Provider";
 
@@ -12,12 +12,12 @@ export const awcFileUploadProviderYandexDiskTag = "awc-file-upload-provider-yand
 export default class AwcFileUploadProviderYandexDisk extends Provider {
     @property({ type: String, attribute: "name" }) providerName = "Яндекс Диск";
     // Проблема что свойство переопределяется, поправить чтобы ссылки можно было из вне задавать
-    @property({ type: String, attribute: "auth-url", reflect: true }) authUrl = "/_module/system/rest/yandexdisk/auth";
-    @property({ type: String, attribute: "list-url", reflect: true  }) listUrl = "/_module/system/rest/yandexdisk/list";
+    @property({ type: String, attribute: "auth-url", reflect: true }) authUrl = "http://localhost:3000/connect/yandexdisk";
+    @property({ type: String, attribute: "list-url", reflect: true }) listUrl = "http://localhost:3000/list/yandexdisk";
 
     name = this.providerName;
     provider = "yandexdisk";
-    
+
     get icon(): SVGTemplateResult {
         return svg`
               <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -71,20 +71,20 @@ export default class AwcFileUploadProviderYandexDisk extends Provider {
 
             // Перенести на серверную часть
             return {
-                username: "Yandex User",
-                nextPagePath: data._embedded?.nextPagePath ?? null,
-                items: data._embedded.items.map((item: any) => ({
-                    id: item.resource_id,
+                username: data.username,
+                nextPagePath: data.nextPagePath ?? null,
+                items: data.items.map((item: ProviderFile) => ({
+                    id: item.id,
                     name: item.name,
-                    file: item.file || "", 
-                    isFolder: item.type === "dir",
-                    path: item.path,
-                    thumbnail: item.preview || "",
-                    icon: item.type === "dir" ? "" : "",
-                    mimeType: item.mime_type,
-                    modifiedDate: item.modified,
+                    file: item.file,
+                    isFolder: item.isFolder,
+                    thumbnail: item.thumbnail,
+                    // Тут поправить моментик
+                    // icon: item.type === "dir" ? "" : "",
+                    mimeType: item.mimeType,
+                    modifiedDate: item.modifiedDate,
                     size: item.size,
-                    requestPath: item.path,
+                    requestPath: item.requestPath,
                 })),
             };
         } catch (error) {

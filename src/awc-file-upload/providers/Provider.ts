@@ -1,4 +1,4 @@
-import { LitElement, SVGTemplateResult } from "lit";
+import { CSSResultGroup, LitElement, SVGTemplateResult } from "lit";
 import { EventDispatcher, event } from "../../util/event";
 import { ProviderInfo } from "../interfaces/ProviderInfo";
 import { RequestOptions } from "../interfaces/ProviderInfo";
@@ -40,4 +40,7 @@ export abstract class Provider extends LitElement implements ProviderInfo {
     emitProviderSelected(): void {
         this._onSelected(this.getProviderInfo());
     }
+
+
+    // static styles?: CSSResultGroup = [];
 }

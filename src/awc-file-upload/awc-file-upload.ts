@@ -24,11 +24,9 @@ export default class AwcFileUpload extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+
     window.addEventListener("message", this._handleAuthMessage.bind(this));
-    this.addEventListener(
-      "confirm-selection",
-      this._handleConfirmSelection.bind(this)
-    );
+    this.addEventListener("confirm-selection", this._handleConfirmSelection.bind(this));
     this.addEventListener("file-selection-changed", (event: Event) =>
       this._updateSelectedFiles(event as CustomEvent)
     );
@@ -36,11 +34,9 @@ export default class AwcFileUpload extends LitElement {
 
   disconnectedCallback() {
     super.disconnectedCallback();
+
     window.removeEventListener("message", this._handleAuthMessage.bind(this));
-    this.removeEventListener(
-      "confirm-selection",
-      this._handleConfirmSelection.bind(this)
-    );
+    this.removeEventListener("confirm-selection", this._handleConfirmSelection.bind(this));
   }
 
   private _updateSelectedFiles(event: CustomEvent) {
@@ -56,6 +52,7 @@ export default class AwcFileUpload extends LitElement {
 
   private _handleAuthMessage(event: MessageEvent) {
     const { token } = event.data;
+    
     if (token && this._selectedProvider) {
       this._selectedProvider.setAuthToken(token);
       this._currentView = CurrentView.FILE_LIST;

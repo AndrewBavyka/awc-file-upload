@@ -17,6 +17,9 @@ export interface ProviderFile {
     /** MIME-тип (только для файлов). */
     mimeType?: string;
 
+    /** Ссылка на файл заугрузки */
+    file?: string;
+
     /** Путь для запроса элемента (для папок — путь к каталогу, для файлов — идентификатор для загрузки). */
     requestPath: string;
 
