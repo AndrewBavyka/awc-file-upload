@@ -145,6 +145,7 @@ export default class AwcFileUpload extends LitElement {
                     this._currentView = CurrentView.MAIN;
                     this._selectedProvider = null;
                     this._updateTitle();
+                    this._clearSelectedFiles();
                   }}
                   class="awc-file-upload-btn__cancel"
                 >
@@ -158,10 +159,20 @@ export default class AwcFileUpload extends LitElement {
 
         <div class="awc-file-upload__content">
           ${this._moveBetweenScreens(this._currentView)}
-          ${this._currentView !== CurrentView.MAIN
+          ${this._currentView !== CurrentView.MAIN && this._currentView !== CurrentView.AUTH
             ? html`
                 <div class="file-explorer__footer">
-                  <div class="file-explorer__user-info"></div>
+                  <div class="file-explorer__user-info">
+                        <button
+                          @click=${() => {
+                            this._currentView = CurrentView.MAIN;
+                            this._selectedProvider = null;
+                          }}
+                          class="awc-file-upload-btn__logout"
+                        >
+                          Выйти
+                        </button>
+                  </div>
                   <div class="file-explorer__buttons">
                     ${this._currentView === CurrentView.SELECTED_FILES
                       ? html`

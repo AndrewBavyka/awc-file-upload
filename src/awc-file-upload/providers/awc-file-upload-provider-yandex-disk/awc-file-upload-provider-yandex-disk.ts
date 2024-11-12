@@ -2,7 +2,7 @@ import axios from "axios";
 import { CSSResult, html, TemplateResult, svg, SVGTemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { awcFileUploadProviderStyles } from "../styles/awc-file-upload-provider.style";
-import { ProviderData, ProviderFile } from "../../interfaces/ProviderFile";
+import { ProviderData } from "../../interfaces/ProviderFile";
 import { RequestOptions } from "../../interfaces/ProviderInfo";
 import { Provider } from "../Provider";
 
@@ -52,7 +52,7 @@ export default class AwcFileUploadProviderYandexDisk extends Provider {
         if (!this.authToken) {
             this.authToken = localStorage.getItem(this.provider);
         }
-
+    
         try {
             const response = await axios.get(this.listUrl, {
                 params: {
@@ -64,29 +64,8 @@ export default class AwcFileUploadProviderYandexDisk extends Provider {
                     Authorization: `Bearer ${this.authToken}`,
                 },
             });
-
-            const data = response.data;
-
-            console.log(data)
-
-            // Перенести на серверную часть
-            return {
-                username: data.username,
-                nextPagePath: data.nextPagePath ?? null,
-                items: data.items.map((item: ProviderFile) => ({
-                    id: item.id,
-                    name: item.name,
-                    file: item.file,
-                    isFolder: item.isFolder,
-                    thumbnail: item.thumbnail,
-                    // Тут поправить моментик
-                    // icon: item.type === "dir" ? "" : "",
-                    mimeType: item.mimeType,
-                    modifiedDate: item.modifiedDate,
-                    size: item.size,
-                    requestPath: item.requestPath,
-                })),
-            };
+    
+            return response.data as ProviderData;
         } catch (error) {
             console.error("Error loading items:", error);
             throw new Error("Не удалось получить данные от Яндекс Диска");

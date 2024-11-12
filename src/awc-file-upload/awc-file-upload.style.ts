@@ -24,7 +24,8 @@ export const awcFileUploadStyles = css`
         width: 100%;
     }
 
-    .awc-file-upload-btn__cancel {
+    .awc-file-upload-btn__cancel,
+    .awc-file-upload-btn__logout{
         padding: 0;
         background: none;
         border: none;
@@ -34,7 +35,8 @@ export const awcFileUploadStyles = css`
         transition: color .3s ease;
     }
 
-    .awc-file-upload-btn__cancel:hover {
+    .awc-file-upload-btn__cancel:hover,
+    .awc-file-upload-btn__logout:hover {
         color: var(--colors-light-link-hover);
     }
 
@@ -65,6 +67,9 @@ export const awcFileUploadStyles = css`
     }
 
     .file-explorer__footer{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         border-top: 1px solid var(--colors-light-stroke);
         padding: 16px 20px 20px 20px;
     }
