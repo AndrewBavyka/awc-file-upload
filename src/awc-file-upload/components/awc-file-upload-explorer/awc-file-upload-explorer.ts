@@ -217,8 +217,8 @@ export default class AwcFileUploadExplorer extends LitElement {
                 >
                     <awc-checkbox
                         .checked="${isSelected}"
-                        @click="${(e: Event) => e.stopPropagation()}"
-                      
+                        @change="${() => { this.toggleFileSelection(item)}}"
+                        @click=${(e: Event) => e.stopPropagation()}
                     ></awc-checkbox>
                     <div class="file-explorer__icon ${item.isFolder ? 'folder' : 'file'}">
                         ${item.isFolder ? AwcFileUploadExplorer.folderIcon : this.renderFileIcon(item)}
@@ -240,7 +240,8 @@ export default class AwcFileUploadExplorer extends LitElement {
                     <div class="file-explorer__item--card">
                         <awc-checkbox
                             .checked="${isSelected}"
-                            @click="${(e: Event) => e.stopPropagation()}"
+                            @change="${() => { this.toggleFileSelection(item)}}"
+                            @click=${(e: Event) => e.stopPropagation()}
                            
                         ></awc-checkbox>
                         <div class="file-explorer__icon ${item.thumbnail ? '' : item.isFolder ? 'folder' : 'file'}">
