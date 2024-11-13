@@ -1,4 +1,4 @@
-import { CSSResultGroup, LitElement, SVGTemplateResult } from "lit";
+import { LitElement, SVGTemplateResult } from "lit";
 import { EventDispatcher, event } from "../../util/event";
 import { ProviderInfo } from "../interfaces/ProviderInfo";
 import { RequestOptions } from "../interfaces/ProviderInfo";
