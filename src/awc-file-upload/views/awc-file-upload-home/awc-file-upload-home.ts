@@ -12,6 +12,7 @@ export default class AwcFileUploadHome extends LitElement {
     protected render(): TemplateResult {
         return html`
             <awc-file-upload-provider-local></awc-file-upload-provider-local>
+            
             <div class="awc-file-upload-service-providers"
                 @click=${this.onProviderClick}
                 @awc-file-upload-provider-selected=${this.onProviderSelected}>

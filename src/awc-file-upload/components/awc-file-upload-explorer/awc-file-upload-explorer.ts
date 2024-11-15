@@ -54,8 +54,7 @@ export default class AwcFileUploadExplorer extends LitElement {
   @state() private errorMessage: string | null = null;
   @state() private isGridView = false;
 
-  @event("file-selection-changed")
-  private _fileSelectionChanged!: EventDispatcher<{}>;
+  @event("file-selection-changed") private _fileSelectionChanged!: EventDispatcher<{}>;
 
   private cacheManager = new CacheManager();
   private abortController: AbortController | null = null;
@@ -66,7 +65,7 @@ export default class AwcFileUploadExplorer extends LitElement {
         </svg>
     `;
     
-  private static publickFolderIcon = svg`
+  private static publicFolderIcon = svg`
         <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M13.744 3.0325C13.136 2.3675 12.32 2 11.472 2H3.2C1.44 2 0.016 3.575 0.016 5.5L0 26.5C0 28.425 1.44 30 3.2 30H28.8C30.56 30 32 28.425 32 26.5V9.5C32 7.575 30.56 6 28.8 6H16L13.744 3.0325Z" fill="#FED34A"/>
             <g opacity="0.5">
@@ -78,6 +77,7 @@ export default class AwcFileUploadExplorer extends LitElement {
 
   async connectedCallback() {
     super.connectedCallback();
+
     this.loadViewMode();
     await this.loadItems(this.currentPath, true);
   }
@@ -128,8 +128,7 @@ export default class AwcFileUploadExplorer extends LitElement {
   private initializeWithCachedItems(cachedItems: ProviderFile[]) {
     this.items = [...cachedItems];
     this.offset = cachedItems.length;
-    this.allItemsLoaded =
-      cachedItems.length > 0 && cachedItems.length % this.limit !== 0;
+    this.allItemsLoaded = cachedItems.length > 0 && cachedItems.length % this.limit !== 0;
   }
 
   private resetItems() {
@@ -180,9 +179,7 @@ export default class AwcFileUploadExplorer extends LitElement {
   }
 
   private handleScroll() {
-    const scrollContainer = this.shadowRoot?.querySelector(
-      ".file-explorer__content"
-    );
+    const scrollContainer = this.shadowRoot?.querySelector(".file-explorer__content");
 
     if (!scrollContainer) return;
 
@@ -212,7 +209,8 @@ export default class AwcFileUploadExplorer extends LitElement {
 
   private onBreadcrumbClick(event: CustomEvent) {
     this.currentPath = event.detail.path;
-    this.loadItems(this.currentPath, true);
+    const currentPathDecode = decodeURIComponent(this.currentPath);
+    this.loadItems(currentPathDecode, true);
   }
 
   private getPathArray(): string[] {
@@ -262,12 +260,10 @@ export default class AwcFileUploadExplorer extends LitElement {
           ${item.isFolder
             ? html`${folderArrowIcon}`
             : html`
-                <awc-checkbox
-                  .checked="${isSelected}"
-                  @change="${() => {
-                    this.toggleFileSelection(item);
-                  }}"
-                  @click=${(e: Event) => e.stopPropagation()}
+               <awc-checkbox
+                  .checked="${this.selectedFiles.has(item.id)}"
+                  @change="${() => this.toggleFileSelection(item)}"
+                  @click="${(e: Event) => e.stopPropagation()}"
                 ></awc-checkbox>
               `}
           <div class="file-explorer__icon ${item.isFolder ? "folder" : "file"}">
@@ -296,13 +292,12 @@ export default class AwcFileUploadExplorer extends LitElement {
             ${item.isFolder
               ? ""
               : html`
-                  <awc-checkbox
-                    .checked="${isSelected}"
-                    @change="${() => {
-                      this.toggleFileSelection(item);
-                    }}"
-                    @click=${(e: Event) => e.stopPropagation()}
-                  ></awc-checkbox>
+                <awc-checkbox
+                  .checked="${this.selectedFiles.has(item.id)}"
+                  @change="${() => this.toggleFileSelection(item)}"
+                  @click="${(e: Event) => e.stopPropagation()}"
+                ></awc-checkbox>
+
                 `}
             <div
               class="file-explorer__icon ${item.thumbnail
@@ -384,4 +379,11 @@ export default class AwcFileUploadExplorer extends LitElement {
   }
 
   static styles: CSSResult = awcFileUploadExplorerStyles;
+}
+
+
+declare global {
+  interface HTMLElementEventMap {
+    'file-selection-changed': CustomEvent;
+  }
 }

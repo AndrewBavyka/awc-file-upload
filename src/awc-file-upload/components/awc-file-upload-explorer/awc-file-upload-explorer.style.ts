@@ -5,6 +5,7 @@ export const awcFileUploadExplorerStyles = css`
         display: flex;
         flex-direction: column;
         width: 100%;
+        max-height: 494px;
     }
 
     .file-explorer__header {
@@ -23,8 +24,7 @@ export const awcFileUploadExplorerStyles = css`
     .file-explorer__content {
         overflow-y: auto;
         overflow-x: hidden;
-        max-height: 343px;
-        min-height: 343px;
+        min-height: 417px;
         padding: 12px 0 12px 20px;
     }
 
@@ -48,7 +48,6 @@ export const awcFileUploadExplorerStyles = css`
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
         gap: 12px;
-        /* padding: 12px; */
     }
 
     .file-explorer__content--grid .file-explorer__item  {
@@ -58,6 +57,7 @@ export const awcFileUploadExplorerStyles = css`
     }
 
     .file-explorer__content--grid .file-explorer__item .file-explorer__item--card {
+        cursor: pointer;
         position: relative;   
         height: 120px;
         overflow: hidden;
@@ -67,6 +67,11 @@ export const awcFileUploadExplorerStyles = css`
         background-color: var(--colors-light-white);
         border: 1px solid var(--colors-light-stroke);
         border-radius: var(--corner-radius-m);
+        transition: background-color .3s ease;
+    }
+
+    .file-explorer__content--grid .file-explorer__item .file-explorer__item--card:hover {
+        background-color: var(--colors-light-input-background);
     }
 
     .file-explorer__content--grid .file-explorer__item awc-checkbox {
@@ -138,6 +143,7 @@ export const awcFileUploadExplorerStyles = css`
     
     .file-explorer__name {
         font: var(--awc-font-text-regular-14);
+        color: var(--colors-light-titles);
         word-break: break-word;
     }
 

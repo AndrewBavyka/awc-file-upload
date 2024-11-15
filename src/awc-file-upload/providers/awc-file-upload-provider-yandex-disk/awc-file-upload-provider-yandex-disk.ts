@@ -12,8 +12,8 @@ export const awcFileUploadProviderYandexDiskTag = "awc-file-upload-provider-yand
 export default class AwcFileUploadProviderYandexDisk extends Provider {
     @property({ type: String, attribute: "name" }) providerName = "Яндекс Диск";
     // Проблема что свойство переопределяется, поправить чтобы ссылки можно было из вне задавать
-    @property({ type: String, attribute: "auth-url", reflect: true }) authUrl = "/_module/system/rest/yandexdisk/auth";
-    @property({ type: String, attribute: "list-url", reflect: true  }) listUrl = "/_module/system/rest/yandexdisk/list";
+    @property({ type: String, attribute: "auth-url", reflect: true }) authUrl = "http://localhost:3000/connect/yandexdisk";
+    @property({ type: String, attribute: "list-url", reflect: true  }) listUrl = "http://localhost:3000/list/yandexdisk";
 
     name = this.providerName;
     provider = "yandexdisk";
