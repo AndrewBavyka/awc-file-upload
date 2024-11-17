@@ -46,7 +46,6 @@ export default class AwcFileUploadExplorer extends LitElement {
 
   @state() private currentPath = "/";
   @state() private items: ProviderFile[] = [];
-  @state() private selectedFiles = new Set<string>();
   @state() private offset = 0;
   @state() private limit = 20;
   @state() private allItemsLoaded = false;
@@ -55,6 +54,8 @@ export default class AwcFileUploadExplorer extends LitElement {
   @state() private isGridView = false;
 
   @event("file-selection-changed") private _fileSelectionChanged!: EventDispatcher<{}>;
+
+  @state() private _selectedFileManager = SelectedFileManager.getInstance();
 
   private cacheManager = new CacheManager();
   private abortController: AbortController | null = null;
@@ -84,18 +85,20 @@ export default class AwcFileUploadExplorer extends LitElement {
 
   private loadViewMode() {
     const providerName = this.provider?.getProviderInfo().provider || "";
-    const savedViewMode = localStorage.getItem(
-      `awc-file-explorer-${providerName}`
-    );
+    const savedViewMode = localStorage.getItem(`awc-file-explorer-${providerName}`);
+
     this.isGridView = savedViewMode === "grid";
   }
 
   private saveViewMode() {
     const providerName = this.provider?.getProviderInfo().provider || "";
-    localStorage.setItem(
-      `awc-file-explorer-${providerName}`,
-      this.isGridView ? "grid" : "list"
-    );
+
+    localStorage.setItem(`awc-file-explorer-${providerName}`, this.isGridView ? "grid" : "list");
+  }
+
+  private toggleView() {
+    this.isGridView = !this.isGridView;
+    this.saveViewMode();
   }
 
   private async loadItems(path: string, reset: boolean = false) {
@@ -202,11 +205,6 @@ export default class AwcFileUploadExplorer extends LitElement {
     }
   }
 
-  private toggleView() {
-    this.isGridView = !this.isGridView;
-    this.saveViewMode();
-  }
-
   private onBreadcrumbClick(event: CustomEvent) {
     this.currentPath = event.detail.path;
     const currentPathDecode = decodeURIComponent(this.currentPath);
@@ -221,48 +219,48 @@ export default class AwcFileUploadExplorer extends LitElement {
   }
 
   private toggleFileSelection(file: ProviderFile) {
-    const manager = SelectedFileManager.getInstance();
-    const updatedSelectedFiles = new Set(this.selectedFiles);
-
+    const updatedSelectedFiles = new Set(this._selectedFileManager.getFiles().map((f) => f.file.id));
+  
     if (updatedSelectedFiles.has(file.id)) {
-      manager.removeFile(file.id);
+      this._selectedFileManager.removeFile(file.id);
       updatedSelectedFiles.delete(file.id);
     } else {
-      manager.addFile(
+      this._selectedFileManager.addFile(
         file,
         this.provider?.getProviderInfo().provider || "Unknown",
         this.provider?.getProviderInfo().icon!
       );
       updatedSelectedFiles.add(file.id);
     }
-
-    this.selectedFiles = updatedSelectedFiles;
-    this._fileSelectionChanged({ selectedFiles: updatedSelectedFiles });
+  
+    this._fileSelectionChanged({ selectedFiles: this._selectedFileManager.getFiles() });
+    this.requestUpdate();
   }
-
+  
   private renderListItems(): TemplateResult[] {
     const folderArrowIcon = svg`
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path fill-rule="evenodd" clip-rule="evenodd" d="M7.29289 4.29289C6.90237 4.68342 6.90237 5.31658 7.29289 5.70711L11.5858 10L7.29289 14.2929C6.90237 14.6834 6.90237 15.3166 7.29289 15.7071C7.68342 16.0976 8.31658 16.0976 8.70711 15.7071L13.7071 10.7071C14.0976 10.3166 14.0976 9.68342 13.7071 9.29289L8.70711 4.29289C8.31658 3.90237 7.68342 3.90237 7.29289 4.29289Z" fill="#919BB6"/>
-            </svg>
-        `;
-
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path fill-rule="evenodd" clip-rule="evenodd" d="M7.29289 4.29289C6.90237 4.68342 6.90237 5.31658 7.29289 5.70711L11.5858 10L7.29289 14.2929C6.90237 14.6834 6.90237 15.3166 7.29289 15.7071C7.68342 16.0976 8.31658 16.0976 8.70711 15.7071L13.7071 10.7071C14.0976 10.3166 14.0976 9.68342 13.7071 9.29289L8.70711 4.29289C8.31658 3.90237 7.68342 3.90237 7.29289 4.29289Z" fill="#919BB6"/>
+      </svg>
+    `;
+    
     return this.items.map((item) => {
-      const isSelected = this.selectedFiles.has(item.id);
+
+      const isSelected = this._selectedFileManager.getFiles().some((f) => f.file.id === item.id);
 
       return html`
         <div
-          class="file-explorer__item file-explorer__item--list ${item.isFolder
-            ? "folder"
-            : "file"} ${isSelected ? "file-explorer__item--selected" : ""}"
+          class="file-explorer__item file-explorer__item--list 
+          ${item.isFolder ? "folder" : "file"} 
+          ${isSelected ? "file-explorer__item--selected" : ""}"
           @click="${() => this.navigateTo(item)}"
         >
           ${item.isFolder
             ? html`${folderArrowIcon}`
             : html`
                <awc-checkbox
-                  .checked="${this.selectedFiles.has(item.id)}"
-                  @change="${() => this.toggleFileSelection(item)}"
+                  ?checked="${isSelected}"
+                  @change="${this.toggleFileSelection}"
                   @click="${(e: Event) => e.stopPropagation()}"
                 ></awc-checkbox>
               `}
@@ -279,8 +277,8 @@ export default class AwcFileUploadExplorer extends LitElement {
 
   private renderGridItems(): TemplateResult[] {
     return this.items.map((item) => {
-      const isSelected = this.selectedFiles.has(item.id);
-
+      const isSelected = this._selectedFileManager.getFiles().some((f) => f.file.id === item.id);
+      
       return html`
         <div
           class="file-explorer__item file-explorer__item--grid ${item.isFolder
@@ -293,7 +291,7 @@ export default class AwcFileUploadExplorer extends LitElement {
               ? ""
               : html`
                 <awc-checkbox
-                  .checked="${this.selectedFiles.has(item.id)}"
+                  .checked="${isSelected}"
                   @change="${() => this.toggleFileSelection(item)}"
                   @click="${(e: Event) => e.stopPropagation()}"
                 ></awc-checkbox>
@@ -366,6 +364,7 @@ export default class AwcFileUploadExplorer extends LitElement {
         @scroll="${this.handleScroll}"
       >
         ${this.isGridView ? this.renderGridItems() : this.renderListItems()}
+        
         ${this.isLoading
           ? html`<div class="file-explorer__loading">
               <awc-spinner size="l" variant="primary"></awc-spinner>

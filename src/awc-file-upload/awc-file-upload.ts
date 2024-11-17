@@ -10,7 +10,7 @@ export const awcFileUploadTag = "awc-file-upload";
 
 @customElement(awcFileUploadTag)
 export default class AwcFileUpload extends LitElement {
-  @property({ type: String }) title = "Перетащите файлы сюда, загружайте или импортируйте из:";
+  @property({ type: String }) title = "Перетащите файлы, вставьте, выберите файлы или импортируйте из:";
 
   @state() private _selectedProvider: Provider | null = null;
   @state() private _navigationManager = new NavigationManager();
@@ -67,11 +67,12 @@ export default class AwcFileUpload extends LitElement {
 
   private _updateTitle() {
     const selectedFiles = this._selectedFileManager.getFiles();
+    const currentView = this._navigationManager.currentView;
 
     if (selectedFiles.length > 0) {
       this.title = `${selectedFiles.length} файлов выбрано`;
-    } else if (this._selectedProvider) {
-      this.title = `Импортируйте из ${this._selectedProvider.getProviderInfo().name}`;
+    } else if (currentView !== "main") {
+      this.title = `Импортируйте из ${this._selectedProvider?.getProviderInfo().name}`;
     } else {
       this.title = "Перетащите файлы сюда, загружайте или импортируйте из:";
     }
@@ -99,11 +100,9 @@ export default class AwcFileUpload extends LitElement {
   }
 
   private _clearSelectedFiles() {
-    this._selectedFileManager.getFiles().forEach(({ file }: { file: ProviderFile }) => {
-      this._selectedFileManager.removeFile(file.id);
-    });
+    this._selectedFileManager.clearFiles();
 
-    this._updateSelectedFiles()
+    this._updateSelectedFiles();
   }
 
   private _handleUpload() {
@@ -155,6 +154,15 @@ export default class AwcFileUpload extends LitElement {
     `
   }
 
+  // <div class="file-explorer__user-info">
+  //         <button
+  //           @click=${this._handleLogout}
+  //           class="awc-file-upload-btn__logout"
+  //         >
+  //           Выйти
+  //         </button>
+  //       </div>
+
   private _renderFooter(): TemplateResult | string {
     if (this._navigationManager.currentView === "main" || this._navigationManager.currentView === "auth") {
       return "";
@@ -162,14 +170,7 @@ export default class AwcFileUpload extends LitElement {
 
     return html`
       <div class="file-explorer__footer">
-        <div class="file-explorer__user-info">
-          <button
-            @click=${this._handleLogout}
-            class="awc-file-upload-btn__logout"
-          >
-            Выйти
-          </button>
-        </div>
+          <awc-switcher>Загружать как ссылки</awc-switcher>
         <div class="file-explorer__buttons">
           ${this._renderFooterButtons()}
         </div>

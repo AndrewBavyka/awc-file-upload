@@ -1,9 +1,12 @@
 import { SVGTemplateResult } from "lit";
 import { ProviderFile } from "./interfaces/ProviderFile";
+import { EventDispatcher, event } from "../util/event";
 
 export class SelectedFileManager {
     private static instance: SelectedFileManager;
     private selectedFiles: Map<string, { file: ProviderFile, provider: string, providerIcon: SVGTemplateResult }> = new Map();
+
+    @event("file-selection-changed") private _fileSelectionChanged!: EventDispatcher<{}>;
 
     static getInstance() {
         if (!SelectedFileManager.instance) {
@@ -22,5 +25,9 @@ export class SelectedFileManager {
 
     getFiles() {
         return Array.from(this.selectedFiles.values());
+    }
+
+    clearFiles() {
+        this.selectedFiles.clear();
     }
 }

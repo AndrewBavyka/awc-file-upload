@@ -8,7 +8,7 @@ export interface ProviderFile {
     /** Флаг, определяющий, является ли элемент папкой. */
     isFolder: boolean;
 
-    /** URL иконки для элемента. */
+    /** URL иконки папки. */
     icon: string;
 
     /** URL миниатюры (только для файлов). */

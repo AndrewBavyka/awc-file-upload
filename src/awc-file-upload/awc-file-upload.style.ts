@@ -3,7 +3,7 @@ import { css } from "lit";
 export const awcFileUploadStyles = css`
     :host {
         --awc-file-upload-file-title: var(--awc-font-h5-medium);
-       
+     
     }
 
     /* awc-modal {
@@ -12,7 +12,7 @@ export const awcFileUploadStyles = css`
     } */
 
     .awc-file-upload__content {
-        min-height: calc(509px - 40px);
+        min-height: calc(534px - 40px);
     }
 
     .awc-file-upload__content awc-file-upload-auth {
@@ -67,11 +67,22 @@ export const awcFileUploadStyles = css`
     }
 
     .file-explorer__footer{
+        position: relative;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        border-top: 1px solid var(--colors-light-stroke);
         padding: 16px 20px 20px 20px;
+    }
+
+    .file-explorer__footer:after {
+        position: absolute;
+        left: 0;
+        top: 0;
+        content: "";
+        display: block;
+        margin: 0 auto;
+        width: 100%;
+        border-top: 1px solid var(--colors-light-stroke);
     }
 
     .file-explorer__buttons{

@@ -5,14 +5,26 @@ export const awcFileUploadExplorerStyles = css`
         display: flex;
         flex-direction: column;
         width: 100%;
-        max-height: 494px;
+        max-height: 420px;
     }
 
     .file-explorer__header {
+        position: relative;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 12px 20px;
+        padding: 10px 20px;
+        box-sizing: border-box;
+    }
+
+    .file-explorer__header:after {
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        content: "";
+        display: block;
+        margin: 0 auto;
+        width: 100%;
         border-bottom: 1px solid var(--colors-light-stroke);
     }
 
@@ -22,9 +34,10 @@ export const awcFileUploadExplorerStyles = css`
     }
 
     .file-explorer__content {
+        box-sizing: border-box;
         overflow-y: auto;
         overflow-x: hidden;
-        min-height: 417px;
+        min-height: 374px;
         padding: 12px 0 12px 20px;
     }
 

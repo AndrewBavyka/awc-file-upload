@@ -1,9 +1,10 @@
 import { CSSResult, html, LitElement, svg, TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
-
+import { fileIcons, defaultFileIcon } from "../../components/awc-file-upload-explorer/fileIcons";
 import { Provider } from "../../providers/Provider";
 import { SelectedFileManager } from "../../SelectedFileManager";
 import { awcFileUploadSelectedStyles } from "./awc-file-upload-selected.style";
+import { ProviderFile } from "../../interfaces/ProviderFile";
 
 export const awcFileUploadSelectedTag = "awc-file-upload-selected";
 
@@ -42,8 +43,23 @@ export default class AwcFileUploadSelected extends LitElement {
     );
   }
 
+  private renderFileIcon(item: ProviderFile): TemplateResult {
+    const fileFormat = item.name.split(".").pop()!;
+    const icon = fileIcons[fileFormat] || defaultFileIcon;
+
+    return item.thumbnail
+      ? html`<img
+          src="${item.thumbnail}"
+          referrerpolicy="no-referrer"
+          alt="${item.name}"
+        />`
+      : html`<span class="file-explorer__file-type">${icon}</span>`;
+  }
+
   protected render(): TemplateResult {
     const selectedFiles = SelectedFileManager.getInstance().getFiles();
+
+    console.log(selectedFiles)
 
     const clearIcon = svg`
             <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
@@ -54,14 +70,10 @@ export default class AwcFileUploadSelected extends LitElement {
     return html`
       <div class="awc-file-upload-selected">
         ${selectedFiles.map(
-          ({ file, providerIcon }) => html`
+      ({ file, providerIcon }) => html`
             <div class="awc-file-upload-selected__file">
               <div class="awc-file-upload-selected__preview">
-                <img
-                  src="${file.thumbnail || "fallback-icon"}"
-                  alt="${file.name}"
-                />
-                
+                 ${this.renderFileIcon(file)}
                 <span class="awc-file-upload-selected__provider"
                   >${providerIcon}</span
                 >
@@ -80,7 +92,7 @@ export default class AwcFileUploadSelected extends LitElement {
               </div>
             </div>
           `
-        )}
+    )}
       </div>
     `;
   }
