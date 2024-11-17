@@ -6,7 +6,6 @@ import { RequestOptions } from "../../interfaces/ProviderInfo";
 import { awcFileUploadExplorerStyles } from "./awc-file-upload-explorer.style";
 import { SelectedFileManager } from "../../SelectedFileManager";
 import { fileIcons, defaultFileIcon } from "./fileIcons";
-import { EventDispatcher, event } from "../../../util/event";
 
 export const awcFileUploadExplorer = "awc-file-upload-explorer";
 
@@ -53,8 +52,6 @@ export default class AwcFileUploadExplorer extends LitElement {
   @state() private errorMessage: string | null = null;
   @state() private isGridView = false;
 
-  @event("file-selection-changed") private _fileSelectionChanged!: EventDispatcher<{}>;
-
   @state() private _selectedFileManager = SelectedFileManager.getInstance();
 
   private cacheManager = new CacheManager();
@@ -79,6 +76,8 @@ export default class AwcFileUploadExplorer extends LitElement {
   async connectedCallback() {
     super.connectedCallback();
 
+    this._selectedFileManager.addEventListener("file-selection-changed", () => this.requestUpdate());
+    
     this.loadViewMode();
     await this.loadItems(this.currentPath, true);
   }
@@ -233,7 +232,6 @@ export default class AwcFileUploadExplorer extends LitElement {
       updatedSelectedFiles.add(file.id);
     }
   
-    this._fileSelectionChanged({ selectedFiles: this._selectedFileManager.getFiles() });
     this.requestUpdate();
   }
   
@@ -245,7 +243,6 @@ export default class AwcFileUploadExplorer extends LitElement {
     `;
     
     return this.items.map((item) => {
-
       const isSelected = this._selectedFileManager.getFiles().some((f) => f.file.id === item.id);
 
       return html`
@@ -343,6 +340,8 @@ export default class AwcFileUploadExplorer extends LitElement {
         `;
 
     return html`
+      <div class="file-explorer__body">
+
       <div class="file-explorer__header">
         <awc-file-upload-breadcrumbs
           .path="${this.getPathArray()}"
@@ -357,22 +356,23 @@ export default class AwcFileUploadExplorer extends LitElement {
         </div>
       </div>
 
-      <div
-        class="file-explorer__content ${this.isGridView
-          ? "file-explorer__content--grid"
-          : "file-explorer__content--list"}"
-        @scroll="${this.handleScroll}"
-      >
-        ${this.isGridView ? this.renderGridItems() : this.renderListItems()}
-        
-        ${this.isLoading
-          ? html`<div class="file-explorer__loading">
-              <awc-spinner size="l" variant="primary"></awc-spinner>
-            </div>`
-          : ""}
-        ${this.errorMessage
-          ? html`<div class="file-explorer__error">${this.errorMessage}</div>`
-          : ""}
+        <div
+          class="file-explorer__content ${this.isGridView
+            ? "file-explorer__content--grid"
+            : "file-explorer__content--list"}"
+          @scroll="${this.handleScroll}"
+        >
+          ${this.isGridView ? this.renderGridItems() : this.renderListItems()}
+          
+          ${this.isLoading
+            ? html`<div class="file-explorer__loading">
+                <awc-spinner size="l" variant="primary"></awc-spinner>
+              </div>`
+            : ""}
+          ${this.errorMessage
+            ? html`<div class="file-explorer__error">${this.errorMessage}</div>`
+            : ""}
+        </div>
       </div>
     `;
   }

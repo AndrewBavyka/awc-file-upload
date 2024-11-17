@@ -1,12 +1,28 @@
 import { SVGTemplateResult } from "lit";
 import { ProviderFile } from "./interfaces/ProviderFile";
-import { EventDispatcher, event } from "../util/event";
 
-export class SelectedFileManager {
+export interface SelectedFile {
+    file: ProviderFile;
+    provider: string;
+    providerIcon: SVGTemplateResult;
+    preview?: string;
+}
+
+export class SelectedFileManager extends EventTarget {
     private static instance: SelectedFileManager;
-    private selectedFiles: Map<string, { file: ProviderFile, provider: string, providerIcon: SVGTemplateResult }> = new Map();
+    private selectedFiles: Map<string, SelectedFile> = new Map();
 
-    @event("file-selection-changed") private _fileSelectionChanged!: EventDispatcher<{}>;
+    private _uploadAsLink: boolean = false;
+
+    private fileSelectionChanged() {
+        const event = new CustomEvent("file-selection-changed", {
+            detail: this.getFiles(),
+            bubbles: true,
+            composed: true,
+        });
+
+        this.dispatchEvent(event);
+    }
 
     static getInstance() {
         if (!SelectedFileManager.instance) {
@@ -16,18 +32,49 @@ export class SelectedFileManager {
     }
 
     addFile(file: ProviderFile, provider: string, providerIcon: SVGTemplateResult) {
-        this.selectedFiles.set(file.id, { file, provider, providerIcon });
+        if (!this.selectedFiles.has(file.id)) {
+            this.selectedFiles.set(file.id, { file, provider, providerIcon });
+            this.fileSelectionChanged();
+        }
     }
 
     removeFile(fileId: string) {
-        this.selectedFiles.delete(fileId);
-    }
-
-    getFiles() {
-        return Array.from(this.selectedFiles.values());
+        if (this.selectedFiles.delete(fileId)) {
+            this.fileSelectionChanged();
+        }
     }
 
     clearFiles() {
-        this.selectedFiles.clear();
+        if (this.selectedFiles.size > 0) {
+            this.selectedFiles.clear();
+            this.fileSelectionChanged();
+        }
     }
+
+    getFiles(): SelectedFile[] {
+        return Array.from(this.selectedFiles.values());
+    }
+
+    isSelected(fileId: string): boolean {
+        return this.selectedFiles.has(fileId);
+    }
+
+    setUploadAsLink(value: boolean): void {
+        console.log(value)
+        this._uploadAsLink = value;
+    }
+      
+    getUploadAsLink(): boolean {
+        return this._uploadAsLink;
+    }
+
+    setFilePreview(file: ProviderFile, preview: string) {
+        const selectedFile = this.selectedFiles.get(file.id);
+        if (selectedFile) {
+            // Assuming you want to store the preview as part of the selected file
+            selectedFile.preview = preview;
+            this.fileSelectionChanged();
+        }
+    }
+    
 }

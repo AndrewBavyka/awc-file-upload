@@ -11,11 +11,13 @@ export default class AwcFileUploadHome extends LitElement {
 
     protected render(): TemplateResult {
         return html`
-            <awc-file-upload-provider-local></awc-file-upload-provider-local>
+            <awc-file-upload-provider-local  
+                @click=${() => this.onProviderClick} 
+                @awc-file-upload-provider-selected=${(e: CustomEvent) => this.onProviderSelected(e)}></awc-file-upload-provider-local>
             
             <div class="awc-file-upload-service-providers"
-                @click=${this.onProviderClick}
-                @awc-file-upload-provider-selected=${this.onProviderSelected}>
+                @click=${(e: Event) => this.onProviderClick(e)}
+                @awc-file-upload-provider-selected=${(e: CustomEvent) => this.onProviderSelected(e)}>
                 <slot name="awc-file-upload-provider-yandex-disk"></slot>
             </div>
         `;

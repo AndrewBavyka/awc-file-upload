@@ -14,6 +14,7 @@ import AwcFileUploadSelected from "./awc-file-upload/views/awc-file-upload-selec
 import AwcFileUploadViewWrapper from "./awc-file-upload/components/awc-file-upload-view-wrapper/awc-file-upload-view-wrapper";
 import AwcFileUploadExplorer from "./awc-file-upload/components/awc-file-upload-explorer/awc-file-upload-explorer";
 import AwcFileUploadBreadcrumbs from "./awc-file-upload/components/awc-file-upload-breadcumbs/awc-file-upload-breadcumbs";
+import AwcFileUploadFooter from "./awc-file-upload/components/awc-file-upload-footer/awc-file-upload-footer";
 
 export default {
     AwcFileUpload,
@@ -27,5 +28,6 @@ export default {
 
     AwcFileUploadViewWrapper,
     AwcFileUploadExplorer,
-    AwcFileUploadBreadcrumbs
+    AwcFileUploadBreadcrumbs,
+    AwcFileUploadFooter,    
 }

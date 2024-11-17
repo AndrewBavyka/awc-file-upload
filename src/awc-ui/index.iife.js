@@ -5331,7 +5331,8 @@ var index=function(exports){"use strict";/**
          transition-duration: 0.3s;
          display: flex;
          flex-direction: column;
-         justify-content: space-between;
+         justify-content: center;
+         align-items: center;
      }
  
      @keyframes fade-modal {
@@ -5344,29 +5345,29 @@ var index=function(exports){"use strict";/**
      }
  
      :host([opened]) .awc-modal__content {
+         position: static;
          display: flex;
          flex-direction: column;
          justify-content: space-between;
          width: 100%;
          max-height: 600px;
          max-width: 610px;
-         top: 50%;
-         left: 50%;
          background-color: var(--colors-light-white);
          border-radius: var(--corner-radius-xl);
          will-change: transform;
-         transform: translate(-50%, -50%) scale3d(1, 1, 1);
+         transform: scale3d(1, 1, 1);
          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
          animation: scale-animation 0.3s ease-out forwards;
+         overflow: hidden;
      }
  
      @keyframes scale-animation {
          0% {
-         transform: translate(-50%, -50%) scale3d(0.5, 0.5, 0.5);
+         transform: scale3d(0.5, 0.5, 0.5);
          opacity: 0;
          }
          100% {
-         transform: translate(-50%, -50%) scale3d(1, 1, 1);
+         transform: scale3d(1, 1, 1);
          opacity: 1;
          }
      }

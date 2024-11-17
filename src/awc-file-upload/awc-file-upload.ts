@@ -1,7 +1,6 @@
 import { CSSResult, html, LitElement, TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { Provider } from "./providers/Provider";
-import { ProviderFile } from "./interfaces/ProviderFile";
 import { awcFileUploadStyles } from "./awc-file-upload.style";
 import { SelectedFileManager } from "./SelectedFileManager";
 import { NavigationManager } from "./views/NavigationManager";
@@ -21,7 +20,7 @@ export default class AwcFileUpload extends LitElement {
 
     window.addEventListener("message", this._handleAuthMessage.bind(this));
     this.addEventListener("confirm-selection", this._handleConfirmSelection.bind(this));
-    this.addEventListener("file-selection-changed", this._updateSelectedFiles);
+    this._selectedFileManager.addEventListener("file-selection-changed", this._updateSelectedFiles.bind(this));
   }
 
   disconnectedCallback() {
@@ -29,12 +28,18 @@ export default class AwcFileUpload extends LitElement {
 
     window.removeEventListener("message", this._handleAuthMessage.bind(this));
     this.removeEventListener("confirm-selection", this._handleConfirmSelection.bind(this));
+    this._selectedFileManager.removeEventListener("file-selection-changed", this._updateSelectedFiles.bind(this));
   }
 
   private _updateSelectedFiles() {
-    console.log("file-selection-changed")
     this._updateTitle();
     this.requestUpdate();
+  }
+
+  private _clearSelectedFiles() {
+    this._selectedFileManager.clearFiles();
+
+    this._updateSelectedFiles();
   }
 
   private _handleConfirmSelection() {
@@ -42,6 +47,10 @@ export default class AwcFileUpload extends LitElement {
     this.title = `${this._selectedFileManager.getFiles().length} файлов выбрано`;
 
     this.requestUpdate();
+  }
+
+  private _handleCancelSelection(): void {
+    this._clearSelectedFiles();
   }
 
   private _handleAuthMessage(event: MessageEvent) {
@@ -56,6 +65,8 @@ export default class AwcFileUpload extends LitElement {
 
   private _handleProviderSelected(event: CustomEvent) {
     const provider = event.target as Provider;
+
+    console.log(provider);
 
     if (!provider) return;
 
@@ -99,12 +110,6 @@ export default class AwcFileUpload extends LitElement {
     }
   }
 
-  private _clearSelectedFiles() {
-    this._selectedFileManager.clearFiles();
-
-    this._updateSelectedFiles();
-  }
-
   private _handleUpload() {
     const files = this._selectedFileManager.getFiles();
     console.log("Файлы для загрузки:", files);
@@ -126,10 +131,14 @@ export default class AwcFileUpload extends LitElement {
             <div class="awc-file-upload-heading__title">${this.title}</div>
         </div>
   
-        <div class="awc-file-upload__content">
-          ${this._renderCurrentScreen()}
-          ${this._renderFooter()}
+        <div class="awc-file-upload-content">
+          ${this._renderCurrentScreen()}   
         </div>
+
+        <!-- TODO: Поправить проблему при которой данный блок меняет высоту -->
+        <div class="awc-file-upload-footer" slot="awc-modal-description">
+            ${this._renderFooter()}
+        </div>    
       </awc-modal>
     `;
   }
@@ -154,6 +163,7 @@ export default class AwcFileUpload extends LitElement {
     `
   }
 
+
   // <div class="file-explorer__user-info">
   //         <button
   //           @click=${this._handleLogout}
@@ -164,60 +174,30 @@ export default class AwcFileUpload extends LitElement {
   //       </div>
 
   private _renderFooter(): TemplateResult | string {
-    if (this._navigationManager.currentView === "main" || this._navigationManager.currentView === "auth") {
+    const selectedFilesCount = this._selectedFileManager.getFiles().length;
+
+    if (selectedFilesCount === 0 || this._navigationManager.currentView === "main" || this._navigationManager.currentView === "auth") {
       return "";
     }
 
     return html`
-      <div class="file-explorer__footer">
-          <awc-switcher>Загружать как ссылки</awc-switcher>
-        <div class="file-explorer__buttons">
-          ${this._renderFooterButtons()}
-        </div>
-      </div>
+      <awc-file-upload-footer
+        slot="awc-modal-description"
+        .isSelected=${this._navigationManager.currentView === "selected"}
+        .fileCount=${selectedFilesCount}
+        @cancel-selection=${this._handleCancelSelection}
+        @confirm-selection=${this._handleConfirmSelection}
+        @upload=${this._handleUpload}
+      ></awc-file-upload-footer>
     `;
   }
 
-  private _renderFooterButtons(): TemplateResult {
-    if (this._navigationManager.currentView === "selected") {
-      return html`
-        <awc-button @click=${this._handleUpload}>
-          Загрузить
-          ${this._selectedFileManager.getFiles().length > 0
-          ? `${this._selectedFileManager.getFiles().length}`
-          : ""}
-        </awc-button>
-      `;
-    }
 
-    return html`
-      <awc-button
-        background="gray"
-        size="regular"
-        variant="transparent"
-        type="button"
-        @click=${this._handleCancelSelection}
-      >
-        Отменить
-      </awc-button>
-      <awc-button @click=${this._handleConfirmSelection}>
-        Выбрать
-        ${this._selectedFileManager.getFiles().length > 0
-        ? `${this._selectedFileManager.getFiles().length}`
-        : ""}
-      </awc-button>
-    `;
-  }
-
-  private _handleLogout(): void {
-    this._navigationManager.setView("main");
-    this._selectedProvider = null;
-    this._clearSelectedFiles();
-  }
-
-  private _handleCancelSelection(): void {
-    this._clearSelectedFiles();
-  }
+  // private _handleLogout(): void {
+  //   this._navigationManager.setView("main");
+  //   this._selectedProvider = null;
+  //   this._clearSelectedFiles();
+  // }
 
   static styles?: CSSResult = awcFileUploadStyles;
 }

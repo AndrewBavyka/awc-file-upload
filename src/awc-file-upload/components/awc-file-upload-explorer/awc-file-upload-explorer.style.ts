@@ -2,10 +2,8 @@ import { css } from "lit";
 
 export const awcFileUploadExplorerStyles = css`
     :host {
-        display: flex;
-        flex-direction: column;
+        /* position: absolute; */
         width: 100%;
-        max-height: 420px;
     }
 
     .file-explorer__header {
@@ -33,11 +31,17 @@ export const awcFileUploadExplorerStyles = css`
         cursor: pointer;
     }
 
-    .file-explorer__content {
+    .file-explorer__body {
+        position: static;
         box-sizing: border-box;
+    }
+
+    .file-explorer__content {
+        position: absolute;
         overflow-y: auto;
-        overflow-x: hidden;
-        min-height: 374px;
+        width: 100%;
+        height: calc(474px - 48px);
+        box-sizing: border-box;
         padding: 12px 0 12px 20px;
     }
 
@@ -53,8 +57,17 @@ export const awcFileUploadExplorerStyles = css`
         gap: var(--spacing-sm);
     }
 
-    .file-explorer__content--list .file-explorer__item:hover {
-        background-color: var(--colors-light-input-background);
+
+    @media (hover: hover) {
+        .file-explorer__content--list .file-explorer__item:hover {
+            background-color: var(--colors-light-input-background);
+        }
+    }
+
+    @media (hover: none) {
+        .file-explorer__content--list .file-explorer__item:active {
+            background-color: var(--colors-light-input-background);
+        }
     }
 
     .file-explorer__content--grid {
@@ -83,8 +96,16 @@ export const awcFileUploadExplorerStyles = css`
         transition: background-color .3s ease;
     }
 
-    .file-explorer__content--grid .file-explorer__item .file-explorer__item--card:hover {
-        background-color: var(--colors-light-input-background);
+    @media (hover: hover) {
+        .file-explorer__content--grid .file-explorer__item .file-explorer__item--card:hover {
+            background-color: var(--colors-light-input-background);
+        }
+    }
+
+    @media (hover: none) {
+        .file-explorer__content--grid .file-explorer__item .file-explorer__item--card:active {
+            background-color: var(--colors-light-input-background);
+        }
     }
 
     .file-explorer__content--grid .file-explorer__item awc-checkbox {

@@ -3,41 +3,10 @@ import { css } from "lit";
 export const awcFileUploadStyles = css`
     :host {
         --awc-file-upload-file-title: var(--awc-font-h5-medium);
-     
     }
 
-    /* awc-modal {
-        --awc-font-h4-regular: var(--awc-file-upload-file-title);
-        font: var(--awc-font-h4-regular);
-    } */
-
-    .awc-file-upload__content {
-        min-height: calc(534px - 40px);
-    }
-
-    .awc-file-upload__content awc-file-upload-auth {
-        display: flex;
-        position: absolute;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
-        width: 100%;
-    }
-
-    .awc-file-upload-btn__cancel,
-    .awc-file-upload-btn__logout{
-        padding: 0;
-        background: none;
-        border: none;
-        font: var(--awc-font-text-regular-14);
-        color: var(--colors-light-primary);
-        cursor: pointer;
-        transition: color .3s ease;
-    }
-
-    .awc-file-upload-btn__cancel:hover,
-    .awc-file-upload-btn__logout:hover {
-        color: var(--colors-light-link-hover);
+    awc-modal {
+        --awc-modal-padding: 0px;
     }
 
     .awc-file-upload-heading {
@@ -57,37 +26,39 @@ export const awcFileUploadStyles = css`
         color: var(--colors-light-titles);
     }
 
-    .awc-file-upload__footer{
-        background-color: red;
-        width: 100%;
-    }
-
-    awc-modal {
-        --awc-modal-padding: 0px;
-    }
-
-    .file-explorer__footer{
-        position: relative;
+    .awc-file-upload-content {
         display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 16px 20px 20px 20px;
+        flex-direction: column;
+        min-height: 474px;
     }
-
-    .file-explorer__footer:after {
+   
+    .awc-file-upload-content awc-file-upload-auth {
+        display: flex;
         position: absolute;
-        left: 0;
-        top: 0;
-        content: "";
-        display: block;
-        margin: 0 auto;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
         width: 100%;
-        border-top: 1px solid var(--colors-light-stroke);
     }
 
-    .file-explorer__buttons{
+    .awc-file-upload-footer{
         display: flex;
-        align-items: center;
-        gap: var(--spacing-sm);
+        width: 100%;
+    }
+
+    .awc-file-upload-btn__cancel,
+    .awc-file-upload-btn__logout{
+        padding: 0;
+        background: none;
+        border: none;
+        font: var(--awc-font-text-regular-14);
+        color: var(--colors-light-primary);
+        cursor: pointer;
+        transition: color .3s ease;
+    }
+
+    .awc-file-upload-btn__cancel:hover,
+    .awc-file-upload-btn__logout:hover {
+        color: var(--colors-light-link-hover);
     }
 `;

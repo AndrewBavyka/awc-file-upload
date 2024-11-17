@@ -8,6 +8,12 @@ export interface ProviderFile {
     /** Флаг, определяющий, является ли элемент папкой. */
     isFolder: boolean;
 
+    /** Ссылка на публичную папку */
+    publicFolder: string;
+
+    /** Ссылка на публичный файл  */
+    publicFile: string;
+
     /** URL иконки папки. */
     icon: string;
 
@@ -31,6 +37,13 @@ export interface ProviderFile {
 
     /** Произвольные данные, добавленные для элемента. */
     custom?: Record<string, any>;
+
+    /** 
+     * Тип ссылки на файл. 
+     * Если `externalLink`, то используется внешняя ссылка (например, publicFile или publicFolder). 
+     * Если `uploadedFile`, то файл загружается полностью.
+     */ 
+    linkType?: "externalLink" | "uploadedFile";
 }
 
 export interface ProviderData {
