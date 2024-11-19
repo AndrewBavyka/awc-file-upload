@@ -11,9 +11,6 @@ export interface SelectedFile {
 export class SelectedFileManager extends EventTarget {
     private static instance: SelectedFileManager;
     private selectedFiles: Map<string, SelectedFile> = new Map();
-
-    private _uploadAsLink: boolean = false;
-
     private fileSelectionChanged() {
         const event = new CustomEvent("file-selection-changed", {
             detail: this.getFiles(),
@@ -55,16 +52,27 @@ export class SelectedFileManager extends EventTarget {
         return Array.from(this.selectedFiles.values());
     }
 
-    isSelected(fileId: string): boolean {
-        return this.selectedFiles.has(fileId);
+    getFile(fileId: string): SelectedFile | undefined {
+        return this.selectedFiles.get(fileId);
     }
 
-    setUploadAsLink(value: boolean): void {
-        console.log(value)
-        this._uploadAsLink = value;
+    setExternalMode(isExternalMode: boolean) {
+        this.selectedFiles.forEach((selectedFile) => {
+            const { file } = selectedFile;
+            file.linkType = isExternalMode ? "fileExternal" : "file";
+        });
+
+        this.fileSelectionChanged();
     }
-      
-    getUploadAsLink(): boolean {
-        return this._uploadAsLink;
+
+    toggleFileMode(fileId: string) {
+        const selectedFile = this.selectedFiles.get(fileId);
+
+        if (selectedFile) {
+            const { file } = selectedFile;
+            file.linkType = file.linkType === "file" ? "fileExternal" : "file";
+            this.fileSelectionChanged();
+        }
     }
+
 }

@@ -16,20 +16,29 @@ export default class AwcFileUpload extends LitElement {
   @state() private _selectedFileManager = SelectedFileManager.getInstance();
   // Временное решение
   @state() private accountName: string | null = null;
+  @state() private _isExternalMode: boolean = false;
 
 
   connectedCallback() {
     super.connectedCallback();
+
     window.addEventListener("message", this._handleAuthMessage.bind(this));
     this.addEventListener("confirm-selection", this._confirmSelection.bind(this));
     this._selectedFileManager.addEventListener("file-selection-changed", this._refreshSelectedFiles.bind(this));
+    this.addEventListener("awc-file-upload-switch-mode", this._toggleUploadMode.bind(this));
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
+    
     window.removeEventListener("message", this._handleAuthMessage.bind(this));
     this.removeEventListener("confirm-selection", this._confirmSelection.bind(this));
     this._selectedFileManager.removeEventListener("file-selection-changed", this._refreshSelectedFiles.bind(this));
+  }
+
+  private _toggleUploadMode(event: CustomEvent) {
+    this._isExternalMode = event.detail.isExternalMode;
+    this._selectedFileManager.setExternalMode(this._isExternalMode);
   }
   
   private _handleAuthMessage(event: MessageEvent) {
@@ -61,16 +70,17 @@ export default class AwcFileUpload extends LitElement {
     this._navigationManager.setView(hasProviderToken ? "list" : "auth");
     this._selectedProvider = provider;
     this._updateTitle();
-    await this._getUserInfo();
+    // await this._getUserInfo();
   }
 
   private _uploadFiles() {
     const files = this._selectedFileManager.getFiles();
+
     console.log("Файлы для загрузки:", files);
 
     this.dispatchEvent(
       new CustomEvent("upload", {
-        detail: { files },
+        detail: { files, isExternalMode: this._isExternalMode },
         bubbles: true,
         composed: true,
       })
@@ -110,7 +120,7 @@ export default class AwcFileUpload extends LitElement {
       case "list":
         return html`<awc-file-upload-list .provider=${this._selectedProvider}></awc-file-upload-list>`;
       case "selected":
-        return html`<awc-file-upload-selected></awc-file-upload-selected>`;
+        return html`<awc-file-upload-selected .isExternalMode=${this._isExternalMode}></awc-file-upload-selected>`;
       case "main":
         return html`
           <awc-file-upload-home
@@ -138,16 +148,16 @@ export default class AwcFileUpload extends LitElement {
     `;
   }
 
-  private async _getUserInfo() {
-    if (this._selectedProvider) {
-      try {
-        const userInfo = await this._selectedProvider.getProviderInfo().list("/", {});
-        this.accountName = userInfo.username || '';
-      } catch (error) {
-        this.accountName = ''; 
-      }
-    }
-  }
+  // private async _getUserInfo() {
+  //   if (this._selectedProvider) {
+  //     try {
+  //       const userInfo = await this._selectedProvider.getProviderInfo().list("/", {});
+  //       this.accountName = userInfo.username || '';
+  //     } catch (error) {
+  //       this.accountName = ''; 
+  //     }
+  //   }
+  // }
   
   private _renderHeading(): TemplateResult {
     return html`

@@ -1,7 +1,7 @@
-import { html, LitElement, TemplateResult, CSSResult } from "lit";
+import { html, LitElement, TemplateResult, CSSResult, PropertyValues } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { awcFileUploadFooterStyles } from "./awc-file-upload-footer.style";
-import { SelectedFileManager } from "../../SelectedFileManager";
+import { EventDispatcher, event } from "../../../util/event";
 
 export const awcFileUploadFooterTag = "awc-file-upload-footer";
 
@@ -12,18 +12,25 @@ export default class AwcFileUploadFooter extends LitElement {
 
     @state() private isSwitcherChecked = false;
 
+    @event("awc-file-upload-switch-mode") private _onChangeMode!: EventDispatcher<boolean>;
+
+    connectedCallback(): void {
+        super.connectedCallback();
+        this._onChangeMode(this.isSwitcherChecked);
+    }
+
     private _emitEvent(eventName: string) {
         this.dispatchEvent(new CustomEvent(eventName, { bubbles: true, composed: true }));
     }
 
     private _toggleLinkOrFileUploading(e: Event) {
-        const target = (e.target as any);
+        const target = e.target as HTMLInputElement;
 
         if (!target) return;
 
         this.isSwitcherChecked = target.checked;
 
-        SelectedFileManager.getInstance().setUploadAsLink(this.isSwitcherChecked);
+        this._onChangeMode(this.isSwitcherChecked);
     }
 
     protected render(): TemplateResult {
@@ -62,4 +69,10 @@ export default class AwcFileUploadFooter extends LitElement {
     }
 
     static styles?: CSSResult = awcFileUploadFooterStyles;
+}
+
+declare global {
+    interface HTMLElementEventMap {
+        'awc-file-upload-switch-mode': CustomEvent;
+    }
 }

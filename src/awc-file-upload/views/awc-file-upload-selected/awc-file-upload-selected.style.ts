@@ -65,11 +65,23 @@ export const awcFileUploadSelectedStyles = css`
         color: var(--colors-light-titles);
     }
 
+    .awc-file-upload-selected__description {
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-2xs);
+    }
+
     .awc-file-upload-selected__size {
         font: var(--awc-font-caption-1-regular);
         color: var(--colors-light-secondary);
     }
 
+    .awc-file-upload-selected__type {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
     .awc-file-upload-selected__delete {
         padding: 4px;
         cursor: pointer;
@@ -87,5 +99,4 @@ export const awcFileUploadSelectedStyles = css`
         width: 48px;
         height: 48px;
     }
-
 `;

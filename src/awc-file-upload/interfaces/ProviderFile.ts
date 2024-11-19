@@ -38,7 +38,7 @@
         /** Произвольные данные, добавленные для элемента. */
         custom?: Record<string, any>;
 
-        linkType?: "externalLink" | "uploadedFile";
+        linkType?: "fileExternal" | "file";
     }
 
     export interface ProviderData {

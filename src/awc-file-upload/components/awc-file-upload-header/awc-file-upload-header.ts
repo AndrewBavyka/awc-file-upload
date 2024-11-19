@@ -35,41 +35,41 @@ export default class AwcFileUploadHeader extends LitElement {
         switch (this.view) {
             case "main":
                 return html`
-          <div class="awc-file-upload-heading__title">${this.title}</div>
-        `;
+                <div class="awc-file-upload-heading__title">${this.title}</div>
+            `;
             case "selected":
-                return html`
-          <button class="awc-file-upload-btn__cancel" @click=${this._handleCancel}>Отменить</button>
-          <div class="awc-file-upload-heading__title">${this.title}</div>
-          <button class="awc-file-upload-btn__add-more" @click=${this._handleAddMore}>Добавить ещё</button>
-        `;
-            case "list":
                 return html`
                 <button class="awc-file-upload-btn__cancel" @click=${this._handleCancel}>Отменить</button>
                 <div class="awc-file-upload-heading__title">${this.title}</div>
-                <awc-dropdown position="bottom-end" width="180">
-                    <awc-dropdown-group .label=${this.accountName}>
-                    <awc-dropdown-item @click=${this._handleLogout}>Выйти</awc-dropdown-item>
-                    </awc-dropdown-group>
-                    <span slot="awc-dropdown-toggle" class="awc-file-upload-heading__account">
-                    ${this._accountIconSvg}
-                    </span>
-                </awc-dropdown>
-        `;
+                <button class="awc-file-upload-btn__add-more" @click=${this._handleAddMore}>Добавить ещё</button>
+            `;
+            case "list":
+                return html`
+                    <button class="awc-file-upload-btn__cancel" @click=${this._handleCancel}>Отменить</button>
+                    <div class="awc-file-upload-heading__title">${this.title}</div>
+                    <awc-dropdown position="bottom-end" width="180">
+                        <awc-dropdown-group .label=${this.accountName}>
+                            <awc-dropdown-item @click=${this._handleLogout}>Выйти</awc-dropdown-item>
+                        </awc-dropdown-group>
+                        <span slot="awc-dropdown-toggle" class="awc-file-upload-heading__account">
+                            ${this._accountIconSvg}
+                        </span>
+                    </awc-dropdown>
+            `;
             default:
                 return html`
                     <button class="awc-file-upload-btn__cancel" @click=${this._handleCancel}>Отменить</button>
                     <div class="awc-file-upload-heading__title">${this.title}</div>
-                `;
+            `;
         }
     }
 
     protected render(): TemplateResult {
         return html`
-      <div class="awc-file-upload-header">
-        ${this._renderCurrentHeader()}
-      </div>
-    `;
+            <div class="awc-file-upload-header">
+                ${this._renderCurrentHeader()}
+            </div>
+        `;
     }
 
     static styles?: CSSResult = awcFileUploadHeaderStyles;
