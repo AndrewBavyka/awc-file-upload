@@ -62,7 +62,7 @@ export default class AwcFileUploadExplorer extends LitElement {
             <path d="M13.744 3.0325C13.136 2.3675 12.32 2 11.472 2H3.2C1.44 2 0.016 3.575 0.016 5.5L0 26.5C0 28.425 1.44 30 3.2 30H28.8C30.56 30 32 28.425 32 26.5V9.5C32 7.575 30.56 6 28.8 6H16L13.744 3.0325Z" fill="#FBC332"/>
         </svg>
     `;
-    
+
   private static publicFolderIcon = svg`
         <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M13.744 3.0325C13.136 2.3675 12.32 2 11.472 2H3.2C1.44 2 0.016 3.575 0.016 5.5L0 26.5C0 28.425 1.44 30 3.2 30H28.8C30.56 30 32 28.425 32 26.5V9.5C32 7.575 30.56 6 28.8 6H16L13.744 3.0325Z" fill="#FED34A"/>
@@ -77,7 +77,7 @@ export default class AwcFileUploadExplorer extends LitElement {
     super.connectedCallback();
 
     this._selectedFileManager.addEventListener("file-selection-changed", () => this.requestUpdate());
-    
+
     this.loadViewMode();
     await this.loadItems(this.currentPath, true);
   }
@@ -100,8 +100,10 @@ export default class AwcFileUploadExplorer extends LitElement {
     this.saveViewMode();
   }
 
+  private currentRequestId: number = 0;
+
   private async loadItems(path: string, reset: boolean = false) {
-    if (!this.provider) return;
+    const requestId = ++this.currentRequestId;
 
     this.abortPreviousRequest();
 
@@ -118,7 +120,44 @@ export default class AwcFileUploadExplorer extends LitElement {
       return;
     }
 
-    await this.fetchItemsFromProvider(path, signal);
+    await this.fetchItemsFromProvider(path, signal, requestId);
+  }
+
+  private async fetchItemsFromProvider(path: string, signal: AbortSignal, requestId: number) {
+    this.isLoading = true;
+    this.errorMessage = null;
+
+    try {
+      const options: RequestOptions = {
+        qs: { offset: this.offset.toString(), limit: this.limit.toString() },
+        signal,
+      };
+
+      // Делаем запрос только если идентификатор текущего запроса совпадает
+      if (requestId !== this.currentRequestId) {
+        return;
+      }
+
+      const { items: newItems, nextPagePath } = await this.provider!.list(
+        path,
+        options
+      );
+
+      if (requestId !== this.currentRequestId) {
+        return;
+      }
+
+      this.cacheManager.set(path, this.offset, newItems);
+      this.items = [...this.items, ...newItems];
+      this.offset += newItems.length;
+      this.allItemsLoaded = !nextPagePath;
+    } catch (error) {
+      console.error("Error loading items:", error);
+      this.errorMessage = `Error: ${(error as Error).message}`;
+    } finally {
+      this.isLoading = false;
+      this.abortController = null;
+    }
   }
 
   private abortPreviousRequest() {
@@ -152,33 +191,7 @@ export default class AwcFileUploadExplorer extends LitElement {
     return false;
   }
 
-  private async fetchItemsFromProvider(path: string, signal: AbortSignal) {
-    this.isLoading = true;
-    this.errorMessage = null;
 
-    try {
-      const options: RequestOptions = {
-        qs: { offset: this.offset.toString(), limit: this.limit.toString() },
-        signal,
-      };
-
-      const { items: newItems, nextPagePath } = await this.provider!.list(
-        path,
-        options
-      );
-
-      this.cacheManager.set(path, this.offset, newItems);
-      this.items = [...this.items, ...newItems];
-      this.offset += newItems.length;
-      this.allItemsLoaded = !nextPagePath;
-    } catch (error) {
-      console.error("Error loading items:", error);
-      this.errorMessage = `Error: ${(error as Error).message}`;
-    } finally {
-      this.isLoading = false;
-      this.abortController = null;
-    }
-  }
 
   private handleScroll() {
     const scrollContainer = this.shadowRoot?.querySelector(".file-explorer__content");
@@ -187,9 +200,10 @@ export default class AwcFileUploadExplorer extends LitElement {
 
     const { scrollTop, scrollHeight, clientHeight } = scrollContainer;
     if (
-      scrollTop + clientHeight >= scrollHeight - 5 &&
-      !this.isLoading &&
-      !this.allItemsLoaded
+      scrollTop + clientHeight
+      >= scrollHeight - 5
+      && !this.isLoading
+      && !this.allItemsLoaded
     ) {
       this.loadItems(this.currentPath);
     }
@@ -204,10 +218,12 @@ export default class AwcFileUploadExplorer extends LitElement {
     }
   }
 
+  // TODO: Не самое лучшее решение, ждать пока загрузятся данные и только потом разрешить переход
+  // У Uppy вообще пока не загрузятся данные - путь не отобразится. 
+  // А если быстро переходит по папкам то перебросит обратно в папку где данные загрузились
   private onBreadcrumbClick(event: CustomEvent) {
     this.currentPath = event.detail.path;
-    const currentPathDecode = decodeURIComponent(this.currentPath);
-    this.loadItems(currentPathDecode, true);
+    this.loadItems(decodeURIComponent(this.currentPath), true);
   }
 
   private getPathArray(): string[] {
@@ -219,7 +235,7 @@ export default class AwcFileUploadExplorer extends LitElement {
 
   private toggleFileSelection(file: ProviderFile) {
     const updatedSelectedFiles = new Set(this._selectedFileManager.getFiles().map((f) => f.file.id));
-  
+
     if (updatedSelectedFiles.has(file.id)) {
       this._selectedFileManager.removeFile(file.id);
       updatedSelectedFiles.delete(file.id);
@@ -231,17 +247,17 @@ export default class AwcFileUploadExplorer extends LitElement {
       );
       updatedSelectedFiles.add(file.id);
     }
-  
+
     this.requestUpdate();
   }
-  
+
   private renderListItems(): TemplateResult[] {
     const folderArrowIcon = svg`
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path fill-rule="evenodd" clip-rule="evenodd" d="M7.29289 4.29289C6.90237 4.68342 6.90237 5.31658 7.29289 5.70711L11.5858 10L7.29289 14.2929C6.90237 14.6834 6.90237 15.3166 7.29289 15.7071C7.68342 16.0976 8.31658 16.0976 8.70711 15.7071L13.7071 10.7071C14.0976 10.3166 14.0976 9.68342 13.7071 9.29289L8.70711 4.29289C8.31658 3.90237 7.68342 3.90237 7.29289 4.29289Z" fill="#919BB6"/>
       </svg>
     `;
-    
+
     return this.items.map((item) => {
       const isSelected = this._selectedFileManager.getFiles().some((f) => f.file.id === item.id);
 
@@ -253,8 +269,8 @@ export default class AwcFileUploadExplorer extends LitElement {
           @click="${() => this.navigateTo(item)}"
         >
           ${item.isFolder
-            ? html`${folderArrowIcon}`
-            : html`
+          ? html`${folderArrowIcon}`
+          : html`
                <awc-checkbox
                   ?checked="${isSelected}"
                   @change="${this.toggleFileSelection}"
@@ -262,9 +278,9 @@ export default class AwcFileUploadExplorer extends LitElement {
                 ></awc-checkbox>
               `}
           <div class="file-explorer__icon ${item.isFolder ? "folder" : "file"}">
-            ${item.isFolder
-              ? AwcFileUploadExplorer.folderIcon
-              : this.renderFileIcon(item)}
+          ${item.isFolder
+          ? this.renderFolderIcon(item.isPublicFolder)
+          : this.renderFileIcon(item)}
           </div>
           <span class="file-explorer__name">${item.name}</span>
         </div>
@@ -275,18 +291,18 @@ export default class AwcFileUploadExplorer extends LitElement {
   private renderGridItems(): TemplateResult[] {
     return this.items.map((item) => {
       const isSelected = this._selectedFileManager.getFiles().some((f) => f.file.id === item.id);
-      
+
       return html`
         <div
           class="file-explorer__item file-explorer__item--grid ${item.isFolder
-            ? "folder"
-            : "file"} ${isSelected ? "file-explorer__item--selected" : ""}"
+          ? "folder"
+          : "file"} ${isSelected ? "file-explorer__item--selected" : ""}"
           @click="${() => this.navigateTo(item)}"
         >
           <div class="file-explorer__item--card">
             ${item.isFolder
-              ? ""
-              : html`
+          ? ""
+          : html`
                 <awc-checkbox
                   .checked="${isSelected}"
                   @change="${() => this.toggleFileSelection(item)}"
@@ -296,20 +312,26 @@ export default class AwcFileUploadExplorer extends LitElement {
                 `}
             <div
               class="file-explorer__icon ${item.thumbnail
-                ? ""
-                : item.isFolder
-                ? "folder"
-                : "file"}"
+          ? ""
+          : item.isFolder
+            ? "folder"
+            : "file"}"
             >
-              ${item.isFolder
-                ? AwcFileUploadExplorer.folderIcon
-                : this.renderFileIcon(item)}
+            ${item.isFolder
+          ? this.renderFolderIcon(item.isPublicFolder)
+          : this.renderFileIcon(item)}
             </div>
           </div>
           <span class="file-explorer__name">${item.name}</span>
         </div>
       `;
     });
+  }
+
+  private renderFolderIcon(isPublicFolder: boolean): TemplateResult {
+    return isPublicFolder
+      ? AwcFileUploadExplorer.publicFolderIcon
+      : AwcFileUploadExplorer.folderIcon;
   }
 
   private renderFileIcon(item: ProviderFile): TemplateResult {
@@ -358,20 +380,20 @@ export default class AwcFileUploadExplorer extends LitElement {
 
         <div
           class="file-explorer__content ${this.isGridView
-            ? "file-explorer__content--grid"
-            : "file-explorer__content--list"}"
+        ? "file-explorer__content--grid"
+        : "file-explorer__content--list"}"
           @scroll="${this.handleScroll}"
         >
           ${this.isGridView ? this.renderGridItems() : this.renderListItems()}
           
           ${this.isLoading
-            ? html`<div class="file-explorer__loading">
+        ? html`<div class="file-explorer__loading">
                 <awc-spinner size="l" variant="primary"></awc-spinner>
               </div>`
-            : ""}
+        : ""}
           ${this.errorMessage
-            ? html`<div class="file-explorer__error">${this.errorMessage}</div>`
-            : ""}
+        ? html`<div class="file-explorer__error">${this.errorMessage}</div>`
+        : ""}
         </div>
       </div>
     `;

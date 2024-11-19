@@ -14,45 +14,24 @@ export default class AwcFileUpload extends LitElement {
   @state() private _selectedProvider: Provider | null = null;
   @state() private _navigationManager = new NavigationManager();
   @state() private _selectedFileManager = SelectedFileManager.getInstance();
+  // Временное решение
+  @state() private accountName: string | null = null;
+
 
   connectedCallback() {
     super.connectedCallback();
-
     window.addEventListener("message", this._handleAuthMessage.bind(this));
-    this.addEventListener("confirm-selection", this._handleConfirmSelection.bind(this));
-    this._selectedFileManager.addEventListener("file-selection-changed", this._updateSelectedFiles.bind(this));
+    this.addEventListener("confirm-selection", this._confirmSelection.bind(this));
+    this._selectedFileManager.addEventListener("file-selection-changed", this._refreshSelectedFiles.bind(this));
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
-
     window.removeEventListener("message", this._handleAuthMessage.bind(this));
-    this.removeEventListener("confirm-selection", this._handleConfirmSelection.bind(this));
-    this._selectedFileManager.removeEventListener("file-selection-changed", this._updateSelectedFiles.bind(this));
+    this.removeEventListener("confirm-selection", this._confirmSelection.bind(this));
+    this._selectedFileManager.removeEventListener("file-selection-changed", this._refreshSelectedFiles.bind(this));
   }
-
-  private _updateSelectedFiles() {
-    this._updateTitle();
-    this.requestUpdate();
-  }
-
-  private _clearSelectedFiles() {
-    this._selectedFileManager.clearFiles();
-
-    this._updateSelectedFiles();
-  }
-
-  private _handleConfirmSelection() {
-    this._navigationManager.setView("selected");
-    this.title = `${this._selectedFileManager.getFiles().length} файлов выбрано`;
-
-    this.requestUpdate();
-  }
-
-  private _handleCancelSelection(): void {
-    this._clearSelectedFiles();
-  }
-
+  
   private _handleAuthMessage(event: MessageEvent) {
     const { token } = event.data;
 
@@ -63,10 +42,18 @@ export default class AwcFileUpload extends LitElement {
     }
   }
 
-  private _handleProviderSelected(event: CustomEvent) {
-    const provider = event.target as Provider;
+  private _confirmSelection() {
+    this._navigationManager.setView("selected");
+    this.title = `${this._selectedFileManager.getFiles().length} файлов выбрано`;
+    this.requestUpdate();
+  }
 
-    console.log(provider);
+  private _cancelSelection() {
+    this._clearSelectedFiles();
+  }
+
+  private async _handleProviderSelection(event: CustomEvent) {
+    const provider = event.target as Provider;
 
     if (!provider) return;
 
@@ -74,6 +61,31 @@ export default class AwcFileUpload extends LitElement {
     this._navigationManager.setView(hasProviderToken ? "list" : "auth");
     this._selectedProvider = provider;
     this._updateTitle();
+    await this._getUserInfo();
+  }
+
+  private _uploadFiles() {
+    const files = this._selectedFileManager.getFiles();
+    console.log("Файлы для загрузки:", files);
+
+    this.dispatchEvent(
+      new CustomEvent("upload", {
+        detail: { files },
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
+
+  private _clearSelectedFiles() {
+    this._selectedFileManager.clearFiles();
+    this._navigationManager.setView("main");
+    this._refreshSelectedFiles();
+  }
+
+  private _refreshSelectedFiles() {
+    this._updateTitle();
+    this.requestUpdate();
   }
 
   private _updateTitle() {
@@ -91,7 +103,7 @@ export default class AwcFileUpload extends LitElement {
     this.requestUpdate();
   }
 
-  private _moveBetweenScreens() {
+  private _renderView() {
     switch (this._navigationManager.currentView) {
       case "auth":
         return html`<awc-file-upload-auth .provider=${this._selectedProvider}></awc-file-upload-auth>`;
@@ -102,7 +114,7 @@ export default class AwcFileUpload extends LitElement {
       case "main":
         return html`
           <awc-file-upload-home
-            .onProviderSelected=${this._handleProviderSelected.bind(this)}
+            .onProviderSelected=${this._handleProviderSelection.bind(this)}
           >
             <awc-file-upload-provider-yandex-disk slot="awc-file-upload-provider-yandex-disk"></awc-file-upload-provider-yandex-disk>
           </awc-file-upload-home>
@@ -110,68 +122,50 @@ export default class AwcFileUpload extends LitElement {
     }
   }
 
-  private _handleUpload() {
-    const files = this._selectedFileManager.getFiles();
-    console.log("Файлы для загрузки:", files);
-
-    this.dispatchEvent(
-      new CustomEvent("upload", {
-        detail: { files },
-        bubbles: true,
-        composed: true,
-      })
-    );
-  }
-
   protected render(): TemplateResult {
     return html`
       <awc-modal opened>
         <div class="awc-file-upload-heading" slot="awc-modal-heading">
-            ${this._renderHeading()}
-            <div class="awc-file-upload-heading__title">${this.title}</div>
+          ${this._renderHeading()}
         </div>
-  
         <div class="awc-file-upload-content">
-          ${this._renderCurrentScreen()}   
+          ${this._renderView()}
         </div>
-
-        <!-- TODO: Поправить проблему при которой данный блок меняет высоту -->
         <div class="awc-file-upload-footer" slot="awc-modal-description">
-            ${this._renderFooter()}
-        </div>    
+          ${this._renderFooter()}
+        </div>
       </awc-modal>
     `;
   }
 
-  private _renderCurrentScreen(): TemplateResult {
-    return this._moveBetweenScreens();
+  private async _getUserInfo() {
+    if (this._selectedProvider) {
+      try {
+        const userInfo = await this._selectedProvider.getProviderInfo().list("/", {});
+        this.accountName = userInfo.username || '';
+      } catch (error) {
+        this.accountName = ''; 
+      }
+    }
   }
-
-  private _renderHeading(): TemplateResult | string {
-    if (this._navigationManager.currentView === "main") return "";
-
+  
+  private _renderHeading(): TemplateResult {
     return html`
-      <button
-        @click=${() => {
-        this._navigationManager.setView("main");
-        this._selectedProvider = null;
-        this._clearSelectedFiles()
-      }} 
-        class="awc-file-upload-btn__cancel">
-          Отменить
-        </button>
-    `
+      <awc-file-upload-header
+        slot="awc-modal-heading"
+        .view=${this._navigationManager.currentView}
+        .provider=${this._selectedProvider}
+        .title=${this.title}
+        .accountName=${this.accountName!}
+        @cancel-selection=${this._cancelSelection}
+        @add-more-files=${() => { }}
+        @logout=${() => {
+        this._selectedProvider?.logout();
+        this._clearSelectedFiles();
+      }}
+      ></awc-file-upload-header>
+    `;
   }
-
-
-  // <div class="file-explorer__user-info">
-  //         <button
-  //           @click=${this._handleLogout}
-  //           class="awc-file-upload-btn__logout"
-  //         >
-  //           Выйти
-  //         </button>
-  //       </div>
 
   private _renderFooter(): TemplateResult | string {
     const selectedFilesCount = this._selectedFileManager.getFiles().length;
@@ -185,19 +179,12 @@ export default class AwcFileUpload extends LitElement {
         slot="awc-modal-description"
         .isSelected=${this._navigationManager.currentView === "selected"}
         .fileCount=${selectedFilesCount}
-        @cancel-selection=${this._handleCancelSelection}
-        @confirm-selection=${this._handleConfirmSelection}
-        @upload=${this._handleUpload}
+        @cancel-selection=${this._cancelSelection}
+        @confirm-selection=${this._confirmSelection}
+        @upload=${this._uploadFiles}
       ></awc-file-upload-footer>
     `;
   }
-
-
-  // private _handleLogout(): void {
-  //   this._navigationManager.setView("main");
-  //   this._selectedProvider = null;
-  //   this._clearSelectedFiles();
-  // }
 
   static styles?: CSSResult = awcFileUploadStyles;
 }

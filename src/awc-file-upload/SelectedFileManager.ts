@@ -67,14 +67,4 @@ export class SelectedFileManager extends EventTarget {
     getUploadAsLink(): boolean {
         return this._uploadAsLink;
     }
-
-    setFilePreview(file: ProviderFile, preview: string) {
-        const selectedFile = this.selectedFiles.get(file.id);
-        if (selectedFile) {
-            // Assuming you want to store the preview as part of the selected file
-            selectedFile.preview = preview;
-            this.fileSelectionChanged();
-        }
-    }
-    
 }

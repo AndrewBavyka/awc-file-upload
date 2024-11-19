@@ -1,21 +1,30 @@
 import { LitElement, SVGTemplateResult } from "lit";
 import { EventDispatcher, event } from "../../util/event";
-import { ProviderInfo } from "../interfaces/ProviderInfo";
-import { RequestOptions } from "../interfaces/ProviderInfo";
+import { ProviderInfo, RequestOptions } from "../interfaces/ProviderInfo";
 import { ProviderData } from "../interfaces/ProviderFile";
 
-export abstract class Provider extends LitElement implements ProviderInfo {
+export class Provider extends LitElement implements ProviderInfo {
     @event("awc-file-upload-provider-selected") private _onSelected!: EventDispatcher<ProviderInfo>;
 
-    abstract name: string;
-    abstract provider: string;
+    name!: string;
+    provider!: string;
     protected authToken: string | null = null;
 
-    abstract get icon(): SVGTemplateResult;
+    get icon(): SVGTemplateResult {
+        throw new Error("Property 'icon' must be implemented in the derived class.");
+    }
 
-    abstract login(options?: RequestOptions): Promise<void>;
-    abstract logout(options?: RequestOptions): Promise<void>;
-    abstract list(directory: string | null, options: RequestOptions): Promise<ProviderData>;
+    async login(options?: RequestOptions): Promise<void> {
+        throw new Error("Method 'login' must be implemented in the derived class.");
+    }
+
+    async logout(options?: RequestOptions): Promise<void> {
+        throw new Error("Method 'logout' must be implemented in the derived class.");
+    }
+
+    async list(directory: string | null, options: RequestOptions): Promise<ProviderData> {
+        throw new Error("Method 'list' must be implemented in the derived class.");
+    }
 
     checkLocalStorage(): boolean {
         return !!(this.provider && localStorage.getItem(this.provider));
@@ -36,11 +45,8 @@ export abstract class Provider extends LitElement implements ProviderInfo {
             list: this.list.bind(this),
         };
     }
-    
+
     emitProviderSelected(): void {
         this._onSelected(this.getProviderInfo());
     }
-
-
-    // static styles?: CSSResultGroup = [];
 }

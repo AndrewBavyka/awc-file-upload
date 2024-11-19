@@ -157,7 +157,7 @@ export const awcFileUploadExplorerStyles = css`
         height: 40px;
     }
 
-    .file-explorer__content--grid .file-explorer__file-type svg{
+    .file-explorer__content--grid .file-explorer__file-type svg {
         width: 40px;
         height: 40px;
     }

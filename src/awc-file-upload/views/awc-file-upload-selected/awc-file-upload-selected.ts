@@ -53,7 +53,7 @@ export default class AwcFileUploadSelected extends LitElement {
           referrerpolicy="no-referrer"
           alt="${item.name}"
         />`
-      : html`<span class="file-explorer__file-type">${icon}</span>`;
+      : html`<span class="awc-file-upload-selected__preview__icon">${icon}</span>`;
   }
 
   protected render(): TemplateResult {
@@ -68,13 +68,13 @@ export default class AwcFileUploadSelected extends LitElement {
     return html`
       <div class="awc-file-upload-selected">
         ${selectedFiles.map(
-      ({ file, providerIcon }) => html`
+      ({ file, providerIcon, provider }) => html`
             <div class="awc-file-upload-selected__file">
               <div class="awc-file-upload-selected__preview">
                  ${this.renderFileIcon(file)}
-                <span class="awc-file-upload-selected__provider"
-                  >${providerIcon}</span
-                >
+                <span class="awc-file-upload-selected__provider">
+                  ${provider !== "local" ? providerIcon : ""}
+                </span>
               </div>
               <div class="awc-file-upload-selected__info">
                 <span class="awc-file-upload-selected__name">${file.name}</span>

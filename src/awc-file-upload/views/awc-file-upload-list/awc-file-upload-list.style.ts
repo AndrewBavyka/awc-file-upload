@@ -8,4 +8,9 @@ export const awcFileUploadListStyles = css`
         display: block;
         position: relative;
     } */
+
+    :host {
+        display: block;
+        min-height: 473px
+    }
 `;

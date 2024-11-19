@@ -61,14 +61,13 @@ export default class AwcFileUploadProviderYandexDisk extends Provider {
                     limit: options.qs?.limit ?? 20,
                 },
                 headers: {  
-                    Authorization: `Bearer ${this.authToken}`,
+                    Authorization: `${this.authToken}`,
                 },
             });
     
             return response.data as ProviderData;
         } catch (error) {
-            console.error("Error loading items:", error);
-            throw new Error("Не удалось получить данные от Яндекс Диска");
+            throw new Error(`Не удалось получить данные от ${this.providerName}: ${error}`);
         }
     }
 

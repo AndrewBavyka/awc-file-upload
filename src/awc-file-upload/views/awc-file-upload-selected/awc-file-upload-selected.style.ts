@@ -4,7 +4,7 @@ import { css } from "lit";
 export const awcFileUploadSelectedStyles = css`
     :host {
         display: block;
-        min-height: 420px;
+        min-height: 421px;
     }
 
     .awc-file-upload-selected {
@@ -81,6 +81,11 @@ export const awcFileUploadSelectedStyles = css`
 
     .awc-file-upload-selected__delete:hover svg {
         fill: var(--colors-light-primary-hover);
+    }
+
+    .awc-file-upload-selected__preview__icon svg{
+        width: 48px;
+        height: 48px;
     }
 
 `;

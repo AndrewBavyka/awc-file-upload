@@ -2,16 +2,10 @@ import { css } from "lit";
 
 export const awcFileUploadAuthStyles = css`
     :host {
-        /* display: flex; */
-        /* position: absolute; */
-        /* height: 100%;
-        width: 100%;
-        top: 0;
-        left: 0;
-        transform: translateX(0%);
-        justify-content: center;
+        min-height: 500px;
+        position: relative;
+        display: flex;
         align-items: center;
-        background-color: var(--colors-light-white); */
     }
 
     .awc-auth-view__description {

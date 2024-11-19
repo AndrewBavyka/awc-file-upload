@@ -5358,7 +5358,6 @@ var index=function(exports){"use strict";/**
          transform: scale3d(1, 1, 1);
          box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
          animation: scale-animation 0.3s ease-out forwards;
-         overflow: hidden;
      }
  
      @keyframes scale-animation {
@@ -5493,9 +5492,6 @@ var index=function(exports){"use strict";/**
          `,D=x`
              <div class="awc-modal__header--popup">
                  <slot name="awc-modal-heading"></slot>
-                 <span class="awc-modal__close" @click=${this.close} slot="toolbar">
-                     ${this._renderCloseIcon()}
-                 </span>
              </div>
          `;return x`
              <div class="awc-modal">
