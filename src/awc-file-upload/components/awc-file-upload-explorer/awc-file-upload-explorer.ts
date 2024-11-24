@@ -4,7 +4,7 @@ import { Provider } from "../../providers/Provider";
 import { ProviderFile } from "../../interfaces/ProviderFile";
 import { RequestOptions } from "../../interfaces/ProviderInfo";
 import { awcFileUploadExplorerStyles } from "./awc-file-upload-explorer.style";
-import { SelectedFileManager } from "../../SelectedFileManager";
+import { SelectedFileManager } from "../../managers/SelectedFileManager";
 import { fileIcons, defaultFileIcon } from "./fileIcons";
 
 export const awcFileUploadExplorer = "awc-file-upload-explorer";
@@ -208,6 +208,7 @@ export default class AwcFileUploadExplorer extends LitElement {
     if (item.isFolder) {
       this.currentPath = item.requestPath;
       this.loadItems(this.currentPath, true);
+      this._moveScroolTop();
     } else {
       this.toggleFileSelection(item);
     }
@@ -217,6 +218,8 @@ export default class AwcFileUploadExplorer extends LitElement {
   // У Uppy вообще пока не загрузятся данные - путь не отобразится. 
   // А если быстро переходит по папкам то перебросит обратно в папку где данные загрузились
   private onBreadcrumbClick(event: CustomEvent) {
+    this._moveScroolTop();
+
     this.currentPath = event.detail.path;
     this.loadItems(decodeURIComponent(this.currentPath), true);
   }
@@ -240,11 +243,17 @@ export default class AwcFileUploadExplorer extends LitElement {
         this.provider?.getProviderInfo().provider || "Unknown",
         this.provider?.getProviderInfo().icon!
       );
-      
+
       updatedSelectedFiles.add(file.id);
     }
 
     this.requestUpdate();
+  }
+
+
+  private _moveScroolTop(): void {
+    const scrollContainer = this.shadowRoot?.querySelector(".file-explorer__body");
+    scrollContainer?.scrollTo(0, 0);
   }
 
   private renderListItems(): TemplateResult[] {
@@ -380,13 +389,13 @@ export default class AwcFileUploadExplorer extends LitElement {
             ${this.isGridView ? this.renderGridItems() : this.renderListItems()}
             
             ${this.isLoading
-          ? html`<div class="file-explorer__loading">
+        ? html`<div class="file-explorer__loading">
                   <awc-spinner size="l" variant="primary"></awc-spinner>
                 </div>`
-          : ""}
+        : ""}
             ${this.errorMessage
-          ? html`<div class="file-explorer__error">${this.errorMessage}</div>`
-          : ""}
+        ? html`<div class="file-explorer__error">${this.errorMessage}</div>`
+        : ""}
           </div>
       </div>
     `;

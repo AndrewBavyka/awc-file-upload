@@ -8,7 +8,10 @@ export class Provider extends LitElement implements ProviderInfo {
 
     name!: string;
     provider!: string;
+    
     protected authToken: string | null = null;
+    protected _username: string | null = null;
+    private _usernameResolver: (() => void) | null = null;
 
     get icon(): SVGTemplateResult {
         throw new Error("Property 'icon' must be implemented in the derived class.");
@@ -33,6 +36,23 @@ export class Provider extends LitElement implements ProviderInfo {
     setAuthToken(token: string): void {
         this.authToken = token;
         localStorage.setItem(this.provider, token);
+    }
+
+    async setUsername(username: string) {
+        this._username = username;
+        if (this._usernameResolver) {
+            this._usernameResolver();
+        }
+    }
+
+    async getUsername(): Promise<string | null> {
+        if (!this._username) {
+            await new Promise<void>((resolve) => {
+                this._usernameResolver = resolve;
+            });
+        }
+
+        return this._username;
     }
 
     getProviderInfo(): ProviderInfo {

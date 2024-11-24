@@ -42,12 +42,6 @@ export default class AwcFileUploadProviderYandexDisk extends Provider {
         if (newWindow) newWindow.focus();
     }
 
-    async logout() {
-        if (this.checkLocalStorage()) {
-            localStorage.removeItem(this.provider);
-        }
-    }
-
     async list(directory: string | null, options: RequestOptions): Promise<ProviderData> {
         if (!this.authToken) {
             this.authToken = localStorage.getItem(this.provider);
@@ -64,7 +58,12 @@ export default class AwcFileUploadProviderYandexDisk extends Provider {
                     Authorization: `${this.authToken}`,
                 },
             });
-    
+            
+            if (response.data.username) {
+                this.setUsername(response.data.username);
+                this.requestUpdate();
+            }
+
             return response.data as ProviderData;
         } catch (error) {
             throw new Error(`Не удалось получить данные от ${this.providerName}: ${error}`);

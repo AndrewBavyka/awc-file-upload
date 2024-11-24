@@ -1,7 +1,7 @@
 import { CSSResult, html, LitElement, svg, TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { awcFileUploadHeaderStyles } from "./awc-file-upload-header.style";
-import { CurrentView } from "../../views/NavigationManager";
+import { CurrentView } from "../../managers/NavigationManager";
 
 export const awcFileUploadHeaderTag = "awc-file-upload-header";
 
@@ -35,7 +35,7 @@ export default class AwcFileUploadHeader extends LitElement {
         switch (this.view) {
             case "main":
                 return html`
-                <div class="awc-file-upload-heading__title">${this.title}</div>
+                <div class="awc-file-upload-heading__title awc-file-upload-heading__title--main">${this.title}</div>
             `;
             case "selected":
                 return html`
@@ -59,7 +59,7 @@ export default class AwcFileUploadHeader extends LitElement {
             default:
                 return html`
                     <button class="awc-file-upload-btn__cancel" @click=${this._handleCancel}>Отменить</button>
-                    <div class="awc-file-upload-heading__title">${this.title}</div>
+                    <div class="awc-file-upload-heading__title awc-file-upload-heading__title--auth">${this.title}</div>
             `;
         }
     }

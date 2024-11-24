@@ -1,7 +1,7 @@
 import { html, svg, CSSResult, TemplateResult, SVGTemplateResult } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { awcFileUploadProviderStyles } from "../styles/awc-file-upload-provider.style";
-import { SelectedFileManager } from "../../SelectedFileManager";
+import { SelectedFileManager } from "../../managers/SelectedFileManager";
 import { ProviderFile } from "../../interfaces/ProviderFile";
 import { Provider } from "../Provider";
 
@@ -29,10 +29,21 @@ export default class AwcFileUploadProviderLocal extends Provider {
   }
 
   @state() private selectedFileManager = SelectedFileManager.getInstance();
+  
+  private _onChange(e: Event): void {
+    const target = e.target as HTMLInputElement | null;
+    const files = target?.files;
+
+    if (!files || files.length === 0) return;
+
+    Array.from(files).forEach((file) => this._processFile(file));
+
+    this.dispatchEvent(new CustomEvent("confirm-selection", { bubbles: true, composed: true }));
+  }
 
   convertToProviderFile(file: File): ProviderFile {
     const isImage = file.type.startsWith("image/");
-
+    
     return {
       id: file.name + Date.now().toString(),
       name: file.name,
@@ -43,22 +54,10 @@ export default class AwcFileUploadProviderLocal extends Provider {
       modifiedDate: new Date().toISOString(),
       size: file.size,
       mimeType: file.type,
-      file: {...file},
+      file: file,
       thumbnail: isImage ? URL.createObjectURL(file) : "",
       fileExternal: ""
     };
-  }
-
-  private _onChange(e: Event): void {
-    const target = e.target as HTMLInputElement | null;
-    const files = target?.files;
-
-    if (!files || files.length === 0) return;
-
-    Array.from(files).forEach((file) => this._processFile(file));
-
-    // После обработки всех файлов можно инициировать подтверждение выбора
-    this.dispatchEvent(new CustomEvent("confirm-selection", { bubbles: true, composed: true }));
   }
 
   private _processFile(file: File): void {
@@ -76,8 +75,6 @@ export default class AwcFileUploadProviderLocal extends Provider {
     reader.onload = () => this.selectedFileManager.addFile(providerFile, this.provider, this.icon);
     reader.readAsDataURL(file);
   }
-
-
 
   protected render(): TemplateResult {
     return html`

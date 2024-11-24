@@ -18,6 +18,11 @@ export const awcFileUploadHeaderStyles = css`
         max-width: 510px;
         font: var(--awc-font-h5-medium);
         color: var(--colors-light-titles);
+        margin: 0 auto;
+    }
+
+    .awc-file-upload-heading__title--main {
+        margin: 0;
     }
 
     .awc-file-upload-btn__cancel,

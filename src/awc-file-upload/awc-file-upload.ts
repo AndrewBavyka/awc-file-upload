@@ -1,10 +1,11 @@
 import { CSSResult, html, LitElement, TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { Provider } from "./providers/Provider";
+import { SelectedFile } from "./interfaces/SelectedFile";
 import { awcFileUploadStyles } from "./awc-file-upload.style";
-import { SelectedFileManager, SelectedFile } from "./SelectedFileManager";
-import { NavigationManager } from "./views/NavigationManager";
-import { UploadManager } from "./UploadManager";
+import { SelectedFileManager } from "./managers/SelectedFileManager";
+import { NavigationManager } from "./managers/NavigationManager";
+import { UploadManager } from "./managers/UploadManager";
 
 export const awcFileUploadTag = "awc-file-upload";
 
@@ -20,7 +21,6 @@ export default class AwcFileUpload extends LitElement {
   // Временное решение
   @state() private accountName: string | null = null;
   @state() private _isExternalMode: boolean = false;
-
 
   connectedCallback() {
     super.connectedCallback();
@@ -55,6 +55,7 @@ export default class AwcFileUpload extends LitElement {
       this._selectedProvider.setAuthToken(token);
       this._navigationManager.setView("list");
       this._updateTitle();
+      this.requestUpdate();
     }
   }
 
@@ -80,6 +81,18 @@ export default class AwcFileUpload extends LitElement {
     this._updateTitle();
   }
 
+  private _logout() {
+    if (this._selectedProvider?.checkLocalStorage()) {
+      localStorage.removeItem(this._selectedProvider?.getProviderInfo().provider!);
+    }
+
+    this._navigationManager.setView("main");
+    this._updateTitle();
+    // Стоит ли очищать при выходе из аккаунта очистку вообще всех файлов?
+    this._clearSelectedFiles();
+    this.requestUpdate();
+  }
+
   private async _handleProviderSelection(event: CustomEvent) {
     const provider = event.target as Provider;
 
@@ -89,7 +102,6 @@ export default class AwcFileUpload extends LitElement {
     this._navigationManager.setView(hasProviderToken ? "list" : "auth");
     this._selectedProvider = provider;
     this._updateTitle();
-    // await this._getUserInfo();
   }
 
   private _uploadFiles() {
@@ -106,7 +118,7 @@ export default class AwcFileUpload extends LitElement {
     } else {
       console.error("Не удалось получить URL для загрузки.");
     }
-    
+
   }
 
   private _refreshSelectedFiles(e: CustomEvent<SelectedFile[]>) {
@@ -163,18 +175,13 @@ export default class AwcFileUpload extends LitElement {
     `;
   }
 
-  // private async _getUserInfo() {
-  //   if (this._selectedProvider) {
-  //     try {
-  //       const userInfo = await this._selectedProvider.getProviderInfo().list("/", {});
-  //       this.accountName = userInfo.username || '';
-  //     } catch (error) {
-  //       this.accountName = ''; 
-  //     }
-  //   }
-  // }
+  private async _loadUserInfo() {
+    return this.accountName = await this._selectedProvider?.getUsername()!;
+  }
 
   private _renderHeading(): TemplateResult {
+    this._loadUserInfo();
+
     return html`
       <awc-file-upload-header
         .view=${this._navigationManager.currentView}
@@ -184,7 +191,7 @@ export default class AwcFileUpload extends LitElement {
         @cancel=${this._cancel}
         @add-more-files=${() => { }}
         @logout=${() => {
-        this._selectedProvider?.logout();
+        this._logout();
         this._clearSelectedFiles();
       }}
       ></awc-file-upload-header>

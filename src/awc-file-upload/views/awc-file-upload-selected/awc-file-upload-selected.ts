@@ -2,7 +2,7 @@ import { CSSResult, html, LitElement, svg, TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { fileIcons, defaultFileIcon } from "../../components/awc-file-upload-explorer/fileIcons";
 import { Provider } from "../../providers/Provider";
-import { SelectedFileManager } from "../../SelectedFileManager";
+import { SelectedFileManager } from "../../managers/SelectedFileManager";
 import { awcFileUploadSelectedStyles } from "./awc-file-upload-selected.style";
 import { ProviderFile } from "../../interfaces/ProviderFile";
 import { EventDispatcher, event } from "../../../util/event";

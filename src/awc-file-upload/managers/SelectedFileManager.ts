@@ -1,12 +1,6 @@
 import { SVGTemplateResult } from "lit";
-import { ProviderFile } from "./interfaces/ProviderFile";
-
-export interface SelectedFile {
-    file: ProviderFile;
-    provider: string;
-    providerIcon: SVGTemplateResult;
-    preview?: string;
-}
+import { ProviderFile } from "../interfaces/ProviderFile";
+import { SelectedFile } from "../interfaces/SelectedFile";
 
 export class SelectedFileManager extends EventTarget {
     private static instance: SelectedFileManager;
