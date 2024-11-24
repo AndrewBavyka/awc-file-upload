@@ -17,16 +17,20 @@ export class UploadManager {
 
     private async uploadLocalFile(selectedFile: SelectedFile): Promise<void> {
         const { provider, file } = selectedFile;
-
+    
         if (!(file.file instanceof File)) {
             console.error('Объект не является локальным файлом:', file);
             return;
         }
-
+    
         const formData = new FormData();
-
         formData.append(provider, file.file, file.name);
-
+    
+        const extraData = SelectedFileManager.getInstance().getExtraData();
+        for (const key in extraData) {
+            formData.append(key, extraData[key]);
+        }
+    
         try {
             const response: AxiosResponse = await axios.post(this.uploadUrl, formData, {
                 headers: {
@@ -39,7 +43,7 @@ export class UploadManager {
                     }
                 },
             });
-
+    
             console.log(`Локальный файл "${file.name}" успешно загружен!`, response.data);
         } catch (error: unknown) {
             if (error instanceof AxiosError) {
@@ -49,22 +53,28 @@ export class UploadManager {
             }
         }
     }
+    
 
     private async uploadCloudProviderFile(selectedFile: SelectedFile): Promise<void> {
         const { provider, file } = selectedFile;
-    
+        const extraData = SelectedFileManager.getInstance().getExtraData();
+
         if (!file.fileExternal || !file.file) {
             console.error('Нет URL для загрузки удаленного файла:', file);
             return;
         }
 
         try {
-            const response: AxiosResponse = await axios.post(this.uploadUrl, {provider, file } , {
+            const response: AxiosResponse = await axios.post(this.uploadUrl, {
+                provider,
+                file,
+                extraData,
+            }, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
             });
-    
+
             console.log(`Удаленный файл "${file.name}" успешно загружен!`, response.data);
         } catch (error: unknown) {
             if (error instanceof AxiosError) {
@@ -74,10 +84,9 @@ export class UploadManager {
             }
         }
     }
-    
 
     private async uploadFile(selectedFile: SelectedFile): Promise<void> {
-        const {file } = selectedFile;
+        const { file } = selectedFile;
 
         if (file.file instanceof File) {
             await this.uploadLocalFile(selectedFile);

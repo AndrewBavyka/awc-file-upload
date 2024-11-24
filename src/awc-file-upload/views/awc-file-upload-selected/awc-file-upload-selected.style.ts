@@ -32,7 +32,6 @@ export const awcFileUploadSelectedStyles = css`
     .awc-file-upload-selected__preview {
         position: relative;
         display: flex;
-        overflow: hidden;
         border-radius: var(--corner-radius-s);
     }
 
@@ -62,10 +61,16 @@ export const awcFileUploadSelectedStyles = css`
     .awc-file-upload-selected__info {
         display: flex;
         flex-direction: column;
+        white-space: nowrap;
+        overflow: hidden;
     }
+
     .awc-file-upload-selected__name {
         font: var(--awc-font-text-regular-14);
         color: var(--colors-light-titles);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;        
     }
 
     .awc-file-upload-selected__description {

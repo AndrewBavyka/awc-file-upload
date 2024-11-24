@@ -5,6 +5,7 @@ import { SelectedFile } from "../interfaces/SelectedFile";
 export class SelectedFileManager extends EventTarget {
     private static instance: SelectedFileManager;
     private selectedFiles: Map<string, SelectedFile> = new Map();
+    private extraData: Record<string, any> = {};
 
     private fileSelectionChanged() {
         const event = new CustomEvent("file-selection-changed", {
@@ -21,6 +22,14 @@ export class SelectedFileManager extends EventTarget {
             SelectedFileManager.instance = new SelectedFileManager();
         }
         return SelectedFileManager.instance;
+    }
+
+    getExtraData() {
+        return this.extraData;
+    }
+
+    setExtraData(data: Record<string, any>) {
+        this.extraData = { ...this.extraData, ...data };
     }
 
     addFile(file: ProviderFile, provider: string, providerIcon: SVGTemplateResult) {

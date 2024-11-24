@@ -1,4 +1,5 @@
-import { LitElement, html, TemplateResult, CSSResult, svg } from "lit";
+import { LitElement, html, TemplateResult, CSSResult, svg, PropertyValues } from "lit";
+import anime from "animejs";
 import { customElement, property, state } from "lit/decorators.js";
 import { Provider } from "../../providers/Provider";
 import { ProviderFile } from "../../interfaces/ProviderFile";
@@ -75,6 +76,7 @@ export default class AwcFileUploadExplorer extends LitElement {
 
   async connectedCallback() {
     super.connectedCallback();
+
     this.loadViewMode();
     await this.loadItems(this.currentPath, true);
   }
@@ -92,8 +94,31 @@ export default class AwcFileUploadExplorer extends LitElement {
     localStorage.setItem(`awc-file-explorer-${providerName}`, this.isGridView ? "grid" : "list");
   }
 
+  protected updated(_changedProperties: PropertyValues): void {
+    super.updated(_changedProperties);
+
+    if (_changedProperties.has("isGridView")) {
+      this.animateViewToggle();
+    }
+  }
+
+  private animateViewToggle() {
+    const container = this.shadowRoot!.querySelector(".file-explorer__body")!;
+    const items = container.querySelectorAll(".file-explorer__item");
+    
+    anime({
+      targets: items,
+      scale: [0.8, 1],
+      opacity: [0, 1],
+      duration: 300,
+      easing: 'easeOutExpo',
+      delay: anime.stagger(50),
+    });
+  }
+
   private toggleView() {
     this.isGridView = !this.isGridView;
+    this.animateViewToggle();
     this.saveViewMode();
   }
 

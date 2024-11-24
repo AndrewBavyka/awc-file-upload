@@ -12,6 +12,7 @@ export const awcFileUploadTag = "awc-file-upload";
 @customElement(awcFileUploadTag)
 export default class AwcFileUpload extends LitElement {
   @property({ type: String }) title = "Перетащите файлы, вставьте, выберите файлы или импортируйте из:";
+  @property({ type: Object }) extraData = {};
 
   @state() private _selectedProvider: Provider | null = null;
   @state() private _navigationManager = new NavigationManager();
@@ -31,6 +32,7 @@ export default class AwcFileUpload extends LitElement {
     this.addEventListener("awc-file-upload-switch-mode", this._toggleUploadMode);
 
     this._selectedFileManager.addEventListener("file-selection-changed", (e) => this._refreshSelectedFiles(e as CustomEvent<SelectedFile[]>));
+    this._selectedFileManager.setExtraData(this.extraData);
   }
 
   disconnectedCallback() {
