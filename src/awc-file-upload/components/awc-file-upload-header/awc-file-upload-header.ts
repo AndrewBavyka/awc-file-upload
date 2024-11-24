@@ -12,7 +12,7 @@ export default class AwcFileUploadHeader extends LitElement {
     @property({ type: String }) accountName = "";
 
     private _handleCancel() {
-        this.dispatchEvent(new CustomEvent("cancel-selection", { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent("cancel", { bubbles: true, composed: true }));
     }
 
     private _handleAddMore() {
@@ -51,9 +51,9 @@ export default class AwcFileUploadHeader extends LitElement {
                         <awc-dropdown-group .label=${this.accountName}>
                             <awc-dropdown-item @click=${this._handleLogout}>Выйти</awc-dropdown-item>
                         </awc-dropdown-group>
-                        <span slot="awc-dropdown-toggle" class="awc-file-upload-heading__account">
+                        <awc-icon-button size="32" slot="awc-dropdown-toggle" class="awc-file-upload-heading__account">
                             ${this._accountIconSvg}
-                        </span>
+                        </awc-icon-button>
                     </awc-dropdown>
             `;
             default:

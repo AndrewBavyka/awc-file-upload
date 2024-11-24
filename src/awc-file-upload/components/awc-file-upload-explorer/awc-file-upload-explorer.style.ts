@@ -2,8 +2,9 @@ import { css } from "lit";
 
 export const awcFileUploadExplorerStyles = css`
     :host {
-        /* position: absolute; */
         width: 100%;
+        display: flex;
+        flex-direction: column;
     }
 
     .file-explorer__header {
@@ -32,17 +33,22 @@ export const awcFileUploadExplorerStyles = css`
     }
 
     .file-explorer__body {
-        position: static;
         box-sizing: border-box;
+        flex: 1;
+        position: relative;
+        padding: 12px 0px 12px 20px;
+        margin-bottom: 12px;
+        overflow-x: hidden;
+        overflow-y: auto;
     }
 
     .file-explorer__content {
         position: absolute;
-        overflow-y: auto;
-        width: 100%;
-        height: calc(474px - 48px);
         box-sizing: border-box;
-        padding: 12px 0 12px 20px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        width: calc(100% - 25px);
     }
 
     .file-explorer__content--list .file-explorer__item {
@@ -182,8 +188,8 @@ export const awcFileUploadExplorerStyles = css`
     }
 
     .file-explorer__loading {
-        position: absolute;
-        top: 50%;
+        position: relative;
+        /* top: 50%; */
         left: 0;
         width: 100%;
         display: inline-flex;

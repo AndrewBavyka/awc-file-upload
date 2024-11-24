@@ -21,7 +21,7 @@
         mimeType?: string;
 
         /** Ссылка на файл заугрузки */
-        file?: string;
+        file?: string | File;
 
         /** Ссылка на файл для перехода на внешний ресурс */
         fileExternal: string;

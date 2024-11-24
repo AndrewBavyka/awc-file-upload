@@ -2283,21 +2283,6 @@
                     "js": {
                         "properties": [
                             {
-                                "name": "shadowRootOptions",
-                                "required": false,
-                                "priority": "normal",
-                                "value": {
-                                    "type": "object",
-                                    "required": true,
-                                    "default": "{\"delegatesFocus\":true}"
-                                },
-                                "description": "Опции для тени Shadow DOM.",
-                                "source": {
-                                    "module": "./../../components/awc-checkbox-group/awc-checkbox/awc-checkbox.ts",
-                                    "symbol": "AwcCheckbox.shadowRootOptions"
-                                }
-                            },
-                            {
                                 "name": "value",
                                 "required": false,
                                 "priority": "normal",
@@ -2546,6 +2531,23 @@
                                 }
                             },
                             {
+                                "name": "shadowRootOptions",
+                                "required": false,
+                                "priority": "normal",
+                                "value": {
+                                    "type": [
+                                        "{ delegatesFocus: boolean; mode: ShadowRootMode; slotAssignment?: SlotAssignmentMode",
+                                        "undefined; }"
+                                    ],
+                                    "required": false,
+                                    "default": "{\"delegatesFocus\":true}"
+                                },
+                                "source": {
+                                    "module": "./../../components/awc-checkbox-group/awc-checkbox/awc-checkbox.ts",
+                                    "symbol": "AwcCheckbox.shadowRootOptions"
+                                }
+                            },
+                            {
                                 "name": "formControlValidators",
                                 "required": false,
                                 "priority": "normal",
@@ -2580,7 +2582,7 @@
                                 "value": {
                                     "type": "(event: Event) => void",
                                     "required": true,
-                                    "default": "\"(event: Event): void => {\\n    event.preventDefault();\\n    \\n    this.validationTarget.focus();\\n  }\""
+                                    "default": "\"(event: Event): void => {\\n    event.preventDefault();\\n\\n    this.validationTarget.focus();\\n  }\""
                                 },
                                 "source": {
                                     "module": "./../../components/awc-checkbox-group/awc-checkbox/awc-checkbox.ts",
@@ -3913,8 +3915,7 @@
                             "priority": "normal",
                             "value": {
                                 "type": "number",
-                                "required": true,
-                                "default": "\"250\""
+                                "required": true
                             },
                             "description": "Пользовательская ширина выпадающего меню",
                             "source": {
@@ -4036,8 +4037,7 @@
                                 "priority": "normal",
                                 "value": {
                                     "type": "number",
-                                    "required": true,
-                                    "default": "\"250\""
+                                    "required": true
                                 },
                                 "description": "Пользовательская ширина выпадающего меню",
                                 "source": {
@@ -4439,6 +4439,229 @@
                     "source": {
                         "module": "./../../components/awc-header/awc-header.ts",
                         "symbol": "AwcHeader"
+                    }
+                },
+                {
+                    "name": "awc-icon-button",
+                    "source": {
+                        "module": "./../../components/awc-icon-button/awc-icon-button.ts",
+                        "symbol": "AwcIconButton"
+                    },
+                    "attributes": [
+                        {
+                            "name": "name",
+                            "required": false,
+                            "priority": "normal",
+                            "value": {
+                                "type": "String",
+                                "required": true,
+                                "default": "\"\""
+                            },
+                            "description": "Имя кнопки.",
+                            "source": {
+                                "module": "./../../components/awc-icon-button/awc-icon-button.ts",
+                                "symbol": "AwcIconButton.name"
+                            }
+                        },
+                        {
+                            "name": "value",
+                            "required": false,
+                            "priority": "normal",
+                            "value": {
+                                "type": "String",
+                                "required": true,
+                                "default": "\"\""
+                            },
+                            "description": "Значение кнопки.",
+                            "source": {
+                                "module": "./../../components/awc-icon-button/awc-icon-button.ts",
+                                "symbol": "AwcIconButton.value"
+                            }
+                        },
+                        {
+                            "name": "size",
+                            "required": false,
+                            "priority": "normal",
+                            "value": {
+                                "type": "String",
+                                "required": true,
+                                "default": "\"24\""
+                            },
+                            "description": "Размер кнопки (Вложенные иконки меняют размер в том числе).",
+                            "source": {
+                                "module": "./../../components/awc-icon-button/awc-icon-button.ts",
+                                "symbol": "AwcIconButton.size"
+                            }
+                        },
+                        {
+                            "name": "type",
+                            "required": false,
+                            "priority": "normal",
+                            "value": {
+                                "type": "String",
+                                "required": true,
+                                "default": "\"submit\""
+                            },
+                            "description": "Тип кнопки.",
+                            "source": {
+                                "module": "./../../components/awc-icon-button/awc-icon-button.ts",
+                                "symbol": "AwcIconButton.type"
+                            }
+                        },
+                        {
+                            "name": "href",
+                            "required": false,
+                            "priority": "normal",
+                            "value": {
+                                "type": "String",
+                                "required": true,
+                                "default": "\"\""
+                            },
+                            "description": "Задает адрес документа, на который следует перейти.",
+                            "source": {
+                                "module": "./../../components/awc-icon-button/awc-icon-button.ts",
+                                "symbol": "AwcIconButton.href"
+                            }
+                        },
+                        {
+                            "name": "target",
+                            "required": false,
+                            "priority": "normal",
+                            "value": {
+                                "type": "String",
+                                "required": true,
+                                "default": "\"_self\""
+                            },
+                            "description": "Тип перехода по ссылке.",
+                            "source": {
+                                "module": "./../../components/awc-icon-button/awc-icon-button.ts",
+                                "symbol": "AwcIconButton.target"
+                            }
+                        },
+                        {
+                            "name": "disabled",
+                            "required": false,
+                            "priority": "normal",
+                            "value": {
+                                "type": "Boolean",
+                                "required": false,
+                                "default": "\"false\""
+                            },
+                            "description": "Флаг, отключающий кнопку.",
+                            "source": {
+                                "module": "./../../components/awc-icon-button/awc-icon-button.ts",
+                                "symbol": "AwcIconButton.disabled"
+                            }
+                        }
+                    ],
+                    "js": {
+                        "properties": [
+                            {
+                                "name": "name",
+                                "required": false,
+                                "priority": "normal",
+                                "value": {
+                                    "type": "String",
+                                    "required": true,
+                                    "default": "\"\""
+                                },
+                                "description": "Имя кнопки.",
+                                "source": {
+                                    "module": "./../../components/awc-icon-button/awc-icon-button.ts",
+                                    "symbol": "AwcIconButton.name"
+                                }
+                            },
+                            {
+                                "name": "value",
+                                "required": false,
+                                "priority": "normal",
+                                "value": {
+                                    "type": "String",
+                                    "required": true,
+                                    "default": "\"\""
+                                },
+                                "description": "Значение кнопки.",
+                                "source": {
+                                    "module": "./../../components/awc-icon-button/awc-icon-button.ts",
+                                    "symbol": "AwcIconButton.value"
+                                }
+                            },
+                            {
+                                "name": "size",
+                                "required": false,
+                                "priority": "normal",
+                                "value": {
+                                    "type": "String",
+                                    "required": true,
+                                    "default": "\"24\""
+                                },
+                                "description": "Размер кнопки (Вложенные иконки меняют размер в том числе).",
+                                "source": {
+                                    "module": "./../../components/awc-icon-button/awc-icon-button.ts",
+                                    "symbol": "AwcIconButton.size"
+                                }
+                            },
+                            {
+                                "name": "type",
+                                "required": false,
+                                "priority": "normal",
+                                "value": {
+                                    "type": "String",
+                                    "required": true,
+                                    "default": "\"submit\""
+                                },
+                                "description": "Тип кнопки.",
+                                "source": {
+                                    "module": "./../../components/awc-icon-button/awc-icon-button.ts",
+                                    "symbol": "AwcIconButton.type"
+                                }
+                            },
+                            {
+                                "name": "href",
+                                "required": false,
+                                "priority": "normal",
+                                "value": {
+                                    "type": "String",
+                                    "required": true,
+                                    "default": "\"\""
+                                },
+                                "description": "Задает адрес документа, на который следует перейти.",
+                                "source": {
+                                    "module": "./../../components/awc-icon-button/awc-icon-button.ts",
+                                    "symbol": "AwcIconButton.href"
+                                }
+                            },
+                            {
+                                "name": "target",
+                                "required": false,
+                                "priority": "normal",
+                                "value": {
+                                    "type": "String",
+                                    "required": true,
+                                    "default": "\"_self\""
+                                },
+                                "description": "Тип перехода по ссылке.",
+                                "source": {
+                                    "module": "./../../components/awc-icon-button/awc-icon-button.ts",
+                                    "symbol": "AwcIconButton.target"
+                                }
+                            },
+                            {
+                                "name": "disabled",
+                                "required": false,
+                                "priority": "normal",
+                                "value": {
+                                    "type": "Boolean",
+                                    "required": false,
+                                    "default": "\"false\""
+                                },
+                                "description": "Флаг, отключающий кнопку.",
+                                "source": {
+                                    "module": "./../../components/awc-icon-button/awc-icon-button.ts",
+                                    "symbol": "AwcIconButton.disabled"
+                                }
+                            }
+                        ]
                     }
                 },
                 {
@@ -5575,6 +5798,21 @@
                                 "module": "./../../components/awc-modal/awc-modal.ts",
                                 "symbol": "AwcModal.opened"
                             }
+                        },
+                        {
+                            "name": "customizable",
+                            "required": false,
+                            "priority": "normal",
+                            "value": {
+                                "type": "boolean",
+                                "required": false,
+                                "default": "\"false\""
+                            },
+                            "description": "Флаг указывающий, что модальное окно может быть кастомизировано. \nОтображается только подложка компонента.",
+                            "source": {
+                                "module": "./../../components/awc-modal/awc-modal.ts",
+                                "symbol": "AwcModal.customizable"
+                            }
                         }
                     ],
                     "js": {
@@ -5622,6 +5860,21 @@
                                 "source": {
                                     "module": "./../../components/awc-modal/awc-modal.ts",
                                     "symbol": "AwcModal.opened"
+                                }
+                            },
+                            {
+                                "name": "customizable",
+                                "required": false,
+                                "priority": "normal",
+                                "value": {
+                                    "type": "boolean",
+                                    "required": false,
+                                    "default": "\"false\""
+                                },
+                                "description": "Флаг указывающий, что модальное окно может быть кастомизировано. \nОтображается только подложка компонента.",
+                                "source": {
+                                    "module": "./../../components/awc-modal/awc-modal.ts",
+                                    "symbol": "AwcModal.customizable"
                                 }
                             },
                             {
@@ -6477,6 +6730,21 @@
                             }
                         },
                         {
+                            "name": "sise",
+                            "required": false,
+                            "priority": "normal",
+                            "value": {
+                                "type": "AwcProgressBarSizes",
+                                "required": true,
+                                "default": "\"midium\""
+                            },
+                            "description": "Размер полосы загрузки.",
+                            "source": {
+                                "module": "./../../components/awc-progress-bar/awc-progress-bar.ts",
+                                "symbol": "AwcProgressBar.sise"
+                            }
+                        },
+                        {
                             "name": "hide-percent",
                             "required": false,
                             "priority": "normal",
@@ -6485,7 +6753,7 @@
                                 "required": false,
                                 "default": "\"false\""
                             },
-                            "description": "Флаг для отображения процентов",
+                            "description": "Флаг для отображения процентов.",
                             "source": {
                                 "module": "./../../components/awc-progress-bar/awc-progress-bar.ts",
                                 "symbol": "AwcProgressBar.hidePercent"
@@ -6540,6 +6808,21 @@
                                 }
                             },
                             {
+                                "name": "sise",
+                                "required": false,
+                                "priority": "normal",
+                                "value": {
+                                    "type": "AwcProgressBarSizes",
+                                    "required": true,
+                                    "default": "\"midium\""
+                                },
+                                "description": "Размер полосы загрузки.",
+                                "source": {
+                                    "module": "./../../components/awc-progress-bar/awc-progress-bar.ts",
+                                    "symbol": "AwcProgressBar.sise"
+                                }
+                            },
+                            {
                                 "name": "hidePercent",
                                 "required": false,
                                 "priority": "normal",
@@ -6548,7 +6831,7 @@
                                     "required": false,
                                     "default": "\"false\""
                                 },
-                                "description": "Флаг для отображения процентов",
+                                "description": "Флаг для отображения процентов.",
                                 "source": {
                                     "module": "./../../components/awc-progress-bar/awc-progress-bar.ts",
                                     "symbol": "AwcProgressBar.hidePercent"

@@ -7,9 +7,11 @@ export const awcFileUploadHeaderStyles = css`
     }
 
     .awc-file-upload-header {
+        padding: 16px 20px;
         display: flex;
         align-items: center;
         justify-content: space-between;
+        border-bottom: 1px solid var(--colors-light-stroke);
     }
 
     .awc-file-upload-heading__title {

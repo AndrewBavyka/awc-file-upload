@@ -1,10 +1,11 @@
-import { CSSResult, html, LitElement, PropertyValues, svg, TemplateResult } from "lit";
+import { CSSResult, html, LitElement, svg, TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { fileIcons, defaultFileIcon } from "../../components/awc-file-upload-explorer/fileIcons";
 import { Provider } from "../../providers/Provider";
 import { SelectedFileManager } from "../../SelectedFileManager";
 import { awcFileUploadSelectedStyles } from "./awc-file-upload-selected.style";
 import { ProviderFile } from "../../interfaces/ProviderFile";
+import { EventDispatcher, event } from "../../../util/event";
 
 export const awcFileUploadSelectedTag = "awc-file-upload-selected";
 
@@ -12,8 +13,11 @@ export const awcFileUploadSelectedTag = "awc-file-upload-selected";
 export default class AwcFileUploadSelected extends LitElement {
   @property({ type: Object }) provider: Provider | null = null;
 
-  @state() private isExternalMode: boolean = false;
-  @state() private _selectedFileManager = SelectedFileManager.getInstance();
+  @state() isExternalMode: boolean = false;
+  @state() private _selectedFileManager = SelectedFileManager.getInstance()
+  @state() _linkType: ProviderFile | null = null;
+
+  @event("file-selection-changed") private _onFileSelectionCnanged!: EventDispatcher<{ selectedFiles: string[] }>
 
   private formatFileSize(file: ProviderFile): string {
     if (file.linkType === "fileExternal") return "0 B";
@@ -35,19 +39,12 @@ export default class AwcFileUploadSelected extends LitElement {
     this._selectedFileManager.removeFile(fileId);
     this.requestUpdate();
 
-    this.dispatchEvent(
-      new CustomEvent("file-selection-changed", {
-        detail: {
-          selectedFiles: new Set(
-            SelectedFileManager.getInstance()
-              .getFiles()
-              .map(({ file }) => file.id)
-          ),
-        },
-        bubbles: true,
-        composed: true,
-      })
-    );
+    this._onFileSelectionCnanged({
+      selectedFiles:
+        this._selectedFileManager
+          .getFiles()
+          .map(({ file }) => file.id)
+    });
   }
 
   private toggleFileMode(fileId: string) {
@@ -57,19 +54,22 @@ export default class AwcFileUploadSelected extends LitElement {
 
     const { file } = selectedFile;
 
-    const newLinkType = this.isExternalMode
-      ? (file.linkType === "fileExternal" ? "file" : "fileExternal")
-      : (file.linkType === "file" ? "fileExternal" : "file");
-
-    file.linkType = newLinkType;
-  }
-
-  protected update(changedProperties: PropertyValues): void {
-    super.update(changedProperties);
-
-    if (changedProperties.has("isExternalMode")) {
-
+    if (this.isExternalMode) {
+      if (file.linkType === "fileExternal") {
+        file.linkType = "file";
+      } else {
+        file.linkType = "fileExternal";
+      }
+    } else {
+      if (file.linkType === "file") {
+        file.linkType = "fileExternal";
+      } else {
+        file.linkType = "file";
+      }
     }
+
+    this._linkType = file;
+    this.requestUpdate();
   }
 
   private renderFileIcon(item: ProviderFile): TemplateResult {
@@ -123,16 +123,18 @@ export default class AwcFileUploadSelected extends LitElement {
                 <span class="awc-file-upload-selected__name">${file.name}</span>
                 <div class="awc-file-upload-selected__description"> 
                   <span class="awc-file-upload-selected__size">${this.formatFileSize(file)}</span>
-                  <span class="awc-file-upload-selected__type" @click="${() => this.toggleFileMode(file.id)}">
-                    ${console.log(file.linkType)}
-                  ${this.isExternalMode
-                    ? (file.linkType === "fileExternal" ? isLinkFile : isUploadFile)
-                    : (file.linkType === "file" ? isUploadFile : isLinkFile)
-                  }
-                </span>
-                </div>
-              </div>
-              <div
+                  <awc-icon-button size="20" class="awc-file-upload-selected__type" @click="${() => this.toggleFileMode(file.id)}">
+                    ${this.isExternalMode
+                    ? file.linkType === "fileExternal"
+                      ? isLinkFile
+                      : isUploadFile
+                    : file.linkType === "file"
+                      ? isUploadFile
+                      : isLinkFile}
+                          </awc-icon-button>
+                          </div>
+                        </div>
+                        <div
                 class="awc-file-upload-selected__delete"
                 @click="${() => this.handleDelete(file.id)}"
               >

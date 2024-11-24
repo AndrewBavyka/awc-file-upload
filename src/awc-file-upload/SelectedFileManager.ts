@@ -11,6 +11,7 @@ export interface SelectedFile {
 export class SelectedFileManager extends EventTarget {
     private static instance: SelectedFileManager;
     private selectedFiles: Map<string, SelectedFile> = new Map();
+
     private fileSelectionChanged() {
         const event = new CustomEvent("file-selection-changed", {
             detail: this.getFiles(),
@@ -31,8 +32,9 @@ export class SelectedFileManager extends EventTarget {
     addFile(file: ProviderFile, provider: string, providerIcon: SVGTemplateResult) {
         if (!this.selectedFiles.has(file.id)) {
             this.selectedFiles.set(file.id, { file, provider, providerIcon });
-            this.fileSelectionChanged();
         }
+
+        this.fileSelectionChanged();
     }
 
     removeFile(fileId: string) {
@@ -64,15 +66,11 @@ export class SelectedFileManager extends EventTarget {
 
         this.fileSelectionChanged();
     }
-
-    toggleFileMode(fileId: string) {
-        const selectedFile = this.selectedFiles.get(fileId);
-
-        if (selectedFile) {
-            const { file } = selectedFile;
-            file.linkType = file.linkType === "file" ? "fileExternal" : "file";
-            this.fileSelectionChanged();
-        }
-    }
-
 }
+
+declare global {
+    interface HTMLElementEventMap {
+      'file-selection-changed': CustomEvent;
+    }
+  }
+  

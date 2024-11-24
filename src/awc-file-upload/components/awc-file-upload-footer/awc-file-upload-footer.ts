@@ -1,7 +1,7 @@
 import { html, LitElement, TemplateResult, CSSResult, PropertyValues } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { customElement, property } from "lit/decorators.js";
 import { awcFileUploadFooterStyles } from "./awc-file-upload-footer.style";
-import { EventDispatcher, event } from "../../../util/event";
+import {EventDispatcher, event } from "../../../util/event";
 
 export const awcFileUploadFooterTag = "awc-file-upload-footer";
 
@@ -10,17 +10,18 @@ export default class AwcFileUploadFooter extends LitElement {
     @property({ type: Boolean }) isSelected = false;
     @property({ type: Number }) fileCount = 0;
 
-    @state() private isSwitcherChecked = false;
+    private isSwitcherChecked = false;
 
-    @event("awc-file-upload-switch-mode") private _onChangeMode!: EventDispatcher<boolean>;
-
-    connectedCallback(): void {
-        super.connectedCallback();
-        this._onChangeMode(this.isSwitcherChecked);
-    }
+    @event("awc-file-upload-switch-mode") private _onChangeMode!: EventDispatcher<{[key: string]: boolean}>;
 
     private _emitEvent(eventName: string) {
         this.dispatchEvent(new CustomEvent(eventName, { bubbles: true, composed: true }));
+    }
+
+    protected update(changedProperties: PropertyValues): void {
+        super.update(changedProperties);
+
+        this._onChangeMode({isExternalMode : this.isSwitcherChecked });
     }
 
     private _toggleLinkOrFileUploading(e: Event) {
@@ -30,7 +31,7 @@ export default class AwcFileUploadFooter extends LitElement {
 
         this.isSwitcherChecked = target.checked;
 
-        this._onChangeMode(this.isSwitcherChecked);
+        this._onChangeMode({isExternalMode : this.isSwitcherChecked });
     }
 
     protected render(): TemplateResult {

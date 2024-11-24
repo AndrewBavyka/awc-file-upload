@@ -573,7 +573,7 @@
     },
     {
       "name": "awc-checkbox",
-      "description": "Элемент checkbox.\n\nEvents:\n\n  * `awc-checkbox-change` {} - Событие, возникающее при изменении состояния checkbox.\n\n  * `awc-focus` {} - Событие, возникающее при фокусировке на checkbox.\n\n  * `awc-blur` {} - Событие, возникающее при потере фокуса checkbox.\n\n  * `change` {`Event`} - \n\nAttributes:\n\n  * `value` {`string`} - Значение checkbox.\n\n  * `label` {`string`} - Текстовая метка checkbox.\n\n  * `name` {`string`} - Уникальное имя группы checkbox.\n\n  * `checked` {`boolean`} - Флаг, указывающий, выбран ли checkbox.\n\n  * `required` {`boolean`} - Флаг, указывающий, является ли checkbox обязательным для выбора.\n\n  * `disabled` {`boolean`} - Флаг, указывающий, отключен ли checkbox.\n\n  * `indeterminate` {`boolean`} - Флаг, указывающий, находится ли checkbox в неопределенном состоянии.\n\n  * `static-error` {`boolean`} - Статичное, принудительное отображение ошибки.\n\n  * `custom-error` {string} - Пользовательская ошибка валидации. (Автоматически становится приоритетной)\n\n  * `size` {string} - Выборо размера checkbox.\n\n  * `custom-color` {string} - Цвет состояния checkbox.\n\nProperties:\n\n  * `shadowRootOptions` {object} - Опции для тени Shadow DOM.\n\n  * `value` {`string`} - Значение checkbox.\n\n  * `label` {`string`} - Текстовая метка checkbox.\n\n  * `name` {`string`} - Уникальное имя группы checkbox.\n\n  * `checked` {`boolean`} - Флаг, указывающий, выбран ли checkbox.\n\n  * `required` {`boolean`} - Флаг, указывающий, является ли checkbox обязательным для выбора.\n\n  * `disabled` {`boolean`} - Флаг, указывающий, отключен ли checkbox.\n\n  * `indeterminate` {`boolean`} - Флаг, указывающий, находится ли checkbox в неопределенном состоянии.\n\n  * `staticError` {`boolean`} - Статичное, принудительное отображение ошибки.\n\n  * `customError` {string} - Пользовательская ошибка валидации. (Автоматически становится приоритетной)\n\n  * `size` {string} - Выборо размера checkbox.\n\n  * `customColor` {string} - Цвет состояния checkbox.\n\n  * `onChange` {EventDispatcher<boolean>} - Событие изменения состояния checkbox.\n\n  * `onFocus` {EventDispatcher<string>} - Событие фокусировки на checkbox.\n\n  * `onBlur` {EventDispatcher<string>} - Событие потери фокуса checkbox.\n\n  * `checkboxElement` {`HTMLInputElement`} - \n\n  * `labelCheckboxElement` {`HTMLLabelElement`} - \n\n  * `field` {`AwcCheckboxGroup | null`} - \n\n  * `formControlValidators` {`Validator[]`} - \n\n  * `_handleFieldValueChange` - \n\n  * `_onInvalid` - \n\n  * `validationTarget` {`HTMLInputElement`} - \n\n  * `form` {`HTMLFormElement`} - \n\n  * `internals` - \n\n  * `showError` {`boolean`} - \n\n  * `validationMessage` {`string`} - \n\n  * `validity` {`ValidityState`} - \n\n  * `validationComplete` {`Promise<void>`} - ",
+      "description": "Элемент checkbox.\n\nEvents:\n\n  * `awc-checkbox-change` {} - Событие, возникающее при изменении состояния checkbox.\n\n  * `awc-focus` {} - Событие, возникающее при фокусировке на checkbox.\n\n  * `awc-blur` {} - Событие, возникающее при потере фокуса checkbox.\n\n  * `change` {`Event`} - \n\nAttributes:\n\n  * `value` {`string`} - Значение checkbox.\n\n  * `label` {`string`} - Текстовая метка checkbox.\n\n  * `name` {`string`} - Уникальное имя группы checkbox.\n\n  * `checked` {`boolean`} - Флаг, указывающий, выбран ли checkbox.\n\n  * `required` {`boolean`} - Флаг, указывающий, является ли checkbox обязательным для выбора.\n\n  * `disabled` {`boolean`} - Флаг, указывающий, отключен ли checkbox.\n\n  * `indeterminate` {`boolean`} - Флаг, указывающий, находится ли checkbox в неопределенном состоянии.\n\n  * `static-error` {`boolean`} - Статичное, принудительное отображение ошибки.\n\n  * `custom-error` {string} - Пользовательская ошибка валидации. (Автоматически становится приоритетной)\n\n  * `size` {string} - Выборо размера checkbox.\n\n  * `custom-color` {string} - Цвет состояния checkbox.\n\nProperties:\n\n  * `value` {`string`} - Значение checkbox.\n\n  * `label` {`string`} - Текстовая метка checkbox.\n\n  * `name` {`string`} - Уникальное имя группы checkbox.\n\n  * `checked` {`boolean`} - Флаг, указывающий, выбран ли checkbox.\n\n  * `required` {`boolean`} - Флаг, указывающий, является ли checkbox обязательным для выбора.\n\n  * `disabled` {`boolean`} - Флаг, указывающий, отключен ли checkbox.\n\n  * `indeterminate` {`boolean`} - Флаг, указывающий, находится ли checkbox в неопределенном состоянии.\n\n  * `staticError` {`boolean`} - Статичное, принудительное отображение ошибки.\n\n  * `customError` {string} - Пользовательская ошибка валидации. (Автоматически становится приоритетной)\n\n  * `size` {string} - Выборо размера checkbox.\n\n  * `customColor` {string} - Цвет состояния checkbox.\n\n  * `onChange` {EventDispatcher<boolean>} - Событие изменения состояния checkbox.\n\n  * `onFocus` {EventDispatcher<string>} - Событие фокусировки на checkbox.\n\n  * `onBlur` {EventDispatcher<string>} - Событие потери фокуса checkbox.\n\n  * `checkboxElement` {`HTMLInputElement`} - \n\n  * `labelCheckboxElement` {`HTMLLabelElement`} - \n\n  * `field` {`AwcCheckboxGroup | null`} - \n\n  * `shadowRootOptions` {`{ delegatesFocus: boolean; mode: ShadowRootMode; slotAssignment?: SlotAssignmentMode | undefined; }`} - \n\n  * `formControlValidators` {`Validator[]`} - \n\n  * `_handleFieldValueChange` - \n\n  * `_onInvalid` - \n\n  * `validationTarget` {`HTMLInputElement`} - \n\n  * `form` {`HTMLFormElement`} - \n\n  * `internals` - \n\n  * `showError` {`boolean`} - \n\n  * `validationMessage` {`string`} - \n\n  * `validity` {`ValidityState`} - \n\n  * `validationComplete` {`Promise<void>`} - ",
       "attributes": [
         {
           "name": "value",
@@ -874,7 +874,7 @@
         },
         {
           "name": "width",
-          "description": "`width` {`number`} - Пользовательская ширина выпадающего меню\n\nProperty: width\n\nDefault: 250"
+          "description": "`width` {`number`} - Пользовательская ширина выпадающего меню\n\nProperty: width"
         },
         {
           "name": "selected-mode",
@@ -1008,6 +1008,89 @@
     {
       "name": "awc-header",
       "attributes": []
+    },
+    {
+      "name": "awc-icon-button",
+      "description": "Attributes:\n\n  * `name` {String} - Имя кнопки.\n\n  * `value` {String} - Значение кнопки.\n\n  * `size` {String} - Размер кнопки (Вложенные иконки меняют размер в том числе).\n\n  * `type` {String} - Тип кнопки.\n\n  * `href` {String} - Задает адрес документа, на который следует перейти.\n\n  * `target` {String} - Тип перехода по ссылке.\n\n  * `disabled` {Boolean} - Флаг, отключающий кнопку.\n\nProperties:\n\n  * `name` {String} - Имя кнопки.\n\n  * `value` {String} - Значение кнопки.\n\n  * `size` {String} - Размер кнопки (Вложенные иконки меняют размер в том числе).\n\n  * `type` {String} - Тип кнопки.\n\n  * `href` {String} - Задает адрес документа, на который следует перейти.\n\n  * `target` {String} - Тип перехода по ссылке.\n\n  * `disabled` {Boolean} - Флаг, отключающий кнопку.",
+      "attributes": [
+        {
+          "name": "name",
+          "description": "`name` {String} - Имя кнопки.\n\nProperty: name\n\nDefault: "
+        },
+        {
+          "name": "value",
+          "description": "`value` {String} - Значение кнопки.\n\nProperty: value\n\nDefault: "
+        },
+        {
+          "name": "size",
+          "description": "`size` {String} - Размер кнопки (Вложенные иконки меняют размер в том числе).\n\nProperty: size\n\nDefault: 24",
+          "values": [
+            {
+              "name": "24"
+            },
+            {
+              "name": "32"
+            },
+            {
+              "name": "20"
+            },
+            {
+              "name": "28"
+            },
+            {
+              "name": "30"
+            },
+            {
+              "name": "36"
+            },
+            {
+              "name": "40"
+            }
+          ]
+        },
+        {
+          "name": "type",
+          "description": "`type` {String} - Тип кнопки.\n\nProperty: type\n\nDefault: submit",
+          "values": [
+            {
+              "name": "button"
+            },
+            {
+              "name": "submit"
+            },
+            {
+              "name": "reset"
+            }
+          ]
+        },
+        {
+          "name": "href",
+          "description": "`href` {String} - Задает адрес документа, на который следует перейти.\n\nProperty: href\n\nDefault: "
+        },
+        {
+          "name": "target",
+          "description": "`target` {String} - Тип перехода по ссылке.\n\nProperty: target\n\nDefault: _self",
+          "values": [
+            {
+              "name": "_blank"
+            },
+            {
+              "name": "_self"
+            },
+            {
+              "name": "_parent"
+            },
+            {
+              "name": "_top"
+            }
+          ]
+        },
+        {
+          "name": "disabled",
+          "description": "`disabled` {Boolean} - Флаг, отключающий кнопку.\n\nProperty: disabled\n\nDefault: false",
+          "valueSet": "v"
+        }
+      ]
     },
     {
       "name": "awc-icon-loader",
@@ -1218,7 +1301,7 @@
     },
     {
       "name": "awc-modal",
-      "description": "Элемент модальное окно.\n\nEvents:\n\n  * `awc-modal-open` {} - Событие, возникающее при открытии модального окна.\n\n  * `awc-modal-close` {} - Событие, возникающее при закрытии модального окна.\n\nAttributes:\n\n  * `heading` {`string`} - Заголовок модального окна.\n\n  * `description` {`string`} - Дополнительное описание модального окна.\n\n  * `opened` {`boolean`} - Флаг указывающий, что модальное окно открыто.\n\nProperties:\n\n  * `heading` {`string`} - Заголовок модального окна.\n\n  * `description` {`string`} - Дополнительное описание модального окна.\n\n  * `opened` {`boolean`} - Флаг указывающий, что модальное окно открыто.\n\n  * `slottedButtons` {`HTMLSlotElement[]`} - \n\n  * `_isEmptyButtonSlot` {`boolean`} - \n\n  * `_modalOpenEvent` {EventDispatcher<boolean>} - Событие, возникающее при открытии модального окна.\n\n  * `_modalCloseEvent` {EventDispatcher<boolean>} - Событие, возникающее при закрытии модального окна.\n\n  * `_html` {`HTMLHtmlElement`} - \n\n  * `_keyClosing` - \n\n  * `_clickOutside` - \n\n  * `tabsGroup` {`AwcTabsGroup`} - \n\n  * `awcButtons` {`AwcButton[]`} - ",
+      "description": "Элемент модальное окно.\n\nEvents:\n\n  * `awc-modal-open` {} - Событие, возникающее при открытии модального окна.\n\n  * `awc-modal-close` {} - Событие, возникающее при закрытии модального окна.\n\nAttributes:\n\n  * `heading` {`string`} - Заголовок модального окна.\n\n  * `description` {`string`} - Дополнительное описание модального окна.\n\n  * `opened` {`boolean`} - Флаг указывающий, что модальное окно открыто.\n\n  * `customizable` {`boolean`} - Флаг указывающий, что модальное окно может быть кастомизировано. \nОтображается только подложка компонента.\n\nProperties:\n\n  * `heading` {`string`} - Заголовок модального окна.\n\n  * `description` {`string`} - Дополнительное описание модального окна.\n\n  * `opened` {`boolean`} - Флаг указывающий, что модальное окно открыто.\n\n  * `customizable` {`boolean`} - Флаг указывающий, что модальное окно может быть кастомизировано. \nОтображается только подложка компонента.\n\n  * `slottedButtons` {`HTMLSlotElement[]`} - \n\n  * `_isEmptyButtonSlot` {`boolean`} - \n\n  * `_modalOpenEvent` {EventDispatcher<boolean>} - Событие, возникающее при открытии модального окна.\n\n  * `_modalCloseEvent` {EventDispatcher<boolean>} - Событие, возникающее при закрытии модального окна.\n\n  * `_html` {`HTMLHtmlElement`} - \n\n  * `_keyClosing` - \n\n  * `_clickOutside` - \n\n  * `tabsGroup` {`AwcTabsGroup`} - \n\n  * `awcButtons` {`AwcButton[]`} - ",
       "attributes": [
         {
           "name": "heading",
@@ -1231,6 +1314,11 @@
         {
           "name": "opened",
           "description": "`opened` {`boolean`} - Флаг указывающий, что модальное окно открыто.\n\nProperty: opened\n\nDefault: false",
+          "valueSet": "v"
+        },
+        {
+          "name": "customizable",
+          "description": "`customizable` {`boolean`} - Флаг указывающий, что модальное окно может быть кастомизировано. \nОтображается только подложка компонента.\n\nProperty: customizable\n\nDefault: false",
           "valueSet": "v"
         },
         {
@@ -1421,7 +1509,7 @@
     },
     {
       "name": "awc-progress-bar",
-      "description": "Элемент интерфейса, основная задача которого, показать на каком этапе находится загрузка данных.\n\nEvents:\n\n  * `awc-progress-bar-success` {} - Событие, возникающее когда value достигает максимального (max) значения.\n\nAttributes:\n\n  * `value` {`number`} - Текущее значение прогресса.\n\n  * `max` {`number`} - Максимальное значение прогресса.\n\n  * `label` {`string`} - Текстовый заголовок, отображаемый рядом с прогресс-баром.\n\n  * `hide-percent` {`boolean`} - Флаг для отображения процентов\n\nProperties:\n\n  * `value` {`number`} - Текущее значение прогресса.\n\n  * `max` {`number`} - Максимальное значение прогресса.\n\n  * `label` {`string`} - Текстовый заголовок, отображаемый рядом с прогресс-баром.\n\n  * `hidePercent` {`boolean`} - Флаг для отображения процентов\n\n  * `_onSucces` {EventDispatcher<ProgressUpdate>} - Событие, возникающее когда value достигает максимального (max) значения.\n\n  * `fillerElement` {`HTMLElement`} - ",
+      "description": "Элемент интерфейса, основная задача которого, показать на каком этапе находится загрузка данных.\n\nEvents:\n\n  * `awc-progress-bar-success` {} - Событие, возникающее когда value достигает максимального (max) значения.\n\nAttributes:\n\n  * `value` {`number`} - Текущее значение прогресса.\n\n  * `max` {`number`} - Максимальное значение прогресса.\n\n  * `label` {`string`} - Текстовый заголовок, отображаемый рядом с прогресс-баром.\n\n  * `sise` {`AwcProgressBarSizes`} - Размер полосы загрузки.\n\n  * `hide-percent` {`boolean`} - Флаг для отображения процентов.\n\nProperties:\n\n  * `value` {`number`} - Текущее значение прогресса.\n\n  * `max` {`number`} - Максимальное значение прогресса.\n\n  * `label` {`string`} - Текстовый заголовок, отображаемый рядом с прогресс-баром.\n\n  * `sise` {`AwcProgressBarSizes`} - Размер полосы загрузки.\n\n  * `hidePercent` {`boolean`} - Флаг для отображения процентов.\n\n  * `_onSucces` {EventDispatcher<ProgressUpdate>} - Событие, возникающее когда value достигает максимального (max) значения.\n\n  * `fillerElement` {`HTMLElement`} - ",
       "attributes": [
         {
           "name": "value",
@@ -1436,8 +1524,26 @@
           "description": "`label` {`string`} - Текстовый заголовок, отображаемый рядом с прогресс-баром.\n\nProperty: label\n\nDefault: "
         },
         {
+          "name": "sise",
+          "description": "`sise` {`AwcProgressBarSizes`} - Размер полосы загрузки.\n\nProperty: sise\n\nDefault: midium",
+          "values": [
+            {
+              "name": "extrasmall"
+            },
+            {
+              "name": "small"
+            },
+            {
+              "name": "medium"
+            },
+            {
+              "name": "large"
+            }
+          ]
+        },
+        {
           "name": "hide-percent",
-          "description": "`hide-percent` {`boolean`} - Флаг для отображения процентов\n\nProperty: hidePercent\n\nDefault: false",
+          "description": "`hide-percent` {`boolean`} - Флаг для отображения процентов.\n\nProperty: hidePercent\n\nDefault: false",
           "valueSet": "v"
         },
         {

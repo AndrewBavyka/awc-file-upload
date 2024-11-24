@@ -37,16 +37,15 @@ export default class AwcFileUploadProviderLocal extends Provider {
       id: file.name + Date.now().toString(),
       name: file.name,
       isFolder: false,
-      publicFolder: "",
-      publicFile: "",
+      isPublicFolder: false,
       icon: "",
       requestPath: "",
       modifiedDate: new Date().toISOString(),
       size: file.size,
       mimeType: file.type,
-      file: URL.createObjectURL(file),
+      file: {...file},
       thumbnail: isImage ? URL.createObjectURL(file) : "",
-      linkType: "uploadedFile"
+      fileExternal: ""
     };
   }
 

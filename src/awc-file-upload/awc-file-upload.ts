@@ -2,8 +2,9 @@ import { CSSResult, html, LitElement, TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { Provider } from "./providers/Provider";
 import { awcFileUploadStyles } from "./awc-file-upload.style";
-import { SelectedFileManager } from "./SelectedFileManager";
+import { SelectedFileManager, SelectedFile } from "./SelectedFileManager";
 import { NavigationManager } from "./views/NavigationManager";
+import { UploadManager } from "./UploadManager";
 
 export const awcFileUploadTag = "awc-file-upload";
 
@@ -14,6 +15,8 @@ export default class AwcFileUpload extends LitElement {
   @state() private _selectedProvider: Provider | null = null;
   @state() private _navigationManager = new NavigationManager();
   @state() private _selectedFileManager = SelectedFileManager.getInstance();
+  @state() private _uploadManager: UploadManager | null = null;
+
   // Временное решение
   @state() private accountName: string | null = null;
   @state() private _isExternalMode: boolean = false;
@@ -23,24 +26,28 @@ export default class AwcFileUpload extends LitElement {
     super.connectedCallback();
 
     window.addEventListener("message", this._handleAuthMessage.bind(this));
+
     this.addEventListener("confirm-selection", this._confirmSelection.bind(this));
-    this._selectedFileManager.addEventListener("file-selection-changed", this._refreshSelectedFiles.bind(this));
-    this.addEventListener("awc-file-upload-switch-mode", this._toggleUploadMode.bind(this));
+    this.addEventListener("awc-file-upload-switch-mode", this._toggleUploadMode);
+
+    this._selectedFileManager.addEventListener("file-selection-changed", (e) => this._refreshSelectedFiles(e as CustomEvent<SelectedFile[]>));
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
-    
+
     window.removeEventListener("message", this._handleAuthMessage.bind(this));
+
     this.removeEventListener("confirm-selection", this._confirmSelection.bind(this));
-    this._selectedFileManager.removeEventListener("file-selection-changed", this._refreshSelectedFiles.bind(this));
+
+    this._selectedFileManager.removeEventListener("file-selection-changed", (e) => this._refreshSelectedFiles(e as CustomEvent<SelectedFile[]>));
   }
 
   private _toggleUploadMode(event: CustomEvent) {
     this._isExternalMode = event.detail.isExternalMode;
     this._selectedFileManager.setExternalMode(this._isExternalMode);
   }
-  
+
   private _handleAuthMessage(event: MessageEvent) {
     const { token } = event.data;
 
@@ -57,8 +64,20 @@ export default class AwcFileUpload extends LitElement {
     this.requestUpdate();
   }
 
-  private _cancelSelection() {
+  private _clearSelectedFiles() {
+    this._selectedFileManager.clearFiles();
+  }
+
+  private _cancel() {
+    this._navigationManager.setView("main");
     this._clearSelectedFiles();
+    this._updateTitle();
+    this.requestUpdate();
+  }
+
+  private _cancelSelectionFiles() {
+    this._clearSelectedFiles()
+    this._updateTitle();
   }
 
   private async _handleProviderSelection(event: CustomEvent) {
@@ -75,27 +94,23 @@ export default class AwcFileUpload extends LitElement {
 
   private _uploadFiles() {
     const files = this._selectedFileManager.getFiles();
-
     console.log("Файлы для загрузки:", files);
 
-    this.dispatchEvent(
-      new CustomEvent("upload", {
-        detail: { files, isExternalMode: this._isExternalMode },
-        bubbles: true,
-        composed: true,
-      })
-    );
+    const uploadUrl = "http://localhost:3000/upload";
+
+    if (uploadUrl) {
+      this._uploadManager = new UploadManager(uploadUrl);
+      this._uploadManager.uploadSelectedFiles().catch((error) => {
+        console.error("Ошибка при загрузке файлов:", error);
+      });
+    } else {
+      console.error("Не удалось получить URL для загрузки.");
+    }
+    
   }
 
-  private _clearSelectedFiles() {
-    this._selectedFileManager.clearFiles();
-    this._navigationManager.setView("main");
-    this._refreshSelectedFiles();
-  }
-
-  private _refreshSelectedFiles() {
+  private _refreshSelectedFiles(e: CustomEvent<SelectedFile[]>) {
     this._updateTitle();
-    this.requestUpdate();
   }
 
   private _updateTitle() {
@@ -109,8 +124,6 @@ export default class AwcFileUpload extends LitElement {
     } else {
       this.title = "Перетащите файлы сюда, загружайте или импортируйте из:";
     }
-
-    this.requestUpdate();
   }
 
   private _renderView() {
@@ -134,16 +147,18 @@ export default class AwcFileUpload extends LitElement {
 
   protected render(): TemplateResult {
     return html`
-      <awc-modal opened>
-        <div class="awc-file-upload-heading" slot="awc-modal-heading">
+      <awc-modal customizable opened>
+        <div class="awc-file-upload-heading">
           ${this._renderHeading()}
         </div>
         <div class="awc-file-upload-content">
           ${this._renderView()}
-        </div>
-        <div class="awc-file-upload-footer" slot="awc-modal-description">
+
+          <div class="awc-file-upload-footer">
           ${this._renderFooter()}
         </div>
+        </div>
+        
       </awc-modal>
     `;
   }
@@ -158,16 +173,15 @@ export default class AwcFileUpload extends LitElement {
   //     }
   //   }
   // }
-  
+
   private _renderHeading(): TemplateResult {
     return html`
       <awc-file-upload-header
-        slot="awc-modal-heading"
         .view=${this._navigationManager.currentView}
         .provider=${this._selectedProvider}
         .title=${this.title}
         .accountName=${this.accountName!}
-        @cancel-selection=${this._cancelSelection}
+        @cancel=${this._cancel}
         @add-more-files=${() => { }}
         @logout=${() => {
         this._selectedProvider?.logout();
@@ -186,10 +200,9 @@ export default class AwcFileUpload extends LitElement {
 
     return html`
       <awc-file-upload-footer
-        slot="awc-modal-description"
         .isSelected=${this._navigationManager.currentView === "selected"}
         .fileCount=${selectedFilesCount}
-        @cancel-selection=${this._cancelSelection}
+        @cancel-selection=${this._cancelSelectionFiles}
         @confirm-selection=${this._confirmSelection}
         @upload=${this._uploadFiles}
       ></awc-file-upload-footer>

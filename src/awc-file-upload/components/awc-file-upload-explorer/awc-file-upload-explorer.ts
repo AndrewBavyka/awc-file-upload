@@ -75,9 +75,6 @@ export default class AwcFileUploadExplorer extends LitElement {
 
   async connectedCallback() {
     super.connectedCallback();
-
-    this._selectedFileManager.addEventListener("file-selection-changed", () => this.requestUpdate());
-
     this.loadViewMode();
     await this.loadItems(this.currentPath, true);
   }
@@ -191,10 +188,8 @@ export default class AwcFileUploadExplorer extends LitElement {
     return false;
   }
 
-
-
   private handleScroll() {
-    const scrollContainer = this.shadowRoot?.querySelector(".file-explorer__content");
+    const scrollContainer = this.shadowRoot?.querySelector(".file-explorer__body");
 
     if (!scrollContainer) return;
 
@@ -245,6 +240,7 @@ export default class AwcFileUploadExplorer extends LitElement {
         this.provider?.getProviderInfo().provider || "Unknown",
         this.provider?.getProviderInfo().icon!
       );
+      
       updatedSelectedFiles.add(file.id);
     }
 
@@ -259,7 +255,7 @@ export default class AwcFileUploadExplorer extends LitElement {
     `;
 
     return this.items.map((item) => {
-      const isSelected = this._selectedFileManager.getFiles().some((f) => f.file.id === item.id);
+      const isSelected = this._selectedFileManager.getFile(item.id);
 
       return html`
         <div
@@ -271,9 +267,9 @@ export default class AwcFileUploadExplorer extends LitElement {
           ${item.isFolder
           ? html`${folderArrowIcon}`
           : html`
-               <awc-checkbox
+              <awc-checkbox
                   ?checked="${isSelected}"
-                  @change="${this.toggleFileSelection}"
+                  @change="${() => this.toggleFileSelection(item)}"
                   @click="${(e: Event) => e.stopPropagation()}"
                 ></awc-checkbox>
               `}
@@ -290,7 +286,7 @@ export default class AwcFileUploadExplorer extends LitElement {
 
   private renderGridItems(): TemplateResult[] {
     return this.items.map((item) => {
-      const isSelected = this._selectedFileManager.getFiles().some((f) => f.file.id === item.id);
+      const isSelected = this._selectedFileManager.getFile(item.id);
 
       return html`
         <div
@@ -304,7 +300,7 @@ export default class AwcFileUploadExplorer extends LitElement {
           ? ""
           : html`
                 <awc-checkbox
-                  .checked="${isSelected}"
+                  ?checked="${isSelected}"
                   @change="${() => this.toggleFileSelection(item)}"
                   @click="${(e: Event) => e.stopPropagation()}"
                 ></awc-checkbox>
@@ -362,7 +358,7 @@ export default class AwcFileUploadExplorer extends LitElement {
         `;
 
     return html`
-      <div class="file-explorer__body">
+      
 
       <div class="file-explorer__header">
         <awc-file-upload-breadcrumbs
@@ -372,39 +368,29 @@ export default class AwcFileUploadExplorer extends LitElement {
           @breadcrumb-click="${this.onBreadcrumbClick}"
         >
         </awc-file-upload-breadcrumbs>
-
-        <div class="file-explorer__view-toggle" @click="${this.toggleView}">
+        
+        <awc-icon-button size="32" class="file-explorer__view-toggle" @click="${this.toggleView}">
           ${this.isGridView ? listIcon : gridIcon}
-        </div>
+        </awc-icon-button>
       </div>
 
-        <div
-          class="file-explorer__content ${this.isGridView
-        ? "file-explorer__content--grid"
-        : "file-explorer__content--list"}"
-          @scroll="${this.handleScroll}"
-        >
-          ${this.isGridView ? this.renderGridItems() : this.renderListItems()}
-          
-          ${this.isLoading
-        ? html`<div class="file-explorer__loading">
-                <awc-spinner size="l" variant="primary"></awc-spinner>
-              </div>`
-        : ""}
-          ${this.errorMessage
-        ? html`<div class="file-explorer__error">${this.errorMessage}</div>`
-        : ""}
-        </div>
+      <div class="file-explorer__body" @scroll="${this.handleScroll}">
+          <div class="file-explorer__content ${this.isGridView ? "file-explorer__content--grid" : "file-explorer__content--list"}" 
+          >
+            ${this.isGridView ? this.renderGridItems() : this.renderListItems()}
+            
+            ${this.isLoading
+          ? html`<div class="file-explorer__loading">
+                  <awc-spinner size="l" variant="primary"></awc-spinner>
+                </div>`
+          : ""}
+            ${this.errorMessage
+          ? html`<div class="file-explorer__error">${this.errorMessage}</div>`
+          : ""}
+          </div>
       </div>
     `;
   }
 
   static styles: CSSResult = awcFileUploadExplorerStyles;
-}
-
-
-declare global {
-  interface HTMLElementEventMap {
-    'file-selection-changed': CustomEvent;
-  }
 }

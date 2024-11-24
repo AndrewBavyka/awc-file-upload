@@ -10,15 +10,18 @@ export const awcFileUploadStyles = css`
     }
 
     .awc-file-upload-heading {
+        box-sizing: border-box;
+        display: flex;
         position: relative;
         width: 100%;
-        display: flex;
+        max-height: 80px;
     }
 
     .awc-file-upload-content {
         display: flex;
         flex-direction: column;
-        /* min-height: 474px; */
+        min-height: 474px;
+        position: relative;
     }
    
     .awc-file-upload-footer{
