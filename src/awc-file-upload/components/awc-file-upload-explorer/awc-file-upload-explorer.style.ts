@@ -37,7 +37,7 @@ export const awcFileUploadExplorerStyles = css`
         flex: 1;
         position: relative;
         padding: 12px 0px 12px 20px;
-        margin-bottom: 12px;
+        margin-bottom: 2px;
         overflow-x: hidden;
         overflow-y: auto;
     }

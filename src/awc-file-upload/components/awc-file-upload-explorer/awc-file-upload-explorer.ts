@@ -79,6 +79,7 @@ export default class AwcFileUploadExplorer extends LitElement {
 
     this.loadViewMode();
     await this.loadItems(this.currentPath, true);
+    this._selectedFileManager.addEventListener("file-selection-changed", () => this.requestUpdate());
   }
 
   private loadViewMode() {
@@ -238,10 +239,7 @@ export default class AwcFileUploadExplorer extends LitElement {
       this.toggleFileSelection(item);
     }
   }
-
-  // TODO: Не самое лучшее решение, ждать пока загрузятся данные и только потом разрешить переход
-  // У Uppy вообще пока не загрузятся данные - путь не отобразится. 
-  // А если быстро переходит по папкам то перебросит обратно в папку где данные загрузились
+  
   private onBreadcrumbClick(event: CustomEvent) {
     this._moveScroolTop();
 
@@ -302,7 +300,7 @@ export default class AwcFileUploadExplorer extends LitElement {
           ? html`${folderArrowIcon}`
           : html`
               <awc-checkbox
-                  ?checked="${isSelected}"
+                  ?checked="${!!isSelected}"
                   @change="${() => this.toggleFileSelection(item)}"
                   @click="${(e: Event) => e.stopPropagation()}"
                 ></awc-checkbox>
