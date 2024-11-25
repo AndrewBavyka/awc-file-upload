@@ -153,7 +153,7 @@ export default class AwcFileUpload extends LitElement {
           <awc-file-upload-home
             .onProviderSelected=${this._handleProviderSelection.bind(this)}
           >
-            <awc-file-upload-provider-yandex-disk slot="awc-file-upload-provider-yandex-disk"></awc-file-upload-provider-yandex-disk>
+            <slot name="awc-file-upload-provider-yandex-disk"></slot>
           </awc-file-upload-home>
         `;
     }

@@ -16,10 +16,8 @@ export default class AwcFileUploadHome extends LitElement {
             >
             </awc-file-upload-provider-local>
             
-            <div class="awc-file-upload-service-providers"
-               
-                @awc-file-upload-provider-selected=${(e: CustomEvent) => this.onProviderSelected(e)}>
-                <slot name="awc-file-upload-provider-yandex-disk"></slot>
+            <div class="awc-file-upload-service-providers">
+               <slot @awc-file-upload-provider-selected=${(e: CustomEvent) => this.onProviderSelected(e)}></slot>
             </div>
         `;
     }

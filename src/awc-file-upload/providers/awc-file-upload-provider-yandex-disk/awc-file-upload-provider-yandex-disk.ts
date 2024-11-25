@@ -10,10 +10,9 @@ export const awcFileUploadProviderYandexDiskTag = "awc-file-upload-provider-yand
 
 @customElement(awcFileUploadProviderYandexDiskTag)
 export default class AwcFileUploadProviderYandexDisk extends Provider {
-    @property({ type: String, attribute: "name" }) providerName = "Яндекс Диск";
-    // Проблема что свойство переопределяется, поправить чтобы ссылки можно было из вне задавать
-    @property({ type: String, attribute: "auth-url", reflect: true }) authUrl = "http://localhost:3000/connect/yandexdisk";
-    @property({ type: String, attribute: "list-url", reflect: true  }) listUrl = "http://localhost:3000/list/yandexdisk";
+    @property({ type: String, attribute: "provider-name", reflect: true }) providerName = "Яндекс Диск";
+    @property({ type: String, attribute: "auth-url", reflect: true }) authUrl = "";
+    @property({ type: String, attribute: "list-url", reflect: true  }) listUrl = "";
 
     name = this.providerName;
     provider = "yandexdisk";
@@ -48,6 +47,7 @@ export default class AwcFileUploadProviderYandexDisk extends Provider {
         }
     
         try {
+            console.log(this.providerName)
             const response = await axios.get(this.listUrl, {
                 params: {
                     path: directory ?? "/",
@@ -74,7 +74,7 @@ export default class AwcFileUploadProviderYandexDisk extends Provider {
         return html`
             <div tabindex="0" class="awc-file-upload-provider" @click=${this.emitProviderSelected}>
                 ${this.icon}
-                <p class="awc-file-upload-provider__name">${this.name}</p>
+                <p class="awc-file-upload-provider__name">${this.providerName}</p>
             </div>
         `;
     }
