@@ -13,6 +13,9 @@ export const awcFileUploadTag = "awc-file-upload";
 export default class AwcFileUpload extends LitElement {
   @property({ type: String }) title = "Перетащите файлы, вставьте, выберите файлы или импортируйте из:";
   @property({ type: Object }) extraData = {};
+  @property({ type: String, attribute: "upload-url" }) uploadUrl = "";
+
+  @property({ type: Boolean, reflect: true }) active = false;
 
   @state() private _selectedProvider: Provider | null = null;
   @state() private _navigationManager = new NavigationManager();
@@ -107,20 +110,14 @@ export default class AwcFileUpload extends LitElement {
   }
 
   private _uploadFiles() {
-    const files = this._selectedFileManager.getFiles();
-    console.log("Файлы для загрузки:", files);
-
-    const uploadUrl = "http://localhost:3000/upload";
-
-    if (uploadUrl) {
-      this._uploadManager = new UploadManager(uploadUrl);
+    if (this.uploadUrl) {
+      this._uploadManager = new UploadManager(this.uploadUrl);
       this._uploadManager.uploadSelectedFiles().catch((error) => {
         console.error("Ошибка при загрузке файлов:", error);
       });
     } else {
       console.error("Не удалось получить URL для загрузки.");
     }
-
   }
 
   private _refreshSelectedFiles(e: CustomEvent<SelectedFile[]>) {
@@ -161,7 +158,7 @@ export default class AwcFileUpload extends LitElement {
 
   protected render(): TemplateResult {
     return html`
-      <awc-modal customizable opened>
+      <awc-modal customizable ?opened=${this.active}>
         <div class="awc-file-upload-heading">
           ${this._renderHeading()}
         </div>

@@ -33,9 +33,6 @@ export class UploadManager {
     
         try {
             const response: AxiosResponse = await axios.post(this.uploadUrl, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
                 onUploadProgress: (progressEvent: AxiosProgressEvent) => {
                     if (progressEvent.lengthComputable) {
                         const progress = (progressEvent.loaded / progressEvent.total!) * 100;
@@ -43,7 +40,7 @@ export class UploadManager {
                     }
                 },
             });
-    
+
             console.log(`Локальный файл "${file.name}" успешно загружен!`, response.data);
         } catch (error: unknown) {
             if (error instanceof AxiosError) {
@@ -64,6 +61,8 @@ export class UploadManager {
             return;
         }
 
+        console.log(selectedFile)
+        
         try {
             const response: AxiosResponse = await axios.post(this.uploadUrl, {
                 provider,

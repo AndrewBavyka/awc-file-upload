@@ -29,8 +29,8 @@ export default class AwcFileUploadSelected extends LitElement {
     this.requestUpdate();
   }
 
-  private formatFileSize(file: ProviderFile): string {
-    if (file.linkType === "fileExternal") return "0 B";
+  private _formatFileSize(file: ProviderFile): string {
+    if (file.fileSource === "fileExternal") return "0 B";
 
     const size = file.size || 0;
     if (size < 1024) return `${size} B`;
@@ -57,9 +57,9 @@ export default class AwcFileUploadSelected extends LitElement {
     if (!selectedFile) return;
 
     const { file } = selectedFile;
-    const isExternal = file.linkType === "fileExternal";
+    const isExternal = file.fileSource === "fileExternal";
 
-    file.linkType = isExternal ? "file" : "fileExternal";
+    file.fileSource = isExternal ? "file" : "fileExternal";
     this._linkType = file;
     this.requestUpdate();
   }
@@ -90,8 +90,8 @@ export default class AwcFileUploadSelected extends LitElement {
     `;
 
     return this.isExternalMode
-      ? (file.linkType === "fileExternal" ? isLinkFile : isUploadFile)
-      : (file.linkType === "file" ? isUploadFile : isLinkFile);
+      ? (file.fileSource === "fileExternal" ? isLinkFile : isUploadFile)
+      : (file.fileSource === "file" ? isUploadFile : isLinkFile);
   }
 
   protected render(): TemplateResult {
@@ -115,7 +115,7 @@ export default class AwcFileUploadSelected extends LitElement {
               <div class="awc-file-upload-selected__info">
                 <span title=${file.name} class="awc-file-upload-selected__name">${file.name}</span>
                 <div class="awc-file-upload-selected__description"> 
-                  <span class="awc-file-upload-selected__size">${this.formatFileSize(file)}</span>
+                  <span class="awc-file-upload-selected__size">${this._formatFileSize(file)}</span>
                   ${provider !== 'local' ? html`
                     <awc-icon-button size="20" class="awc-file-upload-selected__type" @click="${() => this.toggleFileMode(file.id)}">
                       ${this.getFileIcon(file)}

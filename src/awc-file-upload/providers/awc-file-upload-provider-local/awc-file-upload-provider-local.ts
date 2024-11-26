@@ -29,7 +29,7 @@ export default class AwcFileUploadProviderLocal extends Provider {
   }
 
   @state() private selectedFileManager = SelectedFileManager.getInstance();
-  
+
   private _onChange(e: Event): void {
     const target = e.target as HTMLInputElement | null;
     const files = target?.files;
@@ -38,12 +38,14 @@ export default class AwcFileUploadProviderLocal extends Provider {
 
     Array.from(files).forEach((file) => this._processFile(file));
 
-    this.dispatchEvent(new CustomEvent("confirm-selection", { bubbles: true, composed: true }));
+    this.dispatchEvent(
+      new CustomEvent("confirm-selection", { bubbles: true, composed: true })
+    );
   }
 
   convertToProviderFile(file: File): ProviderFile {
     const isImage = file.type.startsWith("image/");
-    
+
     return {
       id: file.name + Date.now().toString(),
       name: file.name,
@@ -56,13 +58,13 @@ export default class AwcFileUploadProviderLocal extends Provider {
       mimeType: file.type,
       file: file,
       thumbnail: isImage ? URL.createObjectURL(file) : "",
-      fileExternal: ""
+      fileExternal: "",
     };
   }
 
   private _processFile(file: File): void {
     const providerFile = this.convertToProviderFile(file);
-    this.selectedFileManager.addFile(providerFile, 'local', this.icon);
+    this.selectedFileManager.addFile(providerFile, "local", this.icon);
 
     if (file.type.startsWith("image/")) {
       this._generateImagePreview(file, providerFile);
@@ -72,17 +74,27 @@ export default class AwcFileUploadProviderLocal extends Provider {
   private _generateImagePreview(file: File, providerFile: ProviderFile): void {
     const reader = new FileReader();
 
-    reader.onload = () => this.selectedFileManager.addFile(providerFile, this.provider, this.icon);
+    reader.onload = () =>
+      this.selectedFileManager.addFile(providerFile, this.provider, this.icon);
     reader.readAsDataURL(file);
   }
 
   protected render(): TemplateResult {
     return html`
-      <label tabindex="0" class="awc-file-upload-provider-local--input" for="upload">
-        ${this.icon}    
-        ${this.name}
+      <label
+        tabindex="0"
+        class="awc-file-upload-provider-local--input"
+        for="upload"
+      >
+        ${this.icon} ${this.name}
       </label>
-      <input @change="${this._onChange}" multiple type="file" id="upload" hidden />
+      <input
+        @change="${this._onChange}"
+        multiple
+        type="file"
+        id="upload"
+        hidden
+      />
 
       <style>
         ${AwcFileUploadProviderLocal.styles.cssText}

@@ -64,7 +64,7 @@ export class SelectedFileManager extends EventTarget {
     setExternalMode(isExternalMode: boolean) {
         this.selectedFiles.forEach((selectedFile) => {
             const { file } = selectedFile;
-            file.linkType = isExternalMode ? "fileExternal" : "file";
+            file.fileSource = isExternalMode ? "fileExternal" : "file";
         });
 
         this.fileSelectionChanged();

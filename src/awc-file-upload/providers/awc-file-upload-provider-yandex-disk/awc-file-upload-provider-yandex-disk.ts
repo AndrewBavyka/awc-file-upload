@@ -47,7 +47,6 @@ export default class AwcFileUploadProviderYandexDisk extends Provider {
         }
     
         try {
-            console.log(this.providerName)
             const response = await axios.get(this.listUrl, {
                 params: {
                     path: directory ?? "/",
@@ -55,7 +54,7 @@ export default class AwcFileUploadProviderYandexDisk extends Provider {
                     limit: options.qs?.limit ?? 20,
                 },
                 headers: {  
-                    Authorization: `${this.authToken}`,
+                    Authorization: `Bearer ${this.authToken}`,
                 },
             });
             

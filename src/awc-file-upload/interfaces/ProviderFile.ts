@@ -26,6 +26,9 @@
         /** Ссылка на файл для перехода на внешний ресурс */
         fileExternal: string;
 
+        /** Тип источника файла.*/
+        fileSource?: "file" | "fileExternal";
+
         /** Путь для запроса элемента (для папок — путь к каталогу, для файлов — идентификатор для загрузки). */
         requestPath: string;
 
@@ -37,8 +40,6 @@
 
         /** Произвольные данные, добавленные для элемента. */
         custom?: Record<string, any>;
-
-        linkType?: "fileExternal" | "file";
     }
 
     export interface ProviderData {
