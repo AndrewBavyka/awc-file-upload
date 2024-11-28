@@ -33,20 +33,23 @@ export default class AwcFileUpload extends LitElement {
 
     this.addEventListener("confirm-selection", this._confirmSelection.bind(this));
     this.addEventListener("awc-file-upload-switch-mode", this._toggleUploadMode);
-
+    this._navigationManager.addEventListener("awc-file-upload-cnange-view", (e) => this._onChangeView(e as CustomEvent));
     this._selectedFileManager.addEventListener("file-selection-changed", (e) => this._refreshSelectedFiles(e as CustomEvent<SelectedFile[]>));
     this._selectedFileManager.setExtraData(this.extraData);
-    this.addEventListener("awc-file-upload-status", (e) => console.log(e as CustomEvent<UploadEventDetail[]>))
+    this.addEventListener("awc-file-upload-status", (e) => console.log(e))
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
 
     window.removeEventListener("message", this._handleAuthMessage.bind(this));
-
     this.removeEventListener("confirm-selection", this._confirmSelection.bind(this));
 
     this._selectedFileManager.removeEventListener("file-selection-changed", (e) => this._refreshSelectedFiles(e as CustomEvent<SelectedFile[]>));
+  }
+
+  private _onChangeView(event: CustomEvent) {
+    console.log(event.detail)
   }
 
   private _toggleUploadMode(event: CustomEvent) {
@@ -99,11 +102,12 @@ export default class AwcFileUpload extends LitElement {
     this.requestUpdate();
   }
 
-  private async _handleProviderSelection(event: CustomEvent) {
+  private _handleProviderSelection(event: CustomEvent) {
     const provider = event.target as Provider;
 
     if (!provider) return;
 
+    this._navigationManager.setSelectedProvider(provider);
     const hasProviderToken = provider.checkLocalStorage();
     this._navigationManager.setView(hasProviderToken ? "list" : "auth");
     this._selectedProvider = provider;
@@ -148,12 +152,11 @@ export default class AwcFileUpload extends LitElement {
         return html`<awc-file-upload-selected .isExternalMode=${this._isExternalMode}></awc-file-upload-selected>`;
       case "main":
         return html`
-          <awc-file-upload-home
-            .onProviderSelected=${this._handleProviderSelection.bind(this)}
-          >
-            <slot name="awc-file-upload-provider-yandex-disk"></slot>
-          </awc-file-upload-home>
-        `;
+              <awc-file-upload-home @awc-file-upload-provider-selected=${this._handleProviderSelection}
+              >
+                  <slot name="awc-file-upload-provider-yandex-disk"></slot>
+              </awc-file-upload-home>
+          `;
     }
   }
 
@@ -163,14 +166,12 @@ export default class AwcFileUpload extends LitElement {
         <div class="awc-file-upload-heading">
           ${this._renderHeading()}
         </div>
-        <div class="awc-file-upload-content">
-          ${this._renderView()}
-
-          <div class="awc-file-upload-footer">
-          ${this._renderFooter()}
+        <div class="awc-file-upload-body">
+          <awc-file-upload-view-wrapper>
+            ${this._renderView()}
+            ${this._renderFooter()}
+          </awc-file-upload-view-wrapper>
         </div>
-        </div>
-        
       </awc-modal>
     `;
   }

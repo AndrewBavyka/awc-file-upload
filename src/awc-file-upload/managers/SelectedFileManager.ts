@@ -73,7 +73,7 @@ export class SelectedFileManager extends EventTarget {
 
 declare global {
     interface HTMLElementEventMap {
-      'file-selection-changed': CustomEvent;
+      'file-selection-changed': CustomEvent<SelectedFile[]>;
     }
   }
   

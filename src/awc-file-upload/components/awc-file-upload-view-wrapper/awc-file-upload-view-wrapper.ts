@@ -6,11 +6,14 @@ export const awcFileUploadViewWrapperTag = "awc-file-upload-view-wrapper";
 
 @customElement(awcFileUploadViewWrapperTag)
 export default class AwcFileUploadViewWrapper extends LitElement {
-    
     protected render(): TemplateResult {
         return html`
-             <slot></slot>
+          <slot @awc-file-upload-change-view=${this._handleChangeView}></slot>
         `;
+    }
+
+    private _handleChangeView(event: CustomEvent) {
+        console.log("View changed:", event.detail);
     }
 
     static styles?: CSSResult = awcFileUploadViewWrapperStyles;

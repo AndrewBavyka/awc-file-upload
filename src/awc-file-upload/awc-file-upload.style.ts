@@ -17,15 +17,8 @@ export const awcFileUploadStyles = css`
         max-height: 80px;
     }
 
-    .awc-file-upload-content {
-        display: flex;
-        flex-direction: column;
+    .awc-file-upload-body {
         min-height: 474px;
         position: relative;
-    }
-   
-    .awc-file-upload-footer{
-        display: flex;
-        width: 100%;
     }
 `;

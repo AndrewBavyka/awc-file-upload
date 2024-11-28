@@ -1,8 +1,13 @@
 import { Provider } from "../providers/Provider";
+import { EventDispatcher, event } from "../../util/event";
 
 export type CurrentView = "main" | "auth" | "list" | "selected";
+export interface NavigationEventDetail {
+    currentView: CurrentView;
+}
+export class NavigationManager extends EventTarget {
+    @event("awc-file-upload-cnange-view") private _onChangeView!: EventDispatcher<NavigationEventDetail>
 
-export class NavigationManager {
     private _currentView: CurrentView = "main";
     private _previousView: CurrentView | null = null;
     private _selectedProvider: Provider | null = null;
@@ -10,6 +15,7 @@ export class NavigationManager {
     setView(view: CurrentView): void {
         this._previousView = this._currentView;
         this._currentView = view;
+        this._onChangeView({ currentView: this._currentView });
     }
 
     setSelectedProvider(provider: Provider): void {
@@ -31,5 +37,13 @@ export class NavigationManager {
     reset(): void {
         this._currentView = "main";
         this._selectedProvider = null;
+
+        this._onChangeView({ currentView: this._currentView });
+    }
+}
+
+declare global {
+    interface HTMLElementEventMap {
+        'awc-file-upload-cnange-view': CustomEvent<NavigationEventDetail>;
     }
 }

@@ -151,6 +151,6 @@ export class UploadManager extends EventTarget {
 
 declare global {
     interface HTMLElementEventMap {
-        'awc-file-upload-status': CustomEvent;
+        'awc-file-upload-status': CustomEvent<UploadEventDetail>;
     }
 }
