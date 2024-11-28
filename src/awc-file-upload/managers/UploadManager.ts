@@ -2,55 +2,78 @@ import axios, { AxiosResponse, AxiosError, AxiosProgressEvent } from 'axios';
 import { SelectedFile } from '../interfaces/SelectedFile';
 import { SelectedFileManager } from './SelectedFileManager';
 
-export class UploadManager {
+type UploadStatus = 'pending' | 'uploading' | 'success' | 'error';
+
+export interface UploadEventDetail {
+    file: SelectedFile;
+    status: UploadStatus;
+    progress?: number;
+    error?: string;
+}
+
+export class UploadManager extends EventTarget {
     private uploadUrl: string;
     private queue: SelectedFile[] = [];
     private isUploading: boolean = false;
 
     constructor(uploadUrl: string) {
+        super();
         this.uploadUrl = uploadUrl;
     }
 
     addFile(file: SelectedFile): void {
         this.queue.push(file);
+        this.dispatchEvent(new CustomEvent<UploadEventDetail>('awc-file-upload-status', {
+            detail: {
+                file,
+                status: 'pending',
+            },
+        }));
+    }
+
+    private dispatchUploadEvent(file: SelectedFile, status: UploadStatus, progress?: number, error?: string): void {
+        this.dispatchEvent(new CustomEvent<UploadEventDetail>('upload-status', {
+            detail: { file, status, progress, error },
+        }));
     }
 
     private async uploadLocalFile(selectedFile: SelectedFile): Promise<void> {
         const { provider, file } = selectedFile;
-    
+
         if (!(file.file instanceof File)) {
             console.error('Объект не является локальным файлом:', file);
             return;
         }
-    
+
         const formData = new FormData();
         formData.append(provider, file.file, file.name);
-    
+
         const extraData = SelectedFileManager.getInstance().getExtraData();
         for (const key in extraData) {
             formData.append(key, extraData[key]);
         }
-    
+
         try {
+            this.dispatchUploadEvent(selectedFile, 'uploading', 0);
+
             const response: AxiosResponse = await axios.post(this.uploadUrl, formData, {
                 onUploadProgress: (progressEvent: AxiosProgressEvent) => {
                     if (progressEvent.lengthComputable) {
                         const progress = (progressEvent.loaded / progressEvent.total!) * 100;
+                        this.dispatchUploadEvent(selectedFile, 'uploading', progress);
                         console.log(`Загрузка локального файла "${file.name}": ${progress.toFixed(2)}%`);
                     }
                 },
             });
 
+            this.dispatchUploadEvent(selectedFile, 'success', 100);
             console.log(`Локальный файл "${file.name}" успешно загружен!`, response.data);
         } catch (error: unknown) {
-            if (error instanceof AxiosError) {
-                console.error(`Ошибка при загрузке локального файла "${file.name}":`, error.message);
-            } else {
-                console.error('Неизвестная ошибка при загрузке локального файла:', error);
-            }
+            const errorMessage = error instanceof AxiosError ? error.message : 'Неизвестная ошибка';
+            this.dispatchUploadEvent(selectedFile, 'error', undefined, errorMessage);
+            console.error(`Ошибка при загрузке локального файла "${file.name}":`, errorMessage);
         }
     }
-    
 
     private async uploadCloudProviderFile(selectedFile: SelectedFile): Promise<void> {
         const { provider, file } = selectedFile;
@@ -61,9 +84,9 @@ export class UploadManager {
             return;
         }
 
-        console.log(selectedFile)
-        
         try {
+            this.dispatchUploadEvent(selectedFile, 'uploading', 0);
+
             const response: AxiosResponse = await axios.post(this.uploadUrl, {
                 provider,
                 file,
@@ -74,13 +97,12 @@ export class UploadManager {
                 },
             });
 
+            this.dispatchUploadEvent(selectedFile, 'success', 100);
             console.log(`Удаленный файл "${file.name}" успешно загружен!`, response.data);
         } catch (error: unknown) {
-            if (error instanceof AxiosError) {
-                console.error(`Ошибка при загрузке удаленного файла "${file.name}":`, error.message);
-            } else {
-                console.error('Неизвестная ошибка при загрузке удаленного файла:', error);
-            }
+            const errorMessage = error instanceof AxiosError ? error.message : 'Неизвестная ошибка';
+            this.dispatchUploadEvent(selectedFile, 'error', undefined, errorMessage);
+            console.error(`Ошибка при загрузке удаленного файла "${file.name}":`, errorMessage);
         }
     }
 
@@ -124,5 +146,11 @@ export class UploadManager {
         }
 
         await this.startUpload();
+    }
+}
+
+declare global {
+    interface HTMLElementEventMap {
+        'awc-file-upload-status': CustomEvent;
     }
 }

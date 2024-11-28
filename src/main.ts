@@ -16,6 +16,7 @@ import AwcFileUploadExplorer from "./awc-file-upload/components/awc-file-upload-
 import AwcFileUploadBreadcrumbs from "./awc-file-upload/components/awc-file-upload-breadcumbs/awc-file-upload-breadcumbs";
 import AwcFileUploadFooter from "./awc-file-upload/components/awc-file-upload-footer/awc-file-upload-footer";
 import AwcFileUploadHeader from "./awc-file-upload/components/awc-file-upload-header/awc-file-upload-header";
+import AwcFileUploadProgress from "./awc-file-upload/components/awc-file-upload-progress/awc-file-upload-progress";
 
 export default {
     AwcFileUpload,
@@ -32,4 +33,5 @@ export default {
     AwcFileUploadBreadcrumbs,
     AwcFileUploadFooter,
     AwcFileUploadHeader,
+    AwcFileUploadProgress
 }

@@ -5,7 +5,7 @@ import { SelectedFile } from "./interfaces/SelectedFile";
 import { awcFileUploadStyles } from "./awc-file-upload.style";
 import { SelectedFileManager } from "./managers/SelectedFileManager";
 import { NavigationManager } from "./managers/NavigationManager";
-import { UploadManager } from "./managers/UploadManager";
+import { UploadManager, UploadEventDetail } from "./managers/UploadManager";
 
 export const awcFileUploadTag = "awc-file-upload";
 
@@ -36,6 +36,7 @@ export default class AwcFileUpload extends LitElement {
 
     this._selectedFileManager.addEventListener("file-selection-changed", (e) => this._refreshSelectedFiles(e as CustomEvent<SelectedFile[]>));
     this._selectedFileManager.setExtraData(this.extraData);
+    this.addEventListener("awc-file-upload-status", (e) => console.log(e as CustomEvent<UploadEventDetail[]>))
   }
 
   disconnectedCallback() {
