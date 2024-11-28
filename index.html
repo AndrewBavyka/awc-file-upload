@@ -12,9 +12,28 @@
 </head>
 
 <body>
-  <awc-file-upload extraData='{"providerId": "yandex", "userId": "12345", "someOtherData": "data"}'>
-    <awc-file-upload-provider-yandex-disk provider-name="Яндекс Диск" auth-url="http://localhost:3000/connect/yandexdisk"  list-url="http://localhost:3000/list/yandexdisk" slot="awc-file-upload-provider-yandex-disk"></awc-file-upload-provider-yandex-disk>
+  <awc-button>Открыть</awc-button>
+
+  <awc-file-upload 
+    upload-url="http://localhost:3000/upload" 
+    extraData='{"providerId": "yandex", "userId": "12345", "someOtherData": "data"}'>
+    <awc-file-upload-provider-yandex-disk 
+      provider-name="Яндекс Диск"
+      auth-url="http://localhost:3000/connect/yandexdisk" 
+      list-url="http://localhost:3000/list/yandexdisk"
+      slot="awc-file-upload-provider-yandex-disk">
+    </awc-file-upload-provider-yandex-disk>
   </awc-file-upload>
 </body>
+
+<script>
+  const button = document.querySelector("awc-button");
+  const fileUpload = document.querySelector("awc-file-upload");
+
+  button.addEventListener("click", () => {
+    fileUpload.toggleAttribute("active");
+  });
+
+</script>
 
 </html>
