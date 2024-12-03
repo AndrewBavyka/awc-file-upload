@@ -6,7 +6,7 @@ export interface NavigationEventDetail {
     currentView: CurrentView;
 }
 export class NavigationManager extends EventTarget {
-    @event("awc-file-upload-cnange-view") private _onChangeView!: EventDispatcher<NavigationEventDetail>
+    @event("awc-file-upload-change-view") private _onChangeView!: EventDispatcher<NavigationEventDetail>
 
     private _currentView: CurrentView = "main";
     private _previousView: CurrentView | null = null;
@@ -44,6 +44,6 @@ export class NavigationManager extends EventTarget {
 
 declare global {
     interface HTMLElementEventMap {
-        'awc-file-upload-cnange-view': CustomEvent<NavigationEventDetail>;
+        'awc-file-upload-change-view': CustomEvent<NavigationEventDetail>;
     }
 }

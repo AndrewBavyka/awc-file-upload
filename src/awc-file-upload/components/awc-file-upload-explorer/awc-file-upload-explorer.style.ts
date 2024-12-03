@@ -187,14 +187,21 @@ export const awcFileUploadExplorerStyles = css`
         word-break: break-word;
     }
 
+    .file-explorer__size {
+        margin-left: auto;
+        font: var(--awc-font-text-regular-14);
+        color: var(--colors-light-secondary);
+    }
+
     .file-explorer__loading {
-        position: relative;
-        /* top: 50%; */
-        left: 0;
-        width: 100%;
-        display: inline-flex;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        display: flex;
         align-items: center;
         justify-content: center;
+        transform: translate(-50%, -50%);
+        z-index: 99;
     }
 
     .file-explorer__error {

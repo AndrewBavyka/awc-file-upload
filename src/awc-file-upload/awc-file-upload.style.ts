@@ -3,6 +3,7 @@ import { css } from "lit";
 export const awcFileUploadStyles = css`
     :host {
         --awc-file-upload-file-title: var(--awc-font-h5-medium);
+        position: relative;
     }
 
     awc-modal {

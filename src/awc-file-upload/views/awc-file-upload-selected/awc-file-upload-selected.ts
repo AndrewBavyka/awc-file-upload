@@ -1,4 +1,4 @@
-import { CSSResult, html, LitElement, svg, TemplateResult } from "lit";
+import { CSSResult, html, LitElement, PropertyValues, svg, TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { fileIcons, defaultFileIcon } from "../../components/awc-file-upload-explorer/fileIcons";
 import { Provider } from "../../providers/Provider";
@@ -6,7 +6,10 @@ import { SelectedFileManager } from "../../managers/SelectedFileManager";
 import { awcFileUploadSelectedStyles } from "./awc-file-upload-selected.style";
 import { ProviderFile } from "../../interfaces/ProviderFile";
 import { EventDispatcher, event } from "../../../util/event";
-
+import { NavigationManager } from "../../managers/NavigationManager";
+import { formatFileSize } from "../../../util/fileSizeConverter";
+import { UploadManager } from "../../managers/UploadManager";
+import { FileUploadCore } from "../../FileUploadCore";
 
 export const awcFileUploadSelectedTag = "awc-file-upload-selected";
 
@@ -21,35 +24,16 @@ export default class AwcFileUploadSelected extends LitElement {
 
   @event("file-selection-changed") private _onFileSelectionCnanged!: EventDispatcher<{ selectedFiles: string[] }>;
 
-  private handleProgress(fileId: string, progress: number) {
-    this.uploadProgress = {
-      ...this.uploadProgress,
-      [fileId]: progress,
-    };
-    this.requestUpdate();
-  }
-
   private _formatFileSize(file: ProviderFile): string {
     if (file.fileSource === "fileExternal") return "0 B";
 
-    const size = file.size || 0;
-    if (size < 1024) return `${size} B`;
-    const kb = size / 1024;
-    if (kb < 1024) return `${kb.toFixed(1)} KB`;
-    const mb = kb / 1024;
-    if (mb < 1024) return `${mb.toFixed(1)} MB`;
-    const gb = mb / 1024;
-    if (gb < 1024) return `${gb.toFixed(1)} GB`;
-    const tb = gb / 1024;
-    return `${tb.toFixed(2)} TB`;
+    return formatFileSize(file.size!, true, 'ru');
   }
 
   private handleDelete(fileId: string) {
     this._selectedFileManager.removeFile(fileId);
+    this._onFileSelectionCnanged({ selectedFiles: this._selectedFileManager.getFiles().map(({ file }) => file.id) });
     this.requestUpdate();
-    this._onFileSelectionCnanged({
-      selectedFiles: this._selectedFileManager.getFiles().map(({ file }) => file.id)
-    });
   }
 
   private toggleFileMode(fileId: string) {
@@ -62,6 +46,16 @@ export default class AwcFileUploadSelected extends LitElement {
     file.fileSource = isExternal ? "file" : "fileExternal";
     this._linkType = file;
     this.requestUpdate();
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this._selectedFileManager.addEventListener("file-selection-changed", () => this.requestUpdate());
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this._selectedFileManager.removeEventListener("file-selection-changed", () => this.requestUpdate());
   }
 
   private renderFileIcon(item: ProviderFile): TemplateResult {

@@ -17,6 +17,12 @@ import AwcFileUploadBreadcrumbs from "./awc-file-upload/components/awc-file-uplo
 import AwcFileUploadFooter from "./awc-file-upload/components/awc-file-upload-footer/awc-file-upload-footer";
 import AwcFileUploadHeader from "./awc-file-upload/components/awc-file-upload-header/awc-file-upload-header";
 import AwcFileUploadProgress from "./awc-file-upload/components/awc-file-upload-progress/awc-file-upload-progress";
+import AwcFileUploadDropZone from "./awc-file-upload/components/awc-file-upload-dropzone/awc-file-upload-dropzone";
+
+// awc-file
+import AwcFileButton from "./awc-file/awc-file-button/awc-file-button";
+import AwcFileItem from "./awc-file/awc-file-item/awc-file-item";
+import AwcFile from "./awc-file/awc-file";
 
 export default {
     AwcFileUpload,
@@ -33,5 +39,10 @@ export default {
     AwcFileUploadBreadcrumbs,
     AwcFileUploadFooter,
     AwcFileUploadHeader,
-    AwcFileUploadProgress
+    AwcFileUploadProgress,
+    AwcFileUploadDropZone,
+
+    AwcFileButton,
+    AwcFile,
+    AwcFileItem,
 }

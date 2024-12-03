@@ -34,4 +34,28 @@ export const awcFileUploadFooterStyles = css`
         align-items: center;
         gap: var(--spacing-sm);
     }
+
+    awc-file-upload-progress {
+        display: inline-flex;
+        position: absolute;
+        width: 100%;
+        top: 0;
+        left: 0;
+    }
+
+    .awc-file-upload-footer__progress-item {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-2xs);
+    }
+
+    .awc-file-upload-footer__progress-value {
+        color: var(--colors-light-titles);
+        font: var(--awc-font-text-medium-14);
+    }
+
+    .awc-file-upload-footer__progress-info {
+        color: var(--colors-light-secondary);
+        font: var(--awc-font-caption-1-regular);
+    }
 `;

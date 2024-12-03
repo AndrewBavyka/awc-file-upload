@@ -11,9 +11,9 @@ export const awcFileUploadSelectedStyles = css`
         padding: 12px;
         display: flex;
         flex-direction: column;
-        max-height: 421px;
         overflow-y: auto;
         overflow-x: hidden;
+        max-height: 380px;
     }
 
     .awc-file-upload-selected__file {

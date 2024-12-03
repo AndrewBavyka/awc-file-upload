@@ -4,6 +4,6 @@ import { ProviderFile, } from "./ProviderFile";
 export interface SelectedFile {
     file: ProviderFile;
     provider: string;
-    providerIcon: SVGTemplateResult;
+    providerIcon?: SVGTemplateResult;
     preview?: string;
 }

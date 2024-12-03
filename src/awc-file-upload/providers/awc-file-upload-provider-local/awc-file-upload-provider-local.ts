@@ -43,28 +43,9 @@ export default class AwcFileUploadProviderLocal extends Provider {
     );
   }
 
-  convertToProviderFile(file: File): ProviderFile {
-    const isImage = file.type.startsWith("image/");
-
-    return {
-      id: file.name + Date.now().toString(),
-      name: file.name,
-      isFolder: false,
-      isPublicFolder: false,
-      icon: "",
-      requestPath: "",
-      modifiedDate: new Date().toISOString(),
-      size: file.size,
-      mimeType: file.type,
-      file: file,
-      thumbnail: isImage ? URL.createObjectURL(file) : "",
-      fileExternal: "",
-    };
-  }
-
   private _processFile(file: File): void {
-    const providerFile = this.convertToProviderFile(file);
-    this.selectedFileManager.addFile(providerFile, "local", this.icon);
+    const providerFile = this.selectedFileManager.convertToProviderFile(file);
+    this.selectedFileManager.addFile(providerFile, "local");
 
     if (file.type.startsWith("image/")) {
       this._generateImagePreview(file, providerFile);
@@ -74,8 +55,7 @@ export default class AwcFileUploadProviderLocal extends Provider {
   private _generateImagePreview(file: File, providerFile: ProviderFile): void {
     const reader = new FileReader();
 
-    reader.onload = () =>
-      this.selectedFileManager.addFile(providerFile, this.provider, this.icon);
+    reader.onload = () => this.selectedFileManager.addFile(providerFile, this.provider);
     reader.readAsDataURL(file);
   }
 

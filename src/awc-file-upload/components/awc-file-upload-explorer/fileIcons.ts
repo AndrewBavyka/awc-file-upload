@@ -1,6 +1,6 @@
-import { svg, TemplateResult } from "lit";
+import { svg, SVGTemplateResult } from "lit";
 
-export const fileIcons: { [key: string]: TemplateResult } = {
+export const fileIcons: { [key: string]: SVGTemplateResult } = {
     doc: svg`
         <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
             <rect width="32" height="32" rx="4" fill="#399BED"/>

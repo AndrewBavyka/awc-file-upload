@@ -32,9 +32,9 @@ export class SelectedFileManager extends EventTarget {
         this.extraData = { ...this.extraData, ...data };
     }
 
-    addFile(file: ProviderFile, provider: string, providerIcon: SVGTemplateResult) {
+    addFile(file: ProviderFile, provider: string, providerIcon?: SVGTemplateResult) {
         if (!this.selectedFiles.has(file.id)) {
-            this.selectedFiles.set(file.id, { file, provider, providerIcon });
+            this.selectedFiles.set(file.id, { file, provider, providerIcon});
         }
 
         this.fileSelectionChanged();
@@ -68,6 +68,25 @@ export class SelectedFileManager extends EventTarget {
         });
 
         this.fileSelectionChanged();
+    }
+
+    convertToProviderFile(file: File) {
+        const isImage = file.type.startsWith("image/");
+       
+        return {
+            id: file.name + Date.now().toString(),
+            name: file.name,
+            isFolder: false,
+            isPublicFolder: false,
+            icon: "",
+            requestPath: "",
+            modifiedDate: new Date().toISOString(),
+            size: file.size,
+            mimeType: file.type,
+            file: file,
+            thumbnail: isImage ? URL.createObjectURL(file) : "",
+            fileExternal: "",
+        };
     }
 }
 

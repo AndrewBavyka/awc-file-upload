@@ -8,7 +8,7 @@ export const awcFileUploadProgress = "awc-file-upload-progress";
 export default class AwcFileUploadProgress extends LitElement {
     @property({type: Boolean}) isCompact = false;
 
-    @property({type: String}) value = "";
+    @property({type: Number}) value = 0;
     @property({type: String}) max = "100";
 
     private _renderCompactProgressBar(): TemplateResult {
@@ -16,7 +16,7 @@ export default class AwcFileUploadProgress extends LitElement {
     }
 
     private _renderRegularProgressBar(): TemplateResult {
-        return html`<awc-progress-bar size="extrasmall" .value="${this.value}" max="${this.max}"></awc-progress-bar>`
+        return html`<awc-progress-bar size="extrasmall" value="${this.value}" max="${this.max}"></awc-progress-bar>`
     }
 
     protected render(): TemplateResult {
