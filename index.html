@@ -28,14 +28,15 @@
       <awc-file-item></awc-file-item>
   </awc-file>
 
-
-
   <awc-file-upload upload-url="http://localhost:3000/upload"
     extraData='{"providerId": "yandex", "userId": "12345", "someOtherData": "data"}'>
     <awc-file-upload-provider-yandex-disk provider-name="Яндекс Диск"
       auth-url="http://localhost:3000/connect/yandexdisk" list-url="http://localhost:3000/list/yandexdisk"
       slot="awc-file-upload-provider-yandex-disk">
     </awc-file-upload-provider-yandex-disk>
+
+    <awc-file-upload-provider-google-drive provider-name="Google Drive" slot="awc-file-upload-provider-google-drive">
+    </awc-file-upload-provider-google-drive>
   </awc-file-upload>
 
 

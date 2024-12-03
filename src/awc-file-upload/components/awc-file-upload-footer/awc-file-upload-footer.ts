@@ -1,4 +1,4 @@
-import { html, LitElement, TemplateResult, CSSResult, PropertyValues } from "lit";
+import { html, LitElement, TemplateResult, CSSResult, PropertyValues, svg } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { awcFileUploadFooterStyles } from "./awc-file-upload-footer.style";
 import { EventDispatcher, event } from "../../../util/event";
@@ -14,7 +14,7 @@ export default class AwcFileUploadFooter extends LitElement {
     @state() private _uploadManager = UploadManager.getInstance();
     @state() private _selectedFileManager = SelectedFileManager.getInstance();
 
-
+    @state() private _uploadedCount: number = 0;
     @state() private _isUploadStart = false;
     private isSwitcherChecked = false;
 
@@ -26,12 +26,22 @@ export default class AwcFileUploadFooter extends LitElement {
 
     connectedCallback(): void {
         super.connectedCallback();
-        this._uploadManager.addEventListener("awc-file-upload-status", this._handleUploadStatus.bind(this));
+        this._uploadManager.addEventListener("awc-file-upload-status", (event) => this._handleUploadStatus(event as CustomEvent<UploadEventDetail>));
     }
 
     disconnectedCallback(): void {
         super.disconnectedCallback();
-        this._uploadManager.removeEventListener("awc-file-upload-status", this._handleUploadStatus.bind(this));
+        this._uploadManager.removeEventListener("awc-file-upload-status", (event) => this._handleUploadStatus(event as CustomEvent<UploadEventDetail>));
+    }
+
+    private _getOverallProgress(): number {
+        const totalFiles = this._selectedFileManager.getFiles().length; // Все файлы
+        if (totalFiles === 0) return 0;
+
+        const uploadingProgress = Array.from(this._progressMap.values()).reduce((sum, progress) => sum + progress, 0);
+        const completedProgress = this._uploadedCount * 100;
+
+        return (uploadingProgress + completedProgress) / totalFiles;
     }
 
     private _handleUploadStatus(event: CustomEvent<UploadEventDetail>) {
@@ -39,8 +49,15 @@ export default class AwcFileUploadFooter extends LitElement {
 
         if (status === 'uploading' && progress !== undefined) {
             this._progressMap.set(file.file.name, progress);
-        } else if (status === 'success' || status === 'error') {
+        } else if (status === 'success') {
             this._progressMap.delete(file.file.name);
+            this._uploadedCount++;
+        } else if (status === 'error') {
+            this._progressMap.delete(file.file.name);
+        }
+
+        if (this._progressMap.size === 0) {
+            this._isUploadStart = false;
         }
 
         this.requestUpdate();
@@ -67,22 +84,43 @@ export default class AwcFileUploadFooter extends LitElement {
         this._emitEvent("upload");
     }
 
+    private _cancelAllUploads(): void {
+        this._uploadManager.cancelAllUploads();
+        this._progressMap.clear();
+        this._isUploadStart = false;
+
+        this.requestUpdate();
+    }
+
     protected render(): TemplateResult {
+        const cancelIcon = svg`
+            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect width="20" height="20" rx="10" fill="#919BB6"/>
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M7.70711 6.29289C7.31658 5.90237 6.68342 5.90237 6.29289 6.29289C5.90237 6.68342 5.90237 7.31658 6.29289 7.70711L8.58235 9.99657L6.29183 12.294C5.9019 12.6851 5.90284 13.3182 6.29395 13.7082C6.68506 14.0981 7.31823 14.0972 7.70817 13.706L9.99657 11.4108L12.2929 13.7071C12.6834 14.0976 13.3166 14.0976 13.7071 13.7071C14.0976 13.3166 14.0976 12.6834 13.7071 12.2929L11.4087 9.99445L13.6902 7.70605C14.0802 7.31494 14.0792 6.68177 13.6881 6.29184C13.297 5.9019 12.6638 5.90284 12.2739 6.29395L9.99445 8.58023L7.70711 6.29289Z" fill="white"/>
+            </svg>
+        `;
+
         const uploading = this._progressMap.size > 0;
+        const overallProgress = this._getOverallProgress();
 
         return html`
             <div class="awc-file-upload-footer">
                 ${uploading
-                ? html`
-                        <div class="awc-file-upload-footer__progress-list">
-                            ${Array.from(this._progressMap.entries()).map(([fileName, progress]) => html`
-                                <awc-file-upload-progress .value=${progress}></awc-file-upload-progress>
-                                <div class="awc-file-upload-footer__progress-item">
-                                    <span class="awc-file-upload-footer__progress-value">Загрузка ${progress.toFixed(0)}%</span>
-                                    <span class="awc-file-upload-footer__progress-info">Загружены 1 из ${this._selectedFileManager.getFiles().length}</span>
-                                </div>
-                            `)}
+                ? html` ${Array.from(this._progressMap.entries()).map(([fileName, progress]) => html`
+                        <awc-file-upload-progress .value=${overallProgress}></awc-file-upload-progress>
+                        <div class="awc-file-upload-footer__progress-item">
+                            <span class="awc-file-upload-footer__progress-value">Загрузка ${overallProgress.toFixed(0)}%</span>
+                            <span class="awc-file-upload-footer__progress-info">Загружены ${this._uploadedCount} из ${this._selectedFileManager.getFiles().length}</span>
                         </div>
+                        <button 
+                            tabindex="0" 
+                            type="button" 
+                            class="awc-file-upload-footer__progress-button" 
+                            @click=${this._cancelAllUploads}
+                        > 
+                            ${cancelIcon}
+                        </button>
+                        `)}
                     `
                 : this.isSelected
                     ? html`

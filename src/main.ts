@@ -3,6 +3,7 @@ import AwcFileUpload from "./awc-file-upload/awc-file-upload";
 // providers
 import AwcFileUploadProviderLocal from "./awc-file-upload/providers/awc-file-upload-provider-local/awc-file-upload-provider-local";
 import AwcFileUploadProviderYandexDisk from "./awc-file-upload/providers/awc-file-upload-provider-yandex-disk/awc-file-upload-provider-yandex-disk";
+import AwcFileUploadProviderGoogleDrive from "./awc-file-upload/providers/awc-file-upload-provider-google-drive/awc-file-upload-provider-google-drive";
 
 // views
 import AwcFileUploadAuth from "./awc-file-upload/views/awc-file-upload-auth/awc-file-upload-auth";
@@ -28,6 +29,7 @@ export default {
     AwcFileUpload,
     AwcFileUploadProviderLocal,
     AwcFileUploadProviderYandexDisk,
+    AwcFileUploadProviderGoogleDrive,
 
     AwcFileUploadAuth,
     AwcFileUploadHome,

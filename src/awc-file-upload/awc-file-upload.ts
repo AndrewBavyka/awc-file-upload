@@ -198,6 +198,7 @@ export default class AwcFileUpload extends LitElement {
               <awc-file-upload-home @awc-file-upload-provider-selected=${this._handleProviderSelection}
               >
                   <slot name="awc-file-upload-provider-yandex-disk"></slot>
+                  <slot name="awc-file-upload-provider-google-drive"></slot>
               </awc-file-upload-home>
           `;
     }

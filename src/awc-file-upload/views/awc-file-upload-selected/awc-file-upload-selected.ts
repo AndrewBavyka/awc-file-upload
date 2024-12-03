@@ -6,10 +6,8 @@ import { SelectedFileManager } from "../../managers/SelectedFileManager";
 import { awcFileUploadSelectedStyles } from "./awc-file-upload-selected.style";
 import { ProviderFile } from "../../interfaces/ProviderFile";
 import { EventDispatcher, event } from "../../../util/event";
-import { NavigationManager } from "../../managers/NavigationManager";
 import { formatFileSize } from "../../../util/fileSizeConverter";
-import { UploadManager } from "../../managers/UploadManager";
-import { FileUploadCore } from "../../FileUploadCore";
+import { UploadManager, UploadEventDetail } from "../../managers/UploadManager";
 
 export const awcFileUploadSelectedTag = "awc-file-upload-selected";
 
@@ -19,8 +17,11 @@ export default class AwcFileUploadSelected extends LitElement {
 
   @state() isExternalMode: boolean = false;
   @state() private _selectedFileManager = SelectedFileManager.getInstance();
+  @state() private _uploadManager = UploadManager.getInstance();
+
   @state() _linkType: ProviderFile | null = null;
-  @state() private uploadProgress: { [fileId: string]: number } = {};
+  @state() private _uploadStatus: { [fileId: string]: { status: string; progress?: number } } = {};
+
 
   @event("file-selection-changed") private _onFileSelectionCnanged!: EventDispatcher<{ selectedFiles: string[] }>;
 
@@ -50,12 +51,22 @@ export default class AwcFileUploadSelected extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+
     this._selectedFileManager.addEventListener("file-selection-changed", () => this.requestUpdate());
+    this._uploadManager.addEventListener("awc-file-upload-status", (event) => this._handleUploadStatus(event as CustomEvent<UploadEventDetail>));
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
+
     this._selectedFileManager.removeEventListener("file-selection-changed", () => this.requestUpdate());
+    this._uploadManager.removeEventListener("awc-file-upload-status", (event) => this._handleUploadStatus(event as CustomEvent<UploadEventDetail>));
+  }
+
+  private _handleUploadStatus(event: CustomEvent) {
+    const { file, status, progress } = event.detail;
+    this._uploadStatus[file.file.id] = { status, progress };
+    this.requestUpdate();
   }
 
   private renderFileIcon(item: ProviderFile): TemplateResult {
@@ -95,35 +106,58 @@ export default class AwcFileUploadSelected extends LitElement {
       </svg>
     `;
 
+    const successIcon = svg`
+    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <g clip-path="url(#clip0_52628_2439)">
+      <rect width="20" height="20" rx="10" fill="#35D3AC"/>
+      <path d="M6 10L8.97585 13L15 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </g>
+      <defs>
+      <clipPath id="clip0_52628_2439">
+      <rect width="20" height="20" fill="white"/>
+      </clipPath>
+      </defs>
+      </svg>
+    `;
+
     return html`
       <div class="awc-file-upload-selected">
-        ${this._selectedFileManager.getFiles().map(
-      ({ file, providerIcon, provider }) => html`
-            <div class="awc-file-upload-selected__file">
-              <div class="awc-file-upload-selected__preview">
-                ${this.renderFileIcon(file)}
-                <span class="awc-file-upload-selected__provider">
-                  ${provider !== "local" ? providerIcon : ""}
-                </span>
-              </div>
-              <div class="awc-file-upload-selected__info">
-                <span title=${file.name} class="awc-file-upload-selected__name">${file.name}</span>
-                <div class="awc-file-upload-selected__description"> 
-                  <span class="awc-file-upload-selected__size">${this._formatFileSize(file)}</span>
-                  ${provider !== 'local' ? html`
-                    <awc-icon-button size="20" class="awc-file-upload-selected__type" @click="${() => this.toggleFileMode(file.id)}">
-                      ${this.getFileIcon(file)}
-                    </awc-icon-button>`
-          : ""}
-                </div>
-              </div>
-              <awc-icon-button size="20" class="awc-file-upload-selected__delete" @click="${() => this.handleDelete(file.id)}">
-                ${clearIcon}
-              </awc-icon-button>
-            </div>
-          `
-    )}
-      </div>
+            ${this._selectedFileManager.getFiles().map(({ file, providerIcon, provider }) => {
+                const uploadStatus = this._uploadStatus[file.id] || { status: 'pending' };
+                const isUploading = uploadStatus.status === 'uploading';
+                const isSuccess = uploadStatus.status === 'success';
+                const progress = uploadStatus.progress || 0;
+
+                return html`
+                    <div class="awc-file-upload-selected__file">
+                        <div class="awc-file-upload-selected__preview">
+                            ${this.renderFileIcon(file)}
+                            <span class="awc-file-upload-selected__provider">
+                                ${provider !== "local" ? providerIcon : ""}
+                            </span>
+                        </div>
+                        <div class="awc-file-upload-selected__info">
+                            <span title=${file.name} class="awc-file-upload-selected__name">${file.name}</span>
+                            <div class="awc-file-upload-selected__description">
+                                <span class="awc-file-upload-selected__size">${this._formatFileSize(file)}</span>
+                                ${provider !== 'local' ? html`
+                                    <awc-icon-button size="20" class="awc-file-upload-selected__type" @click="${() => this.toggleFileMode(file.id)}">
+                                        ${this.getFileIcon(file)}
+                                    </awc-icon-button>` : ""}
+                            </div>
+                        </div>
+
+                        ${isUploading 
+                                    ? html`<awc-file-upload-progress compact .value=${progress}></awc-file-upload-progress>`
+                                    : isSuccess
+                                    ? html`<div class="awc-file-upload-selected__success">${successIcon}</div>`
+                                    : html`<awc-icon-button size="20" class="awc-file-upload-selected__delete" @click="${() => this.handleDelete(file.id)}">
+                            ${clearIcon}
+                        </awc-icon-button>`}
+                    </div>
+                `;
+            })}
+        </div>
     `;
   }
 

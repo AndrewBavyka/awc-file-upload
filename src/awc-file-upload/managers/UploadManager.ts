@@ -19,6 +19,7 @@ export class UploadManager extends EventTarget {
     private uploadUrl: string = '';
     private queue: SelectedFile[] = [];
     private isUploading: boolean = false;
+    private masterAbortController: AbortController | null = null;
 
     public static getInstance(): UploadManager {
         if (!UploadManager.instance) {
@@ -36,7 +37,7 @@ export class UploadManager extends EventTarget {
         this._onUploadStatus({ file, status: 'pending' });
     }
 
-    private async uploadLocalFile(selectedFile: SelectedFile): Promise<void> {
+    private async uploadLocalFile(selectedFile: SelectedFile, signal: AbortSignal): Promise<void> {
         const { provider, file } = selectedFile;
 
         if (!(file.file instanceof File)) {
@@ -55,25 +56,27 @@ export class UploadManager extends EventTarget {
         try {
             this._onUploadStatus({ file: selectedFile, status: 'uploading', progress: 0 });
 
-            const controller = new AbortController();
             const response: AxiosResponse = await axios.post(this.uploadUrl, formData, {
-                signal: controller.signal,
+                signal,
                 timeout: 100000,
                 onUploadProgress: (progressEvent: AxiosProgressEvent) => {
                     if (progressEvent.lengthComputable) {
                         const progress = (progressEvent.loaded / progressEvent.total!) * 100;
                         this._onUploadStatus({ file: selectedFile, status: 'uploading', progress });
-                        console.log(`Загрузка локального файла "${file.name}": ${progress.toFixed(2)}%`);
                     }
                 },
             });
 
             this._onUploadStatus({ file: selectedFile, status: 'success', progress: 100 });
-            console.log(`Локальный файл "${file.name}" успешно загружен!`, response.data);
         } catch (error) {
-            const errorMessage = error instanceof AxiosError ? error.message : 'Неизвестная ошибка';
-            this._onUploadStatus({ file: selectedFile, status: 'error', error: errorMessage });
-            console.error(`Ошибка при загрузке локального файла "${file.name}":`, errorMessage);
+            if (signal.aborted) {
+                this._onUploadStatus({ file: selectedFile, status: 'error', error: 'Отмена загрузки' });
+                console.log(`Загрузка файла "${file.name}" отменена.`);
+            } else {
+                const errorMessage = error instanceof AxiosError ? error.message : 'Неизвестная ошибка';
+                this._onUploadStatus({ file: selectedFile, status: 'error', error: errorMessage });
+                console.error(`Ошибка при загрузке локального файла "${file.name}":`, errorMessage);
+            }
         }
     }
 
@@ -108,11 +111,19 @@ export class UploadManager extends EventTarget {
         }
     }
 
-    private async uploadFile(selectedFile: SelectedFile): Promise<void> {
+    public cancelAllUploads(): void {
+        if (this.masterAbortController) {
+            this.masterAbortController.abort();
+            console.log('Все загрузки отменены.');
+            this.masterAbortController = null;
+        }
+    }
+
+    private async uploadFile(selectedFile: SelectedFile, signal: AbortSignal): Promise<void> {
         const { file } = selectedFile;
 
         if (file.file instanceof File) {
-            await this.uploadLocalFile(selectedFile);
+            await this.uploadLocalFile(selectedFile, signal);
         } else {
             await this.uploadCloudProviderFile(selectedFile);
         }
@@ -125,13 +136,23 @@ export class UploadManager extends EventTarget {
         }
 
         this.isUploading = true;
+        this.masterAbortController = new AbortController();
 
-        for (const selectedFile of this.queue) {
-            await this.uploadFile(selectedFile);
+        try {
+            for (const selectedFile of this.queue) {
+                await this.uploadFile(selectedFile, this.masterAbortController.signal);
+            }
+            console.log('Все файлы загружены!');
+        } catch (error) {
+            if (this.masterAbortController.signal.aborted) {
+                console.log('Загрузка была прервана.');
+            } else {
+                console.error('Ошибка во время загрузки:', error);
+            }
+        } finally {
+            this.isUploading = false;
+            this.masterAbortController = null;
         }
-
-        console.log('Все файлы загружены!');
-        this.isUploading = false;
     }
 
     async uploadSelectedFiles(): Promise<void> {

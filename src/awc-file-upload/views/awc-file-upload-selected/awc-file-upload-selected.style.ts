@@ -107,4 +107,14 @@ export const awcFileUploadSelectedStyles = css`
         width: 48px;
         height: 48px;
     }
+
+    .awc-file-upload-selected__success {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .awc-file-upload-selected__success svg {
+        width: 20px;
+        height: 20px;
+    }
 `;

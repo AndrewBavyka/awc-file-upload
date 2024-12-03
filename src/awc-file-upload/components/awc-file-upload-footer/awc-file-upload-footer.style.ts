@@ -29,10 +29,17 @@ export const awcFileUploadFooterStyles = css`
         border-top: 1px solid var(--colors-light-stroke);
     }
 
-    .awc-file-upload-footer__buttons{
+    .awc-file-upload-footer__buttons {
         display: flex;
         align-items: center;
         gap: var(--spacing-sm);
+    }
+
+    .awc-file-upload-footer__progress-list {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
     }
 
     awc-file-upload-progress {
@@ -57,5 +64,21 @@ export const awcFileUploadFooterStyles = css`
     .awc-file-upload-footer__progress-info {
         color: var(--colors-light-secondary);
         font: var(--awc-font-caption-1-regular);
+    }
+
+    .awc-file-upload-footer__progress-button {
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        border: none;
+        padding: 0;
+        margin: 0;
+        box-sizing: border-box;
+    }
+
+    .awc-file-upload-footer__progress-button:focus {
+        outline: 1px solid var(--colors-light-secondary);
     }
 `;
