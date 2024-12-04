@@ -8,6 +8,7 @@ import { ProviderFile } from "../../interfaces/ProviderFile";
 import { EventDispatcher, event } from "../../../util/event";
 import { formatFileSize } from "../../../util/fileSizeConverter";
 import { UploadManager, UploadEventDetail } from "../../managers/UploadManager";
+import { EventsBus, SelectedFilesEventBus, SelectedFilesEvents, UploadEventBus, UploadEvents } from "../../managers/EventsBus";
 
 export const awcFileUploadSelectedTag = "awc-file-upload-selected";
 
@@ -17,13 +18,8 @@ export default class AwcFileUploadSelected extends LitElement {
 
   @state() isExternalMode: boolean = false;
   @state() private _selectedFileManager = SelectedFileManager.getInstance();
-  @state() private _uploadManager = UploadManager.getInstance();
-
   @state() _linkType: ProviderFile | null = null;
   @state() private _uploadStatus: { [fileId: string]: { status: string; progress?: number } } = {};
-
-
-  @event("file-selection-changed") private _onFileSelectionCnanged!: EventDispatcher<{ selectedFiles: string[] }>;
 
   private _formatFileSize(file: ProviderFile): string {
     if (file.fileSource === "fileExternal") return "0 B";
@@ -33,7 +29,7 @@ export default class AwcFileUploadSelected extends LitElement {
 
   private handleDelete(fileId: string) {
     this._selectedFileManager.removeFile(fileId);
-    this._onFileSelectionCnanged({ selectedFiles: this._selectedFileManager.getFiles().map(({ file }) => file.id) });
+    // this._onFileSelectionCnanged({ selectedFiles: this._selectedFileManager.getFiles().map(({ file }) => file.id) });
     this.requestUpdate();
   }
 
@@ -52,15 +48,15 @@ export default class AwcFileUploadSelected extends LitElement {
   connectedCallback() {
     super.connectedCallback();
 
-    this._selectedFileManager.addEventListener("file-selection-changed", () => this.requestUpdate());
-    this._uploadManager.addEventListener("awc-file-upload-status", (event) => this._handleUploadStatus(event as CustomEvent<UploadEventDetail>));
+    SelectedFilesEventBus.addEventListener(SelectedFilesEvents.FILE_SELECTION_CHANGE, () => this.requestUpdate())
+    UploadEventBus.addEventListener(UploadEvents.UPLOAD_STATUS, (event) => this._handleUploadStatus(event as CustomEvent<UploadEventDetail>))
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
 
-    this._selectedFileManager.removeEventListener("file-selection-changed", () => this.requestUpdate());
-    this._uploadManager.removeEventListener("awc-file-upload-status", (event) => this._handleUploadStatus(event as CustomEvent<UploadEventDetail>));
+    SelectedFilesEventBus.removeEventListener(SelectedFilesEvents.FILE_SELECTION_CHANGE, () => this.requestUpdate())
+    UploadEventBus.removeEventListener(UploadEvents.UPLOAD_STATUS, (event) => this._handleUploadStatus(event as CustomEvent<UploadEventDetail>))
   }
 
   private _handleUploadStatus(event: CustomEvent) {

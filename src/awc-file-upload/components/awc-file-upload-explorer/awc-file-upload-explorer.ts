@@ -8,38 +8,10 @@ import { awcFileUploadExplorerStyles } from "./awc-file-upload-explorer.style";
 import { SelectedFileManager } from "../../managers/SelectedFileManager";
 import { fileIcons, defaultFileIcon } from "./fileIcons";
 import { formatFileSize } from "../../../util/fileSizeConverter";
+import { SelectedFilesEventBus, SelectedFilesEvents } from "../../managers/EventsBus";
+import { CacheManager } from "../../managers/CacheManager";
 
 export const awcFileUploadExplorer = "awc-file-upload-explorer";
-
-class CacheManager {
-  private cache = new Map<string, Map<number, ProviderFile[]>>();
-  private maxCacheSize = 100;
-
-  get(path: string, offset: number): ProviderFile[] {
-    return this.cache.get(path)?.get(offset) || [];
-  }
-
-  set(path: string, offset: number, items: ProviderFile[]) {
-    if (this.cache.size >= this.maxCacheSize) {
-      this.evictOldestEntry();
-    }
-    if (!this.cache.has(path)) {
-      this.cache.set(path, new Map());
-    }
-    this.cache.get(path)?.set(offset, items);
-  }
-
-  private evictOldestEntry() {
-    const firstKey = this.cache.keys().next().value;
-    if (firstKey) {
-      this.cache.delete(firstKey);
-    }
-  }
-
-  getAll(path: string): ProviderFile[] {
-    return Array.from(this.cache.get(path)?.values() || []).flat();
-  }
-}
 
 @customElement(awcFileUploadExplorer)
 export default class AwcFileUploadExplorer extends LitElement {
@@ -80,7 +52,7 @@ export default class AwcFileUploadExplorer extends LitElement {
 
     this.loadViewMode();
     await this.loadItems(this.currentPath, true);
-    this._selectedFileManager.addEventListener("file-selection-changed", () => this.requestUpdate());
+    SelectedFilesEventBus.addEventListener(SelectedFilesEvents.FILE_SELECTION_CHANGE, () => this.requestUpdate())
   }
 
   private loadViewMode() {
@@ -216,6 +188,9 @@ export default class AwcFileUploadExplorer extends LitElement {
   }
 
   private handleScroll() {
+
+    if (this.errorMessage) return;
+
     const scrollContainer = this.shadowRoot?.querySelector(".file-explorer__body");
 
     if (!scrollContainer) return;
@@ -412,7 +387,7 @@ export default class AwcFileUploadExplorer extends LitElement {
           <div class="file-explorer__content ${this.isGridView ? "file-explorer__content--grid" : "file-explorer__content--list"}">
             ${this.isGridView ? this.renderGridItems() : this.renderListItems()}
             ${this.isLoading ? html`<div class="file-explorer__loading"> <awc-spinner size="l" variant="primary"></awc-spinner></div>`: ""}
-            ${this.errorMessage ? html`<div class="file-explorer__error">${this.errorMessage}</div>` : ""}
+            ${this.errorMessage ? html`<awc-file-upload-error></awc-file-upload-error>` : ""}
           </div>
       </div>
     `;

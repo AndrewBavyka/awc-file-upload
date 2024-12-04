@@ -1,6 +1,7 @@
 import { SVGTemplateResult } from "lit";
 import { ProviderFile } from "../interfaces/ProviderFile";
 import { SelectedFile } from "../interfaces/SelectedFile";
+import { EventsBus, SelectedFilesEventBus, SelectedFilesEvents } from "./EventsBus";
 
 export class SelectedFileManager extends EventTarget {
     private static instance: SelectedFileManager;
@@ -8,13 +9,7 @@ export class SelectedFileManager extends EventTarget {
     private extraData: Record<string, any> = {};
 
     private fileSelectionChanged() {
-        const event = new CustomEvent("file-selection-changed", {
-            detail: this.getFiles(),
-            bubbles: true,
-            composed: true,
-        });
-
-        this.dispatchEvent(event);
+        EventsBus.dispatch(SelectedFilesEventBus, SelectedFilesEvents.FILE_SELECTION_CHANGE, this.getFiles());
     }
 
     static getInstance() {
@@ -89,10 +84,3 @@ export class SelectedFileManager extends EventTarget {
         };
     }
 }
-
-declare global {
-    interface HTMLElementEventMap {
-      'file-selection-changed': CustomEvent<SelectedFile[]>;
-    }
-  }
-  

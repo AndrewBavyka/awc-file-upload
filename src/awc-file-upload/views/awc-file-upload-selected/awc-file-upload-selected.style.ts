@@ -50,7 +50,6 @@ export const awcFileUploadSelectedStyles = css`
         justify-content: center;
         background-color: var(--colors-light-stroke);
         border-top-left-radius:  var(--corner-radius-s);
-
     }
 
     .awc-file-upload-selected__provider svg {
@@ -96,7 +95,7 @@ export const awcFileUploadSelectedStyles = css`
         display: flex;
         align-items: center;
         justify-content: center;
-        margin-left: auto;
+      
     }
 
     .awc-file-upload-selected__delete:hover svg {
@@ -106,6 +105,10 @@ export const awcFileUploadSelectedStyles = css`
     .awc-file-upload-selected__preview__icon svg{
         width: 48px;
         height: 48px;
+    }
+
+    .awc-file-upload-selected__delete, .awc-file-upload-selected__success, awc-file-upload-progress {
+        margin-left: auto;
     }
 
     .awc-file-upload-selected__success {

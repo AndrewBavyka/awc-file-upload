@@ -1,11 +1,11 @@
 import { CSSResult, html, LitElement, TemplateResult } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { customElement, property, query, state } from "lit/decorators.js";
 import { Provider } from "./providers/Provider";
-import { SelectedFile } from "./interfaces/SelectedFile";
 import { awcFileUploadStyles } from "./awc-file-upload.style";
 import { SelectedFileManager } from "./managers/SelectedFileManager";
 import { NavigationManager } from "./managers/NavigationManager";
 import { UploadManager } from "./managers/UploadManager";
+import { UploadEventBus, UploadEvents, EventsBus, SelectedFilesEventBus, SelectedFilesEvents, DropzoneEvents, DropzoneEventsBus } from "./managers/EventsBus";
 
 export const awcFileUploadTag = "awc-file-upload";
 
@@ -27,22 +27,39 @@ export default class AwcFileUpload extends LitElement {
   @state() private accountName: string | null = null;
   @state() private _isExternalMode: boolean = false;
 
+  @query('awc-modal') private _modal!: HTMLElement;
+
   connectedCallback() {
     super.connectedCallback();
 
-    window.addEventListener("message", this._handleAuthMessage.bind(this));
+    window.addEventListener("message", (e: MessageEvent) => this._handleAuthMessage(e));
 
-    this.addEventListener("awc-file-upload-dropped", this._handleFilesDropped);
     this.addEventListener("confirm-selection", this._confirmSelection.bind(this));
     this.addEventListener("awc-file-upload-switch-mode", this._toggleUploadMode);
 
-    this._selectedFileManager.addEventListener("file-selection-changed", (e) => this._refreshSelectedFiles(e as CustomEvent<SelectedFile[]>));
     this._selectedFileManager.setExtraData(this.extraData);
-    
+    SelectedFilesEventBus.addEventListener(SelectedFilesEvents.FILE_SELECTION_CHANGE, () => this._refreshSelectedFiles());
+    DropzoneEventsBus.addEventListener(DropzoneEvents.FILE_DROPPED, (e) => this._handleFilesDropped(e as CustomEvent));
+
+    UploadEventBus.addEventListener(UploadEvents.UPLOAD_ERROR, () => { this._navigationManager.setView("error"); this.requestUpdate() });
+    UploadEventBus.addEventListener(UploadEvents.UPLOAD_END, () => this.close());
+
+    EventsBus.autoDispatchToDOM(this, UploadEventBus, UploadEvents.UPLOAD_START);
+    EventsBus.autoDispatchToDOM(this, UploadEventBus, UploadEvents.UPLOAD_END);
+
     this._initialDropzoneEvents();
   }
 
+  disconnectedCallback() {
+    super.disconnectedCallback();
+
+    window.removeEventListener("message", (e: MessageEvent) => this._handleAuthMessage(e));
+    this.removeEventListener("confirm-selection", this._confirmSelection.bind(this));
+    UploadEventBus.removeEventListener(SelectedFilesEvents.FILE_SELECTION_CHANGE, () => this._refreshSelectedFiles());
+  }
+
   // Dropzone
+  // TODO: Перенести часть логики в компонент awc-file-upload-dropzone.
   private _handleFilesDropped(event: CustomEvent<File[]>) {
     const files = event.detail;
     const manager = SelectedFileManager.getInstance();
@@ -59,9 +76,8 @@ export default class AwcFileUpload extends LitElement {
 
   private _initialDropzoneEvents() {
     document.addEventListener("DOMContentLoaded", () => {
-      const modal = this.shadowRoot?.querySelector("awc-modal")!;
-      const modalContent = modal?.shadowRoot?.querySelector(".awc-modal-container")!;
-      const modalWrapper = modal?.shadowRoot?.querySelector(".awc-modal")!;
+      const modalContent = this._modal.shadowRoot?.querySelector(".awc-modal-container")!;
+      const modalWrapper = this._modal.shadowRoot?.querySelector(".awc-modal")!;
 
       modalContent.addEventListener("dragenter", () => this.dropzone = true);
       modalContent.addEventListener("dragover", () => this.dropzone = false);
@@ -73,15 +89,6 @@ export default class AwcFileUpload extends LitElement {
       window.addEventListener("drop", (e: Event) => e.preventDefault());
       window.addEventListener("dragleave", () => this.dropzone = false);
     });
-  }
-
-  disconnectedCallback() {
-    super.disconnectedCallback();
-
-    window.removeEventListener("message", this._handleAuthMessage.bind(this));
-    this.removeEventListener("confirm-selection", this._confirmSelection.bind(this));
-
-    this._selectedFileManager.removeEventListener("file-selection-changed", (e) => this._refreshSelectedFiles(e as CustomEvent<SelectedFile[]>));
   }
 
   private _toggleUploadMode(event: CustomEvent) {
@@ -164,7 +171,7 @@ export default class AwcFileUpload extends LitElement {
     }
   }
 
-  private _refreshSelectedFiles(e: CustomEvent<SelectedFile[]>) {
+  private _refreshSelectedFiles() {
     if (this._selectedFileManager.getFiles().length === 0 && this._navigationManager.currentView === "selected") {
       this._navigationManager.setView("main");
     }
@@ -192,7 +199,9 @@ export default class AwcFileUpload extends LitElement {
       case "list":
         return html`<awc-file-upload-list .provider=${this._selectedProvider}></awc-file-upload-list>`;
       case "selected":
-        return html`<awc-file-upload-selected .isExternalMode=${this._isExternalMode}></awc-file-upload-selected>`;
+        return html`<awc-file-upload-selected></awc-file-upload-selected>`;
+      case "error":
+        return html`<awc-file-upload-error></awc-file-upload-error>`;
       case "main":
         return html`
               <awc-file-upload-home @awc-file-upload-provider-selected=${this._handleProviderSelection}
@@ -204,9 +213,18 @@ export default class AwcFileUpload extends LitElement {
     }
   }
 
+  close(): void {
+    this.active = false;
+    this._selectedFileManager.clearFiles();
+  }
+
+  open(): void {
+    this.active = true;
+  }
+
   protected render(): TemplateResult {
     const hasDragAndDrop = this._navigationManager.currentView !== "list" || "auth";
-    
+
     return html`
       <awc-modal customizable ?opened=${this.active}>
         ${hasDragAndDrop ? html`<awc-file-upload-dropzone ?active=${this.dropzone}></awc-file-upload-dropzone>` : ''}

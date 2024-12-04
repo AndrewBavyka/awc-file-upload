@@ -3,8 +3,10 @@ import { customElement, property, state } from "lit/decorators.js";
 import { awcFileUploadFooterStyles } from "./awc-file-upload-footer.style";
 import { EventDispatcher, event } from "../../../util/event";
 import { UploadManager, UploadEventDetail } from "../../managers/UploadManager";
-export const awcFileUploadFooterTag = "awc-file-upload-footer";
 import { SelectedFileManager } from "../../managers/SelectedFileManager";
+import { UploadEventBus, UploadEvents } from "../../managers/EventsBus";
+
+export const awcFileUploadFooterTag = "awc-file-upload-footer";
 
 @customElement(awcFileUploadFooterTag)
 export default class AwcFileUploadFooter extends LitElement {
@@ -26,16 +28,16 @@ export default class AwcFileUploadFooter extends LitElement {
 
     connectedCallback(): void {
         super.connectedCallback();
-        this._uploadManager.addEventListener("awc-file-upload-status", (event) => this._handleUploadStatus(event as CustomEvent<UploadEventDetail>));
+        UploadEventBus.addEventListener(UploadEvents.UPLOAD_STATUS, (event) => this._handleUploadStatus(event as CustomEvent<UploadEventDetail>));
     }
 
     disconnectedCallback(): void {
         super.disconnectedCallback();
-        this._uploadManager.removeEventListener("awc-file-upload-status", (event) => this._handleUploadStatus(event as CustomEvent<UploadEventDetail>));
+        UploadEventBus.removeEventListener(UploadEvents.UPLOAD_STATUS, (event) => this._handleUploadStatus(event as CustomEvent<UploadEventDetail>));
     }
 
     private _getOverallProgress(): number {
-        const totalFiles = this._selectedFileManager.getFiles().length; // Все файлы
+        const totalFiles = this._selectedFileManager.getFiles().length;
         if (totalFiles === 0) return 0;
 
         const uploadingProgress = Array.from(this._progressMap.values()).reduce((sum, progress) => sum + progress, 0);

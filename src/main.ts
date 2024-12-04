@@ -10,6 +10,7 @@ import AwcFileUploadAuth from "./awc-file-upload/views/awc-file-upload-auth/awc-
 import AwcFileUploadHome from "./awc-file-upload/views/awc-file-upload-home/awc-file-upload-home";
 import AwcFileUploadList from "./awc-file-upload/views/awc-file-upload-list/awc-file-upload-list";
 import AwcFileUploadSelected from "./awc-file-upload/views/awc-file-upload-selected/awc-file-upload-selected";
+import AwcFileUploadError from "./awc-file-upload/views/awc-file-upload-error/awc-file-upload-error";
 
 // components
 import AwcFileUploadViewWrapper from "./awc-file-upload/components/awc-file-upload-view-wrapper/awc-file-upload-view-wrapper";
@@ -35,6 +36,7 @@ export default {
     AwcFileUploadHome,
     AwcFileUploadList,
     AwcFileUploadSelected,
+    AwcFileUploadError,
 
     AwcFileUploadViewWrapper,
     AwcFileUploadExplorer,

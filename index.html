@@ -28,7 +28,7 @@
       <awc-file-item></awc-file-item>
   </awc-file>
 
-  <awc-file-upload upload-url="http://localhost:3000/upload"
+  <awc-file-upload  upload-url="http://localhost:3000/upload"
     extraData='{"providerId": "yandex", "userId": "12345", "someOtherData": "data"}'>
     <awc-file-upload-provider-yandex-disk provider-name="Яндекс Диск"
       auth-url="http://localhost:3000/connect/yandexdisk" list-url="http://localhost:3000/list/yandexdisk"
@@ -38,9 +38,6 @@
     <awc-file-upload-provider-google-drive provider-name="Google Drive" slot="awc-file-upload-provider-google-drive">
     </awc-file-upload-provider-google-drive>
   </awc-file-upload>
-
-
-
 </body>
 
 <script>
@@ -49,7 +46,11 @@
 
   button.addEventListener("click", () => {
     fileUpload.toggleAttribute("active");
+   
   });
+
+  fileUpload.addEventListener("awc-file-upload-end", (e) => console.log(e))
+  fileUpload.addEventListener("awc-file-upload-start", (e) => console.log(e))
 
 </script>
 

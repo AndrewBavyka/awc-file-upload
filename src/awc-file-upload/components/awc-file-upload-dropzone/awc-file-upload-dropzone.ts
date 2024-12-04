@@ -2,6 +2,7 @@ import { CSSResult, html, LitElement, svg, TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { AwcFileUploadDropzoneStyles } from "./awc-file-upload-dropzone.style";
 import { EventDispatcher, event } from "../../../util/event";
+import {EventsBus, DropzoneEventsBus, DropzoneEvents } from "../../managers/EventsBus";
 
 export const awcFileUploadDropzone = "awc-file-upload-dropzone";
 
@@ -14,6 +15,7 @@ export default class AwcFileUploadDropZone extends LitElement {
 
     connectedCallback(): void {
         super.connectedCallback();
+        
         this.addEventListener("dragenter", this._onDragEnter);
         this.addEventListener("dragleave", this._onDragLeave);
         this.addEventListener("dragover", this._onDragOver);
@@ -43,7 +45,7 @@ export default class AwcFileUploadDropZone extends LitElement {
         const files = event.dataTransfer?.files as FileList;
         if (files && files.length > 0) {
             const fileList = Array.from(files);
-            this._onFileDropped(fileList);
+            EventsBus.dispatch(DropzoneEventsBus, DropzoneEvents.FILE_DROPPED, fileList);
         }
     }
 

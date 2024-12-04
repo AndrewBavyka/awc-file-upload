@@ -1,7 +1,7 @@
 import { Provider } from "../providers/Provider";
 import { EventDispatcher, event } from "../../util/event";
 
-export type CurrentView = "main" | "auth" | "list" | "selected";
+export type CurrentView = "main" | "auth" | "list" | "selected" | "error";
 export interface NavigationEventDetail {
     currentView: CurrentView;
 }
