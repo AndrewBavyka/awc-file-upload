@@ -28,5 +28,11 @@ export function formatFileSize(fileSize: number, isSiSystem: boolean = false, la
         size /= base;
     }
 
-    return `${size.toFixed(1)} ${chosenUnits[unitIndex]}`;
+    if(size === 0) {
+        return `${size.toFixed(0)} ${chosenUnits[unitIndex]}`;
+    } else {
+        return `${size.toFixed(1)} ${chosenUnits[unitIndex]}`;
+    }
+
+   
 }
