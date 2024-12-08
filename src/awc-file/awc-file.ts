@@ -1,6 +1,8 @@
 import { CSSResult, html, LitElement, PropertyValues, svg, TemplateResult } from "lit";
-import { customElement, property, queryAll, state } from "lit/decorators.js";
+import { customElement, property, queryAll } from "lit/decorators.js";
 import { awcFileStyles } from "./awc-file.style";
+import AwcFileItem, { awcFileItemTag } from "./awc-file-item/awc-file-item";
+import anime from "animejs";
 
 export const awcFileTag = "awc-file";
 
@@ -46,14 +48,35 @@ export default class AwcFile extends LitElement {
     @property({ type: String, reflect: true }) view: AwcFileDisplayType = "list_block";
     @property({ type: Boolean, reflect: true }) compact = false;
 
+    @property({ type: Boolean, reflect: true }) open = false;
+
     @queryAll("awc-icon-button") private _viewButtons!: HTMLElement[];
 
+    get fileItems(): AwcFileItem[] {
+        return [...this.querySelectorAll(awcFileItemTag)!];
+    }
+
+    private _triggerAnimation(): void {
+        anime({
+            targets: this.fileItems,
+            scale: [0.8, 1],
+            opacity: [0, 1],
+            duration: 400,
+            easing: 'easeOutExpo',
+            delay: anime.stagger(80),
+        });
+    }
+
     private _switchingView(e: Event) {
+        e.stopPropagation();
+
         const target = (e.target as HTMLElement).closest<HTMLElement>("[data-view]");
         if (target) {
             const newView = target.getAttribute("data-view") as AwcFileDisplayType;
+
             if (newView && newView !== this.view) {
                 this.view = newView;
+                this.fileItems.forEach(item => item.view = this.view);
             }
         }
     }
@@ -63,18 +86,29 @@ export default class AwcFile extends LitElement {
             const isActive = button.getAttribute("data-view") === this.view;
             if (isActive) {
                 button.setAttribute("active", "true");
+                this.fileItems.forEach(item => item.view = this.view);
             } else {
                 button.removeAttribute("active");
             }
         });
+
+        this._triggerAnimation();
     }
 
     protected updated(_changedProperties: PropertyValues): void {
         super.updated(_changedProperties);
 
+        if (_changedProperties.has("open") && this.open) {
+            this._triggerAnimation()
+        }
+
         if (_changedProperties.has("view")) {
             this._updateActiveButton();
         }
+    }
+
+    private _toogleAccordion() {
+        this.open = !this.open;
     }
 
     protected render(): TemplateResult {
@@ -86,7 +120,7 @@ export default class AwcFile extends LitElement {
 
         return html`
             <section class="awc-file">
-                <div class="awc-file__header">
+                <div class="awc-file__header" @click="${this._toogleAccordion}">
                     <div class="awc-file__icon">
                         ${awcFileArrowIcon}
                     </div>
@@ -103,17 +137,20 @@ export default class AwcFile extends LitElement {
                                     ${config.icon}
                                 </awc-icon-button>
                             `
-                        )}
+        )}
                     </div>
                 </div>
-                <div class="awc-file__body">
-                    <slot></slot>
+                <div ?inert=${!this.open} class="awc-file__accordion">
+                    <div class="awc-file__body">
+                        <slot></slot>
+                    </div>
+                    <div class="awc-file__button">
+                        <slot name="awc-file-button"></slot>
+                    </div>
                 </div>
-                <slot name="awc-file-button"></slot>
             </section>
         `;
     }
-
 
     static styles: CSSResult = awcFileStyles;
 }

@@ -1,6 +1,22 @@
 import { css } from "lit";
 
 export const awcFileStyles = css`
+    :host {
+        display: block;
+    }
+
+    .awc-file__accordion {
+        display: grid;
+        grid-template-rows: 0fr;
+        transition: opacity 0.3s ease-in-out, grid-template-rows 0.3s ease;
+        opacity: 0;
+    }
+
+    :host([open]) .awc-file__accordion {
+        grid-template-rows: 1fr;
+        opacity: 1;
+    }
+
     p {
         margin: 0;
     }
@@ -9,19 +25,25 @@ export const awcFileStyles = css`
         display: flex;
         flex-direction: column;
         width: 100%;
-        gap: var(--spacing-s);
     }
 
     .awc-file__header {
-        cursor: pointer;
         display: flex;
-        flex-wrap: wrap;
         align-items: center;
         justify-content: space-between;
+        flex-wrap: wrap;
         gap: var(--spacing-xs);
+        user-select: none;
+        cursor: pointer;
     }
 
     .awc-file__icon {
+        transform: rotate(-90deg);
+        transition: transform 0.3s ease;
+    }
+
+    :host([open]) .awc-file__icon {
+        transform: rotate(0deg);
     }
 
     .awc-file__headline {
@@ -32,7 +54,7 @@ export const awcFileStyles = css`
 
     .awc-file__title {
         font: var(--awc-font-headline-medium-16);
-        color: var(----colors-light-titles);
+        color: var(--colors-light-titles);
     }
 
     .awc-file__counter {
@@ -41,12 +63,13 @@ export const awcFileStyles = css`
     }
 
     .awc-file__views {
-        margin-left: auto;
         display: flex;
         align-items: center;
         gap: var(--spacing-xs);
+        margin-left: auto;
     }
 
+    /* Icon Button */
     awc-icon-button svg {
         fill: #919BB6;
         transition: fill 0.3s ease;
@@ -59,6 +82,8 @@ export const awcFileStyles = css`
     .awc-file__body {
         display: flex;
         flex-wrap: wrap;
+        overflow: hidden;
+        padding: 8px 2px;
     }
 
     :host([view="grid"]) .awc-file__body {
@@ -72,7 +97,12 @@ export const awcFileStyles = css`
     }
 
     :host([view="list_block"]) .awc-file__body {
-        
+        align-items: center;
+        gap: var(--spacing-sm);
     }
 
+    .awc-file__button {
+        display: inline-flex;
+        margin-top: 10px;
+    }
 `;
