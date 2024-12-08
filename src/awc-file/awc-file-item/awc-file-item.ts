@@ -1,4 +1,4 @@
-import { CSSResult, CSSResultGroup, html, LitElement, svg, TemplateResult } from "lit";
+import { CSSResult, CSSResultGroup, html, LitElement, PropertyValues, svg, TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { fileIcons, defaultFileIcon } from "../../awc-file-upload/components/awc-file-upload-explorer/fileIcons";
 import { providerIcons } from "../../awc-file-upload/providerIcons";
@@ -9,6 +9,19 @@ import { EventDispatcher, event } from "../../util/event";
 
 export const awcFileItemTag = "awc-file-item";
 
+
+interface FileDetails {
+    id: string,
+    name: string,
+    format: string,
+    thumbnail: string,
+    url: string,
+    size: number,
+    date: string,
+    provider: string,
+    private: boolean,
+}
+
 @customElement(awcFileItemTag)
 export default class AwcFileItem extends LitElement {
     @property({ type: String, reflect: true }) view: AwcFileDisplayType = "list_block";
@@ -16,10 +29,9 @@ export default class AwcFileItem extends LitElement {
     @property({ type: String }) id = "";
     @property({ type: String }) thumbnail = "";
     @property({ type: String }) name = "";
-    @property({ type: String }) date = "Вчера, 11:54";
+    @property({ type: String }) date = "";
     @property({ type: String }) format = "";
     @property({ type: String }) url = "";
-
     @property({ type: Number }) size = 0;
 
     @property({ type: String }) iconPreview = fileIcons;
@@ -28,20 +40,15 @@ export default class AwcFileItem extends LitElement {
     @property({ type: Boolean, attribute: "external-file" }) externalFile = false;
 
     @property({ type: Boolean, attribute: "private" }) private = false;
-    @property({ type: Boolean, attribute: "download" }) download = true;
-    @property({ type: Boolean, attribute: "delete" }) delete = true;
+    @property({ type: Boolean, attribute: "show-private" }) showPrivate = false;
+    @property({ type: Boolean, attribute: "show-download" }) showDownload = true;
 
-    @event("awc-file-download") private _onDownloadEvent!: EventDispatcher<{}>
-    @event("awc-file-private") private _onPrivateEvent!: EventDispatcher<{}>
-    @event("awc-file-delete") private _onDeleteEvent!: EventDispatcher<{}>
+    @event("awc-file-download") private _onDownloadEvent!: EventDispatcher<FileDetails>
+    @event("awc-file-private") private _onPrivateEvent!: EventDispatcher<FileDetails>
+    @event("awc-file-delete") private _onDeleteEvent!: EventDispatcher<FileDetails>
 
     @state() isHoveredButtons: boolean = false;
-
-    private _setIconByFormat(format: string) {
-        const icon = fileIcons[format] || defaultFileIcon;
-        return icon;
-    }
-
+    @state() privateModeAvailable: boolean = false;
 
     private downloadIcon = svg`
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -67,7 +74,42 @@ export default class AwcFileItem extends LitElement {
         </svg>
     `;
 
-    private _buidDropdownGridItem(): TemplateResult {
+    private _getFileDetails(): FileDetails {
+        return {
+            id: this.id,
+            name: this.name,
+            format: this.format,
+            thumbnail: this.thumbnail,
+            url: this.url,
+            size: this.size,
+            date: this.date,
+            provider: this.provider,
+            private: this.private,
+        };
+    }
+
+    private _triggerDownloadEvent() {
+        this._onDownloadEvent(this._getFileDetails());
+    }
+
+    private _triggerDeleteEvent() {
+        this._onDeleteEvent(this._getFileDetails());
+    }
+
+    private _setIconByFormat(format: string) {
+        const icon = fileIcons[format] || defaultFileIcon;
+        return icon;
+    }
+
+    protected updated(_changedProperties: PropertyValues): void {
+        super.updated(_changedProperties);
+
+        if (_changedProperties.has('private')) {
+            this.privateModeAvailable = this.hasAttribute('private');
+        }
+    }
+
+    private _buildDropdownGridItem(): TemplateResult {
         const dotsIcon = svg`
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M13.2498 7C13.2498 7.69036 12.6901 8.25 11.9998 8.25C11.3094 8.25 10.7498 7.69036 10.7498 7C10.7498 6.30964 11.3094 5.75 11.9998 5.75C12.6901 5.75 13.2498 6.30964 13.2498 7ZM13.25 12C13.25 12.6904 12.6903 13.25 12 13.25C11.3096 13.25 10.75 12.6904 10.75 12C10.75 11.3096 11.3096 10.75 12 10.75C12.6903 10.75 13.25 11.3096 13.25 12ZM11.9998 18.25C12.6901 18.25 13.2498 17.6904 13.2498 17C13.2498 16.3096 12.6901 15.75 11.9998 15.75C11.3094 15.75 10.7498 16.3096 10.7498 17C10.7498 17.6904 11.3094 18.25 11.9998 18.25Z" fill="#919BB6"/>
@@ -75,19 +117,44 @@ export default class AwcFileItem extends LitElement {
         `;
 
         return html`
-            <awc-dropdown class="awc-file-item__dropdown" width="210">
-                <awc-dropdown-group divider>
-                    <awc-dropdown-item>${this.downloadIcon} Скачать</awc-dropdown-item>
-                    <awc-dropdown-item>${this.lockIcon} Закрыть доступ</awc-dropdown-item>
-                </awc-dropdown-group>
-                <awc-dropdown-item>${this.trashIcon} Удалить</awc-dropdown-item>
-                <awc-icon-button slot="awc-dropdown-toggle">${dotsIcon}</awc-icon-button>
-            </awc-dropdown>
-        `;
+        <awc-dropdown class="awc-file-item__dropdown" width="210">
+            <awc-dropdown-group divider>
+                ${this.showDownload && !this.externalFile ? html`
+                    <awc-dropdown-item @click=${this._triggerDownloadEvent}>
+                        ${this.downloadIcon} Скачать
+                    </awc-dropdown-item>
+                ` : ""}
+                ${this.showPrivate ? html`
+                    <awc-dropdown-item @click=${this._togglePrivateMode}>
+                        ${this._getPrivateModeIcon()} ${this._getPrivateModeText()}
+                    </awc-dropdown-item>
+                ` : ""}
+            </awc-dropdown-group>
+            <awc-dropdown-item @click=${this._triggerDeleteEvent}>
+                ${this.trashIcon} Удалить
+            </awc-dropdown-item>
+            <awc-icon-button slot="awc-dropdown-toggle">
+                ${dotsIcon}
+            </awc-icon-button>
+        </awc-dropdown>
+    `;
     }
 
     private _convertingFileSize(size: number): string {
         return formatFileSize(size, true, 'ru');
+    }
+
+    private _togglePrivateMode() {
+        this.private = !this.private;
+        this._onPrivateEvent(this._getFileDetails());
+    }
+
+    private _getPrivateModeIcon(): TemplateResult {
+        return this.private ? this.lockIcon : this.unlockIcon;
+    }
+
+    private _getPrivateModeText(): string {
+        return this.private ? "Закрыть доступ" : "Открыть доступ";
     }
 
     private _renderGridItem(): TemplateResult {
@@ -97,7 +164,7 @@ export default class AwcFileItem extends LitElement {
                 ? html`<img class="awc-file-item__image" src="${this.thumbnail}" alt=${this.name} />`
                 : html`<span class="awc-file-item__icon">${this._setIconByFormat(this.format)}</span>`
             }
-                ${this._buidDropdownGridItem()}
+                ${this._buildDropdownGridItem()}
             </div>
             <div class="awc-file-item__info">
                 <p class="awc-file-item__name" title="${this.name}">${this.name}</p>
@@ -155,21 +222,23 @@ export default class AwcFileItem extends LitElement {
     }
 
     private _buildHoverButtons(view: AwcFileDisplayType): TemplateResult {
-        if (view === "list") {
-            return html`
-                <div class="awc-file-item__buttons">
-                    ${this.private ? html`<awc-icon-button>${this.lockIcon}</awc-icon-button>` : ""}
-                    ${this.externalFile ? "" : html`<awc-icon-button>${this.downloadIcon}</awc-icon-button>`}
-                    <awc-icon-button>${this.trashIcon}</awc-icon-button>
-                </div>
-                `;
-        } else {
-            return html`<div class="awc-file-item__buttons">
-            ${this.private ? html`<awc-icon-button>${this.lockIcon}</awc-icon-button>` : ""}
-            ${this.externalFile ? "" : html`<awc-icon-button>${this.downloadIcon}</awc-icon-button>`}
-            <awc-icon-button>${this.trashIcon}</awc-icon-button>
-        </div>`;
-        }
+        return html`
+             <div class="awc-file-item__buttons">
+            ${this.showPrivate ? html`
+                <awc-icon-button @click=${this._togglePrivateMode}>
+                    ${this._getPrivateModeIcon()}
+                </awc-icon-button>
+            ` : ""}
+            ${this.showDownload && !this.externalFile ? html`
+                <awc-icon-button @click=${this._triggerDownloadEvent}>
+                    ${this.downloadIcon}
+                </awc-icon-button>
+            ` : ""}
+            <awc-icon-button @click=${this._triggerDeleteEvent}>
+                ${this.trashIcon}
+            </awc-icon-button>
+        </div>
+        `;
     }
 
     connectedCallback(): void {

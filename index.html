@@ -23,8 +23,8 @@
   </awc-file-button> -->
 
   <awc-file heading="Файлы" view="grid" open>
-      <awc-file-item external-file private name="Подпивасник 1" format="JPG" provider="yandex_disk"></awc-file-item>
-      <awc-file-item private size="8439387" thumbnail="https://img1.akspic.ru/previews/1/6/0/6/7/176061/176061-yablochnyj_pejzazh-yabloko-illustracia-prirodnyj_landshaft-purpur-500x.jpg" name="Подпивасник 1 Подпивасник 1 Подпивасник 1"></awc-file-item>
+      <awc-file-item private external-file show-private name="Подпивасник 1" format="JPG" provider="yandex_disk"></awc-file-item>
+      <awc-file-item private show-private size="8439387" thumbnail="https://img1.akspic.ru/previews/1/6/0/6/7/176061/176061-yablochnyj_pejzazh-yabloko-illustracia-prirodnyj_landshaft-purpur-500x.jpg" name="Подпивасник 1 Подпивасник 1 Подпивасник 1"></awc-file-item>
       <awc-file-item provider="yandex_disk" name="Подпивасник 1 Подпивасник 1 Подпивасник 1 Подпивасник 1 Подпивасник 1 Подпивасник 1"></awc-file-item>
       <awc-file-item format="html" provider="google_drive" name="Подпивасник 1 Подпивасник 1 Подпивасник 1 Подпивасник 1 Подпивасник 1 Подпивасник 1"></awc-file-item>
 
@@ -52,12 +52,17 @@
 </body>
 
 <script>
+  const fileItem = document.querySelector("awc-file");
+  fileItem.addEventListener("awc-file-download", (e) => console.log("Download", e.detail));
+  fileItem.addEventListener("awc-file-private", (e) => console.log("Private", e.detail));
+  fileItem.addEventListener("awc-file-delete", (e) => console.log("Delete", e.detail));
+
+
   const button = document.querySelector("awc-file-button");
   const fileUpload = document.querySelector("awc-file-upload");
 
   button.addEventListener("click", (e) => {
     fileUpload.toggleAttribute("active");
-   
   });
 
   fileUpload.addEventListener("awc-file-upload-end", (e) => console.log(e))
