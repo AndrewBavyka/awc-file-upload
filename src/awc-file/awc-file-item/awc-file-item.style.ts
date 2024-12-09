@@ -7,45 +7,17 @@ export const awcFileItemStyles = css`
         box-sizing: border-box;
     }
 
-    :host([external-file]:not(:host([view="grid"]))),
-    :host([external-file]) .awc-file-item__preview {
+    :host([external-file-link]:not(:host([view="grid"]))),
+    :host([external-file-link]) .awc-file-item__preview {
         cursor: pointer;
     }
 
+    /* Grid View Styles */
     :host([view="grid"]) {
         flex-direction: column;
         gap: var(--spacing-s);
     }
 
-    :host([view="list"]) {
-        padding: 6px;
-        flex-direction: row;
-        align-items: center;
-        gap: var(--spacing-sm);
-        width: 100%;
-        max-height: 36px;
-        transition: background-color 0.3s ease;
-    }
-
-    :host([view="list"]:hover) {
-        background-color: var(--colors-light-light-background);
-        border-radius: var(--corner-radius-m);
-    }
-
-    :host([view="list_block"]) {
-        padding: 0 12px;
-        flex-direction: row;
-        align-items: center;
-        gap: var(--spacing-sm);
-        max-width: 300px;
-        width: 100%;
-        max-height: 56px;
-        height: 56px;
-        border-radius: var(--corner-radius-m);
-        outline: 1px solid var(--colors-light-stroke);
-    }
-
-    /* Grid View Styles */
     :host([view="grid"]) .awc-file-item__preview {
         position: relative;
         width: 120px;
@@ -82,6 +54,11 @@ export const awcFileItemStyles = css`
     }
 
     /* List View Styles */
+    :host([view="list"]) .awc-file-item__preview .awc-file-item__image {
+        outline: 1px solid var(--colors-light-stroke);
+        border-radius: var(--corner-radius-xs);
+    }
+
     :host([view="list"]) .awc-file-item__preview,
     :host([view="list"]) .awc-file-item__preview .awc-file-item__icon svg {
         width: 24px;
@@ -102,13 +79,6 @@ export const awcFileItemStyles = css`
         max-width: 75%;
     }
 
-    :host([view="list_block"]) .awc-file-item__name {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 100%;
-    }
-
     :host([view="list"]) .awc-file-item__subinfo {
         position: relative;
         gap: var(--spacing-m);
@@ -125,12 +95,39 @@ export const awcFileItemStyles = css`
         justify-content: flex-end;
     }
 
+    :host([view="list"]) .awc-file-item__text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+    }
+
+    :host([view="list"]) {
+        padding: 6px;
+        flex-direction: row;
+        align-items: center;
+        gap: var(--spacing-sm);
+        width: 100%;
+        max-height: 36px;
+        transition: background-color 0.3s ease;
+    }
+
+    :host([view="list"]:hover) {
+        background-color: var(--colors-light-light-background);
+        border-radius: var(--corner-radius-m);
+    }
+
     /* List Block View Styles */
     :host([view="list_block"]) .awc-file-item__preview,
     :host([view="list_block"]) .awc-file-item__preview .awc-file-item__icon svg {
         display: flex;
         width: 36px;
         height: 36px;
+    }
+
+    :host([view="list_block"]) .awc-file-item__preview .awc-file-item__image {
+        outline: 1px solid var(--colors-light-stroke);
+        border-radius: var(--corner-radius-s);
     }
 
     :host([view="list_block"]) .awc-file-item__info {
@@ -140,11 +137,24 @@ export const awcFileItemStyles = css`
         overflow: hidden;
     }
 
-    :host([view="list"]) .awc-file-item__text {
+    :host([view="list_block"]) .awc-file-item__name {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         max-width: 100%;
+    }
+
+    :host([view="list_block"]) {
+        padding: 0 12px;
+        flex-direction: row;
+        align-items: center;
+        gap: var(--spacing-sm);
+        max-width: 300px;
+        width: 100%;
+        max-height: 56px;
+        height: 56px;
+        border-radius: var(--corner-radius-m);
+        outline: 1px solid var(--colors-light-stroke);
     }
 
     :host([view="list_block"]) .awc-file-item__subinfo {

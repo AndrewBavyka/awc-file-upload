@@ -59,7 +59,7 @@ export default class AwcFile extends LitElement {
     private _triggerAnimation(): void {
         anime({
             targets: this.fileItems,
-            // scale: [0.8, 1],
+            scale: [0.8, 1],
             opacity: [0, 1],
             duration: 400,
             easing: 'easeOutExpo',

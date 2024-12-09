@@ -72,7 +72,8 @@ export class FileUploadCore {
     // Начало загрузки файлов
     startUpload() {
         if (this._uploadUrl) {
-            this._uploadManager = new UploadManager(this._uploadUrl);
+            this._uploadManager = new UploadManager();
+            this._uploadManager.setUploadUrl(this._uploadUrl);
             this._uploadManager.uploadSelectedFiles().catch((error) => {
                 console.error("Ошибка при загрузке файлов:", error);
             });
