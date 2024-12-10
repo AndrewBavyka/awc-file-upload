@@ -2,7 +2,7 @@ import { html, LitElement, TemplateResult, CSSResult, PropertyValues, svg } from
 import { customElement, property, state } from "lit/decorators.js";
 import { awcFileUploadFooterStyles } from "./awc-file-upload-footer.style";
 import { EventDispatcher, event } from "../../../util/event";
-import { UploadManager, UploadEventDetail } from "../../managers/UploadManager";
+import { UploadManager, UploadProgressEventDetail, UploadStatusEventDetail } from "../../managers/UploadManager";
 import { SelectedFileManager } from "../../managers/SelectedFileManager";
 import { UploadEventBus, UploadEvents } from "../../managers/EventsBus";
 
@@ -28,12 +28,41 @@ export default class AwcFileUploadFooter extends LitElement {
 
     connectedCallback(): void {
         super.connectedCallback();
-        UploadEventBus.addEventListener(UploadEvents.UPLOAD_STATUS, (event) => this._handleUploadStatus(event as CustomEvent<UploadEventDetail>));
+        
+        UploadEventBus.addEventListener(UploadEvents.UPLOAD_STATUS,(event) => this._handleUploadStatus(event as CustomEvent<UploadStatusEventDetail>));
+        UploadEventBus.addEventListener(UploadEvents.UPLOAD_PROGRESS,(event) => this._handleUploadProgress(event as CustomEvent<UploadProgressEventDetail>));
     }
 
     disconnectedCallback(): void {
         super.disconnectedCallback();
-        UploadEventBus.removeEventListener(UploadEvents.UPLOAD_STATUS, (event) => this._handleUploadStatus(event as CustomEvent<UploadEventDetail>));
+
+        UploadEventBus.removeEventListener(UploadEvents.UPLOAD_STATUS, (event) => this._handleUploadStatus(event as CustomEvent<UploadStatusEventDetail>));
+        UploadEventBus.removeEventListener(UploadEvents.UPLOAD_PROGRESS, (event) => this._handleUploadProgress(event as CustomEvent<UploadProgressEventDetail>));
+    }
+
+    private _handleUploadStatus(event: CustomEvent<UploadStatusEventDetail>) {
+        const { file, status } = event.detail;
+
+        if (status === "success") {
+            this._progressMap.delete(file.file.name);
+            this._uploadedCount++;
+        } else if (status === "error") {
+            this._progressMap.delete(file.file.name);
+        }
+        if (this._progressMap.size === 0) {
+            this._isUploadStart = false;
+        }
+
+        this.requestUpdate();
+    }
+    
+    private _handleUploadProgress(event: CustomEvent<UploadProgressEventDetail>) {
+        const { file, progress } = event.detail;
+    
+        if (progress !== undefined) {
+            this._progressMap.set(file.file.name, progress);
+            this.requestUpdate();
+        }
     }
 
     private _getOverallProgress(): number {
@@ -44,25 +73,6 @@ export default class AwcFileUploadFooter extends LitElement {
         const completedProgress = this._uploadedCount * 100;
 
         return (uploadingProgress + completedProgress) / totalFiles;
-    }
-
-    private _handleUploadStatus(event: CustomEvent<UploadEventDetail>) {
-        const { file, status, progress } = event.detail;
-
-        if (status === 'uploading' && progress !== undefined) {
-            this._progressMap.set(file.file.name, progress);
-        } else if (status === 'success') {
-            this._progressMap.delete(file.file.name);
-            this._uploadedCount++;
-        } else if (status === 'error') {
-            this._progressMap.delete(file.file.name);
-        }
-
-        if (this._progressMap.size === 0) {
-            this._isUploadStart = false;
-        }
-
-        this.requestUpdate();
     }
 
     protected update(changedProperties: PropertyValues): void {

@@ -45,6 +45,7 @@ export default class AwcFileUpload extends LitElement {
     UploadEventBus.addEventListener(UploadEvents.UPLOAD_END, () => this.close());
 
     EventsBus.autoDispatchToDOM(this, UploadEventBus, UploadEvents.UPLOAD_START);
+    EventsBus.autoDispatchToDOM(this, UploadEventBus, UploadEvents.UPLOAD_STATUS);
     EventsBus.autoDispatchToDOM(this, UploadEventBus, UploadEvents.UPLOAD_END);
 
     this._initialDropzoneEvents();

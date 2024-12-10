@@ -5,9 +5,8 @@ import { Provider } from "../../providers/Provider";
 import { SelectedFileManager } from "../../managers/SelectedFileManager";
 import { awcFileUploadSelectedStyles } from "./awc-file-upload-selected.style";
 import { ProviderFile } from "../../interfaces/ProviderFile";
-import { EventDispatcher, event } from "../../../util/event";
 import { formatFileSize } from "../../../util/fileSizeConverter";
-import { UploadManager, UploadEventDetail } from "../../managers/UploadManager";
+import { UploadStatusEventDetail, UploadProgressEventDetail } from "../../managers/UploadManager";
 import { EventsBus, SelectedFilesEventBus, SelectedFilesEvents, UploadEventBus, UploadEvents } from "../../managers/EventsBus";
 
 export const awcFileUploadSelectedTag = "awc-file-upload-selected";
@@ -29,7 +28,6 @@ export default class AwcFileUploadSelected extends LitElement {
 
   private handleDelete(fileId: string) {
     this._selectedFileManager.removeFile(fileId);
-    // this._onFileSelectionCnanged({ selectedFiles: this._selectedFileManager.getFiles().map(({ file }) => file.id) });
     this.requestUpdate();
   }
 
@@ -49,19 +47,27 @@ export default class AwcFileUploadSelected extends LitElement {
     super.connectedCallback();
 
     SelectedFilesEventBus.addEventListener(SelectedFilesEvents.FILE_SELECTION_CHANGE, () => this.requestUpdate())
-    UploadEventBus.addEventListener(UploadEvents.UPLOAD_STATUS, (event) => this._handleUploadStatus(event as CustomEvent<UploadEventDetail>))
+    UploadEventBus.addEventListener(UploadEvents.UPLOAD_STATUS, (event) => this._handleUploadStatus(event as CustomEvent<UploadStatusEventDetail>))
+    UploadEventBus.addEventListener(UploadEvents.UPLOAD_PROGRESS, (event) => this._handleUploadProgress(event as CustomEvent<UploadProgressEventDetail>));
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
 
     SelectedFilesEventBus.removeEventListener(SelectedFilesEvents.FILE_SELECTION_CHANGE, () => this.requestUpdate())
-    UploadEventBus.removeEventListener(UploadEvents.UPLOAD_STATUS, (event) => this._handleUploadStatus(event as CustomEvent<UploadEventDetail>))
+    UploadEventBus.removeEventListener(UploadEvents.UPLOAD_STATUS, (event) => this._handleUploadStatus(event as CustomEvent<UploadStatusEventDetail>));
+    UploadEventBus.removeEventListener(UploadEvents.UPLOAD_PROGRESS, (event) => this._handleUploadProgress(event as CustomEvent<UploadProgressEventDetail>));
   }
 
-  private _handleUploadStatus(event: CustomEvent) {
-    const { file, status, progress } = event.detail;
-    this._uploadStatus[file.file.id] = { status, progress };
+  private _handleUploadProgress(event: CustomEvent<UploadProgressEventDetail>) {
+    const { file, progress } = event.detail;
+    this._uploadStatus[file.file.id].progress = progress;
+    this.requestUpdate();
+  }
+
+  private _handleUploadStatus(event: CustomEvent<UploadStatusEventDetail>) {
+    const { file, status } = event.detail;
+    this._uploadStatus[file.file.id] = { status };
     this.requestUpdate();
   }
 
@@ -119,12 +125,12 @@ export default class AwcFileUploadSelected extends LitElement {
     return html`
       <div class="awc-file-upload-selected">
             ${this._selectedFileManager.getFiles().map(({ file, providerIcon, provider }) => {
-                const uploadStatus = this._uploadStatus[file.id] || { status: 'pending' };
-                const isUploading = uploadStatus.status === 'uploading';
-                const isSuccess = uploadStatus.status === 'success';
-                const progress = uploadStatus.progress || 0;
+      const uploadStatus = this._uploadStatus[file.id] || { status: 'pending' };
+      const isUploading = uploadStatus.status === 'uploading';
+      const isSuccess = uploadStatus.status === 'success';
+      const progress = uploadStatus.progress || 0;
 
-                return html`
+      return html`
                     <div class="awc-file-upload-selected__file">
                         <div class="awc-file-upload-selected__preview">
                             ${this.renderFileIcon(file)}
@@ -143,16 +149,16 @@ export default class AwcFileUploadSelected extends LitElement {
                             </div>
                         </div>
 
-                        ${isUploading 
-                                    ? html`<awc-file-upload-progress compact .value=${progress}></awc-file-upload-progress>`
-                                    : isSuccess
-                                    ? html`<div class="awc-file-upload-selected__success">${successIcon}</div>`
-                                    : html`<awc-icon-button size="20" class="awc-file-upload-selected__delete" @click="${() => this.handleDelete(file.id)}">
+                        ${isUploading
+          ? html`<awc-file-upload-progress compact .value=${progress}></awc-file-upload-progress>`
+          : isSuccess
+            ? html`<div class="awc-file-upload-selected__success">${successIcon}</div>`
+            : html`<awc-icon-button size="20" class="awc-file-upload-selected__delete" @click="${() => this.handleDelete(file.id)}">
                             ${clearIcon}
                         </awc-icon-button>`}
                     </div>
                 `;
-            })}
+    })}
         </div>
     `;
   }

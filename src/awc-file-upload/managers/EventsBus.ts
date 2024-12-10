@@ -6,6 +6,7 @@ export const UploadEvents = {
     UPLOAD_END: "awc-file-upload-end",
     UPLOAD_STATUS: "awc-file-upload-status",
     UPLOAD_ERROR: "awc-file-upload-error",
+    UPLOAD_PROGRESS: "awc-file-upload-progress"
 };
 
 export const SelectedFilesEventBus = new EventTarget();
