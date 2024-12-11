@@ -177,6 +177,7 @@ export class UploadManager {
         } finally {
             this.isUploading = false;
             this.masterAbortController = null;
+            this.queue = [];
             this._dispatchEnd();
         }
     }
