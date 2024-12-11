@@ -15,7 +15,7 @@ export default class AwcFileUploadProviderYandexDisk extends Provider {
     @property({ type: String, attribute: "list-url", reflect: true  }) listUrl = "";
 
     name = this.providerName;
-    provider = "yandexdisk";
+    provider = "yandex_disk";
 
     get icon(): SVGTemplateResult {
         return svg`
