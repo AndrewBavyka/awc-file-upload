@@ -81,6 +81,12 @@ export default class AwcFile extends LitElement {
         }
     }
 
+    private _updateFileItemsView(): void {
+        this.fileItems.forEach(item => {
+            item.view = this.view;
+        });
+    }
+
     private _updateActiveButton(): void {
         this._viewButtons.forEach(button => {
             const isActive = button.getAttribute("data-view") === this.view;
@@ -141,7 +147,7 @@ export default class AwcFile extends LitElement {
                     </div>
                 </div>
                 <div ?inert=${!this.open} class="awc-file__accordion">
-                    <div class="awc-file__body">
+                    <div @slotchange=${this._updateFileItemsView} class="awc-file__body">
                         <slot></slot>
                     </div>
                     <div class="awc-file__button">
