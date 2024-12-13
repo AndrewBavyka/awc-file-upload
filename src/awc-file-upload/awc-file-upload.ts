@@ -1,11 +1,8 @@
 import { CSSResult, html, LitElement, TemplateResult } from "lit";
-import { customElement, property, query, state } from "lit/decorators.js";
-import { Provider } from "./providers/Provider";
+import { customElement, property, state } from "lit/decorators.js";
 import { awcFileUploadStyles } from "./awc-file-upload.style";
-import { SelectedFileManager } from "./managers/SelectedFileManager";
-import { NavigationManager } from "./managers/NavigationManager";
-import { UploadManager } from "./managers/UploadManager";
-import { UploadEventBus, UploadEvents, EventsBus, SelectedFilesEventBus, SelectedFilesEvents, DropzoneEvents, DropzoneEventsBus } from "./managers/EventsBus";
+import { FileUploadCore } from "./FileUploadCore";
+import { Provider } from "./providers/Provider";
 
 export const awcFileUploadTag = "awc-file-upload";
 
@@ -15,140 +12,42 @@ export default class AwcFileUpload extends LitElement {
   @property({ type: Object, attribute: "extra-data" }) extraData = {};
   @property({ type: Boolean, reflect: true }) dropzone = false;
   @property({ type: String, attribute: "upload-url" }) uploadUrl = "";
+  @property({ type: Boolean }) active = false;
 
-  @property({ type: Number, attribute: "upload-limit" }) uploadLimit = 5;
-  @property({ type: Number, attribute: "max-file-size" }) maxFileSize = 300;
-
-  @property({ type: Boolean, reflect: true }) active = false;
-
-  @state() private _selectedProvider: Provider | null = null;
-  @state() private _navigationManager = new NavigationManager();
-  @state() private _selectedFileManager = SelectedFileManager.getInstance();
-  @state() private _uploadManager = UploadManager.getInstance();
-
-  // Временное решение
-  @state() private accountName: string | null = null;
-  @state() private _isExternalMode: boolean = false;
-
-  @query('awc-modal') private _modal!: HTMLElement;
+  @state() private _fileUploadCore = new FileUploadCore(this);
 
   connectedCallback() {
     super.connectedCallback();
+    this._fileUploadCore.initialize();
 
     window.addEventListener("message", (e: MessageEvent) => this._handleAuthMessage(e));
-
-    this.addEventListener("confirm-selection", this._confirmSelection.bind(this));
-    this.addEventListener("awc-file-upload-switch-mode", this._toggleUploadMode);
-
-    this._selectedFileManager.setExtraData(this.extraData);
-    SelectedFilesEventBus.addEventListener(SelectedFilesEvents.FILE_SELECTION_CHANGE, () => this._refreshSelectedFiles());
-    DropzoneEventsBus.addEventListener(DropzoneEvents.FILE_DROPPED, (e) => this._handleFilesDropped(e as CustomEvent));
-
-    UploadEventBus.addEventListener(UploadEvents.UPLOAD_ERROR, () => { this._navigationManager.setView("error"); this.requestUpdate() });
-    UploadEventBus.addEventListener(UploadEvents.UPLOAD_END, () => this.close());
-
-    EventsBus.autoDispatchToDOM(this, UploadEventBus, UploadEvents.UPLOAD_START);
-    EventsBus.autoDispatchToDOM(this, UploadEventBus, UploadEvents.UPLOAD_STATUS);
-    EventsBus.autoDispatchToDOM(this, UploadEventBus, UploadEvents.UPLOAD_END);
-
-    this._initialDropzoneEvents();
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
-
-    window.removeEventListener("message", (e: MessageEvent) => this._handleAuthMessage(e));
-    this.removeEventListener("confirm-selection", this._confirmSelection.bind(this));
-    UploadEventBus.removeEventListener(SelectedFilesEvents.FILE_SELECTION_CHANGE, () => this._refreshSelectedFiles());
-  }
-
-  // Dropzone
-  // TODO: Перенести часть логики в компонент awc-file-upload-dropzone.
-  private _handleFilesDropped(event: CustomEvent<File[]>) {
-    const files = event.detail;
-    const manager = SelectedFileManager.getInstance();
-
-    files.forEach(file => {
-      const providerFile = manager.convertToProviderFile(file);
-      manager.addFile(providerFile, "local");
-    });
-
-    this._navigationManager.setView("selected");
-    this._updateTitle();
-    this.requestUpdate();
-  }
-
-  private _initialDropzoneEvents() {
-    document.addEventListener("DOMContentLoaded", () => {
-      const modalContent = this._modal.shadowRoot?.querySelector(".awc-modal-container")!;
-      const modalWrapper = this._modal.shadowRoot?.querySelector(".awc-modal")!;
-
-      modalContent.addEventListener("dragenter", () => this.dropzone = true);
-      modalContent.addEventListener("dragover", () => this.dropzone = false);
-      modalWrapper.addEventListener("dragover", () => this.dropzone = false);
-
-      modalContent.addEventListener("drop", () => this.dropzone = false);
-
-      window.addEventListener("dragover", (e: Event) => e.preventDefault());
-      window.addEventListener("drop", (e: Event) => e.preventDefault());
-      window.addEventListener("dragleave", () => this.dropzone = false);
-    });
-  }
-
-  private _toggleUploadMode(event: CustomEvent) {
-    this._isExternalMode = event.detail.isExternalMode;
-    this._selectedFileManager.setExternalMode(this._isExternalMode);
+    window.removeEventListener("message", this._handleAuthMessage as any);
   }
 
   private _handleAuthMessage(event: MessageEvent) {
     const { token } = event.data;
-
-    if (token && this._selectedProvider) {
-      this._selectedProvider.setAuthToken(token);
-      this._navigationManager.setView("list");
-      this._updateTitle();
+    if (token) {
+      this._fileUploadCore.selectedProvider?.setAuthToken(token);
+      this._fileUploadCore.navigationManager.setView("list");
       this.requestUpdate();
     }
   }
 
-  private _confirmSelection() {
-    this._navigationManager.setView("selected");
-    this.title = `${this._selectedFileManager.getFiles().length} файлов выбрано`;
-    this.requestUpdate();
-  }
+  private _refreshTitle() {
+    const selectedFiles = this._fileUploadCore.selectedFileManager.getFiles();
+    const currentView = this._fileUploadCore.navigationManager.currentView;
 
-  private _clearSelectedFiles() {
-    this._selectedFileManager.clearFiles();
-  }
-
-  private _cancel() {
-    this._navigationManager.setView("main");
-    this._clearSelectedFiles();
-    this._updateTitle();
-    this.requestUpdate();
-  }
-
-  private _cancelSelectionFiles() {
-    this._clearSelectedFiles()
-    this._updateTitle();
-  }
-
-  private _logout() {
-    if (this._selectedProvider?.checkLocalStorage()) {
-      localStorage.removeItem(this._selectedProvider?.getProviderInfo().provider!);
+    if (selectedFiles.length > 0) {
+      this.title = `${selectedFiles.length} файлов выбрано`;
+    } else if (currentView !== "main") {
+      this.title = `Импортируйте из ${this._fileUploadCore.selectedProvider?.getProviderInfo().name}`;
+    } else {
+      this.title = "Перетащите файлы сюда, загружайте или импортируйте из:";
     }
-
-    this._navigationManager.setView("main");
-    this._updateTitle();
-    // Стоит ли очищать при выходе из аккаунта очистку вообще всех файлов?
-    this._clearSelectedFiles();
-    this.requestUpdate();
-  }
-
-  private _addMoreFiles() {
-    this._navigationManager.setView('main');
-    this._updateTitle();
-    this.requestUpdate();
   }
 
   private _handleProviderSelection(event: CustomEvent) {
@@ -156,89 +55,34 @@ export default class AwcFileUpload extends LitElement {
 
     if (!provider) return;
 
-    this._navigationManager.setSelectedProvider(provider);
+    this._fileUploadCore.navigationManager.setSelectedProvider(provider);
     const hasProviderToken = provider.checkLocalStorage();
-    this._navigationManager.setView(hasProviderToken ? "list" : "auth");
-    this._selectedProvider = provider;
-    this._updateTitle();
-    this.requestUpdate();
+    this._fileUploadCore.navigationManager.setView(hasProviderToken ? "list" : "auth");
+    this._fileUploadCore.selectedProvider = provider;
   }
 
   private _uploadFiles() {
     if (this.uploadUrl) {
-      this._uploadManager.setUploadUrl(this.uploadUrl);
-      this._uploadManager.uploadSelectedFiles().catch((error) => {
-        console.error("Ошибка при загрузке файлов:", error);
-      });
+      this._fileUploadCore.uploadFiles(this.uploadUrl);
     } else {
       console.error("Не удалось получить URL для загрузки.");
     }
   }
 
-  private _refreshSelectedFiles() {
-    if (this._selectedFileManager.getFiles().length === 0 && this._navigationManager.currentView === "selected") {
-      this._navigationManager.setView("main");
-    }
-
-    this._updateTitle();
-  }
-
-  private _updateTitle() {
-    const selectedFiles = this._selectedFileManager.getFiles();
-    const currentView = this._navigationManager.currentView;
-
-    if (selectedFiles.length > 0) {
-      this.title = `${selectedFiles.length} файлов выбрано`;
-    } else if (currentView !== "main") {
-      this.title = `Импортируйте из ${this._selectedProvider?.getProviderInfo().name}`;
-    } else {
-      this.title = "Перетащите файлы сюда, загружайте или импортируйте из:";
-    }
-  }
-
-  private _getViewTemplate() {
-    switch (this._navigationManager.currentView) {
-      case "auth":
-        return html`<awc-file-upload-auth .provider=${this._selectedProvider}></awc-file-upload-auth>`;
-      case "list":
-        return html`<awc-file-upload-list .provider=${this._selectedProvider}></awc-file-upload-list>`;
-      case "selected":
-        return html`<awc-file-upload-selected></awc-file-upload-selected>`;
-      case "error":
-        return html`<awc-file-upload-error></awc-file-upload-error>`;
-      case "main":
-        return html`
-              <awc-file-upload-home @awc-file-upload-provider-selected=${this._handleProviderSelection}
-              >
-                  <slot name="awc-file-upload-provider-yandex-disk"></slot>
-                  <slot name="awc-file-upload-provider-google-drive"></slot>
-              </awc-file-upload-home>
-          `;
-    }
-  }
-
-  close(): void {
-    this.active = false;
-    this._selectedFileManager.clearFiles();
-  }
-
-  open(): void {
-    this.active = true;
+  private _cancel() {
+    this._fileUploadCore.clearFiles();
+    this._fileUploadCore.navigationManager.setView("main");
+    this._refreshTitle();
+    this.requestUpdate();
   }
 
   protected render(): TemplateResult {
-    const hasDragAndDrop = this._navigationManager.currentView !== "list" || "auth";
-
     return html`
       <awc-modal customizable ?opened=${this.active}>
-        ${hasDragAndDrop ? html`<awc-file-upload-dropzone ?active=${this.dropzone}></awc-file-upload-dropzone>` : ''}
-    
-        <div class="awc-file-upload-heading">
-          ${this._renderHeading()}
-        </div>
+        <div class="awc-file-upload-heading">${this._renderHeading()}</div>
         <div class="awc-file-upload-body">
-          <awc-file-upload-view-wrapper .navigationManager=${this._navigationManager}>
-            ${this._getViewTemplate()}
+        <awc-file-upload-view-wrapper>
+            ${this._renderBody()}
             ${this._renderFooter()}
           </awc-file-upload-view-wrapper>
         </div>
@@ -246,52 +90,49 @@ export default class AwcFileUpload extends LitElement {
     `;
   }
 
-  private async _loadUserInfo() {
-    return this.accountName = await this._selectedProvider?.getUsername()!;
-  }
-
   private _renderHeading(): TemplateResult {
-    this._loadUserInfo();
-
     return html`
       <awc-file-upload-header
-        .view=${this._navigationManager.currentView}
-        .provider=${this._selectedProvider}
+        .view=${this._fileUploadCore.navigationManager.currentView}
+        .provider=${this._fileUploadCore.selectedProvider}
         .title=${this.title}
-        .accountName=${this.accountName!}
         @cancel=${this._cancel}
-        @add-more-files=${() => this._addMoreFiles()}
-        @logout=${() => {
-        this._logout();
-        this._clearSelectedFiles();
-      }}
+        @upload=${this._uploadFiles}
       ></awc-file-upload-header>
     `;
   }
 
-  private _renderFooter(): TemplateResult | string {
-    const selectedFilesCount = this._selectedFileManager.getFiles().length;
-
-    if (selectedFilesCount === 0 || this._navigationManager.currentView === "main" || this._navigationManager.currentView === "auth") {
-      return "";
+  private _renderBody(): TemplateResult {
+    switch (this._fileUploadCore.navigationManager.currentView) {
+      case "auth":
+        return html`<awc-file-upload-auth .provider=${this._fileUploadCore.selectedProvider}></awc-file-upload-auth>`;
+      case "list":
+        return html`<awc-file-upload-list .provider=${this._fileUploadCore.selectedProvider}></awc-file-upload-list>`;
+      case "selected":
+        return html`<awc-file-upload-selected></awc-file-upload-selected>`;
+      case "error":
+        return html`<awc-file-upload-error></awc-file-upload-error>`;
+      default:
+        return html`
+          <awc-file-upload-home @awc-file-upload-provider-selected=${this._handleProviderSelection}>
+            <slot name="awc-file-upload-provider-yandex-disk"></slot>
+            <slot name="awc-file-upload-provider-google-drive"></slot>
+          </awc-file-upload-home>
+        `;
     }
+  }
 
+  private _renderFooter(): TemplateResult | string {
+    if (this._fileUploadCore.selectedFileManager.getFiles().length === 0) return "";
     return html`
       <awc-file-upload-footer
-        .isSelected=${this._navigationManager.currentView === "selected"}
-        .fileCount=${selectedFilesCount}
-        @cancel-selection=${this._cancelSelectionFiles}
-        @confirm-selection=${this._confirmSelection}
-        @upload=${this._uploadFiles}
+        .isSelected=${this._fileUploadCore.navigationManager.currentView === "selected"}
+        .fileCount=${this._fileUploadCore.selectedFileManager.getFiles().length}
+        @cancel-selection=${this._cancel}
+        @confirm-selection=${() => this._fileUploadCore.navigationManager.setView("selected")}
       ></awc-file-upload-footer>
     `;
   }
 
   static styles?: CSSResult = awcFileUploadStyles;
-}
-
-declare global {
-  interface HTMLElementTagNameMap {
-    [awcFileUploadTag]: AwcFileUpload;
-  }
 }

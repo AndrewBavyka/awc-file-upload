@@ -1,102 +1,100 @@
+import { ReactiveController, ReactiveControllerHost } from "lit";
 import { SelectedFileManager } from "./managers/SelectedFileManager";
 import { NavigationManager } from "./managers/NavigationManager";
 import { UploadManager } from "./managers/UploadManager";
 import { Provider } from "./providers/Provider";
+import {
+    UploadEventBus,
+    UploadEvents,
+    SelectedFilesEventBus,
+    SelectedFilesEvents,
+    DropzoneEvents,
+    DropzoneEventsBus,
+} from "./managers/EventsBus";
 
-export class FileUploadCore {
-    private _selectedFileManager: SelectedFileManager;
-    private _navigationManager: NavigationManager;
-    private _uploadManager: UploadManager | null = null;
-    private _isExternalMode: boolean = false;
+export class FileUploadCore implements ReactiveController {
+    private _host: ReactiveControllerHost;
+    private _selectedFileManager = SelectedFileManager.getInstance();
+    private _navigationManager = new NavigationManager();
+    private _uploadManager = UploadManager.getInstance();
     private _selectedProvider: Provider | null = null;
+    private _isExternalMode = false;
 
-    constructor(
-        private _uploadUrl: string,
-        private _extraData: any = {},
-        private _dropzone:boolean = false,
-    ) {
-        this._selectedFileManager = SelectedFileManager.getInstance();
-        this._navigationManager = new NavigationManager();
-        this._selectedFileManager.setExtraData(_extraData);
+    constructor(host: ReactiveControllerHost) {
+        (this._host = host).addController(this);
     }
 
-    // Включение или отключение внешнего режима
-    setExternalMode(isExternal: boolean) {
-        this._isExternalMode = isExternal;
-        this._selectedFileManager.setExternalMode(isExternal);
+    get selectedFileManager() {
+        return this._selectedFileManager;
     }
 
-    // Работа с выбором файлов
-    handleFilesDropped(files: File[]) {
-        files.forEach(file => {
-            const providerFile = this._selectedFileManager.convertToProviderFile(file);
-            this._selectedFileManager.addFile(providerFile, "local");
+    get navigationManager() {
+        return this._navigationManager;
+    }
+
+    get selectedProvider() {
+        return this._selectedProvider;
+    }
+
+    set selectedProvider(provider: Provider | null) {
+        this._selectedProvider = provider;
+        this._host.requestUpdate();
+    }
+
+    get isExternalMode() {
+        return this._isExternalMode;
+    }
+
+    set isExternalMode(value: boolean) {
+        this._isExternalMode = value;
+        this._host.requestUpdate();
+    }
+
+    initialize() {
+        this._selectedFileManager.clearFiles();
+        this._subscribeToEvents();
+    }
+
+    uploadFiles(uploadUrl: string) {
+        if (uploadUrl) {
+            this._uploadManager.setUploadUrl(uploadUrl);
+            this._uploadManager.uploadSelectedFiles().catch(console.error);
+        } else {
+            console.error("Upload URL is not set.");
+        }
+    }
+
+    clearFiles() {
+        this._selectedFileManager.clearFiles();
+        this._host.requestUpdate();
+    }
+
+    private _subscribeToEvents() {
+        SelectedFilesEventBus.addEventListener(SelectedFilesEvents.FILE_SELECTION_CHANGE, () => {
+            this._host.requestUpdate();
         });
 
-        this._navigationManager.setView("selected");
-        this.updateTitle();
-    }
-
-    chooseProvider(provider: Provider) {
-        if (!provider) return;
-
-        this._selectedProvider = provider;
-        this._navigationManager.setSelectedProvider(this._selectedProvider);
-        const hasProviderToken = this._selectedProvider.checkLocalStorage();
-        this._navigationManager.setView(hasProviderToken ? "list" : "auth");
-    }
-
-    // Работа с авторизацией и токенами
-    handleAuthMessage(token: string) {
-        if (token && this._selectedProvider) {
-            this._selectedProvider.setAuthToken(token);
-            this._navigationManager.setView("list");
-            this.updateTitle();
-        }
-    }
-
-    // Обновление заголовка
-    updateTitle() {
-        const selectedFiles = this._selectedFileManager.getFiles();
-        const currentView = this._navigationManager.currentView;
-
-        if (selectedFiles.length > 0) {
-            return `${selectedFiles.length} файлов выбрано`;
-        } else if (currentView !== "main") {
-            return `Импортируйте из ${this._selectedProvider?.getProviderInfo().name}`;
-        } else {
-            return "Перетащите файлы сюда, загружайте или импортируйте из:";
-        }
-    }
-
-    // Начало загрузки файлов
-    startUpload() {
-        if (this._uploadUrl) {
-            this._uploadManager = new UploadManager();
-            this._uploadManager.setUploadUrl(this._uploadUrl);
-            this._uploadManager.uploadSelectedFiles().catch((error) => {
-                console.error("Ошибка при загрузке файлов:", error);
+        DropzoneEventsBus.addEventListener(DropzoneEvents.FILE_DROPPED, (event: Event) => {
+            const customEvent = event as CustomEvent<File[]>;
+            customEvent.detail.forEach((file) => {
+                const providerFile = this._selectedFileManager.convertToProviderFile(file);
+                this._selectedFileManager.addFile(providerFile, "local");
             });
-        } else {
-            console.error("Не удалось получить URL для загрузки.");
-        }
-    }
+            this._navigationManager.setView("selected");
+            this._host.requestUpdate();
+        });
 
-    // Обновление представления файлов
-    refreshSelectedFiles() {
-        if (this._selectedFileManager.getFiles().length === 0 && this._navigationManager.currentView === "selected") {
+        UploadEventBus.addEventListener(UploadEvents.UPLOAD_ERROR, () => {
+            this._navigationManager.setView("error");
+            this._host.requestUpdate();
+        });
+
+        UploadEventBus.addEventListener(UploadEvents.UPLOAD_END, () => {
             this._navigationManager.setView("main");
-        }
+            this._host.requestUpdate();
+        });
     }
 
-    // Выход
-    logout() {
-        if (this._selectedProvider?.checkLocalStorage()) {
-            localStorage.removeItem(this._selectedProvider?.getProviderInfo().provider!);
-        }
-
-        this._navigationManager.setView("main");
-        this.updateTitle();
-        this._selectedFileManager.clearFiles();
-    }
+    hostConnected(): void { }
+    hostDisconnected(): void { }
 }
