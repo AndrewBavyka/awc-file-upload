@@ -3,7 +3,7 @@ import { ProviderFile } from "../interfaces/ProviderFile";
 import { SelectedFile } from "../interfaces/SelectedFile";
 import { EventsBus, SelectedFilesEventBus, SelectedFilesEvents } from "./EventsBus";
 
-export class SelectedFileManager extends EventTarget {
+export class SelectedFileManager {
     private static instance: SelectedFileManager;
     private selectedFiles: Map<string, SelectedFile> = new Map();
     private extraData: Record<string, any> = {};
@@ -58,6 +58,8 @@ export class SelectedFileManager extends EventTarget {
 
     setExternalMode(isExternalMode: boolean) {
         this.selectedFiles.forEach((selectedFile) => {
+            if(selectedFile.provider === "local") return;
+
             const { file } = selectedFile;
             file.fileSource = isExternalMode ? "fileExternal" : "file";
         });

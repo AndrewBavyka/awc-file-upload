@@ -12,9 +12,12 @@ export const awcFileUploadTag = "awc-file-upload";
 @customElement(awcFileUploadTag)
 export default class AwcFileUpload extends LitElement {
   @property({ type: String }) title = "Перетащите файлы, вставьте, выберите файлы или импортируйте из:";
-  @property({ type: Object }) extraData = {};
+  @property({ type: Object, attribute: "extra-data" }) extraData = {};
   @property({ type: Boolean, reflect: true }) dropzone = false;
   @property({ type: String, attribute: "upload-url" }) uploadUrl = "";
+
+  @property({ type: Number, attribute: "upload-limit" }) uploadLimit = 5;
+  @property({ type: Number, attribute: "max-file-size" }) maxFileSize = 300;
 
   @property({ type: Boolean, reflect: true }) active = false;
 
