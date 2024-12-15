@@ -5,7 +5,7 @@ export type CurrentView = "main" | "auth" | "list" | "selected" | "error";
 export interface NavigationEventDetail {
     currentView: CurrentView;
 }
-export class NavigationManager {
+export class NavigationManager extends EventTarget {
     @event("awc-file-upload-change-view") private _onChangeView!: EventDispatcher<NavigationEventDetail>
 
     private _currentView: CurrentView = "main";

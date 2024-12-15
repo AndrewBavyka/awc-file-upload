@@ -231,23 +231,20 @@ export default class AwcFileUploadExplorer extends LitElement {
   }
 
   private toggleFileSelection(file: ProviderFile) {
-    const updatedSelectedFiles = new Set(this._selectedFileManager.getFiles().map((f) => f.file.id));
+    const isSelected = this._selectedFileManager.getFile(file.id);
 
-    if (updatedSelectedFiles.has(file.id)) {
+    if (isSelected) {
       this._selectedFileManager.removeFile(file.id);
-      updatedSelectedFiles.delete(file.id);
     } else {
       this._selectedFileManager.addFile(
         file,
         this.provider?.getProviderInfo().provider || "Unknown",
-        this.provider?.getProviderInfo().icon!
       );
-
-      updatedSelectedFiles.add(file.id);
     }
-
+  
     this.requestUpdate();
   }
+  
 
   private _moveScroolTop(): void {
     const scrollContainer = this.shadowRoot?.querySelector(".file-explorer__body");
