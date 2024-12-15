@@ -8,6 +8,9 @@ export class SelectedFileManager {
     private selectedFiles: Map<string, SelectedFile> = new Map();
     private extraData: Record<string, any> = {};
 
+    private maxFileSize: number = 0;
+    private uploadLimit: number = 0;
+
     private fileSelectionChanged() {
         EventsBus.dispatch(SelectedFilesEventBus, SelectedFilesEvents.FILE_SELECTION_CHANGE, this.getFiles());
     }
@@ -27,9 +30,28 @@ export class SelectedFileManager {
         this.extraData = { ...this.extraData, ...data };
     }
 
+    setLimits(uploadLimit: number, maxFileSize: number) {
+        this.uploadLimit = uploadLimit;
+        this.maxFileSize = maxFileSize;
+    }
+
+    isFileValid(file: ProviderFile): boolean {
+        return file.size! <= this.maxFileSize;
+    }
+    
     addFile(file: ProviderFile, provider: string, providerIcon?: SVGTemplateResult) {
+        if (this.uploadLimit > 0 && this.selectedFiles.size >= this.uploadLimit) {
+            console.warn("Превышено максимальное количество файлов");
+            return;
+        }
+
+        if (this.maxFileSize > 0 && file.size! > this.maxFileSize) {
+            console.warn(`Файл ${file.name} превышает максимальный размер ${this.maxFileSize} байт`);
+            return;
+        }
+
         if (!this.selectedFiles.has(file.id)) {
-            this.selectedFiles.set(file.id, { file, provider, providerIcon});
+            this.selectedFiles.set(file.id, { file, provider, providerIcon });
         }
 
         this.fileSelectionChanged();

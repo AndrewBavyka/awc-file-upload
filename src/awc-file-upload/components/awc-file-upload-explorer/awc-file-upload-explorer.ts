@@ -77,9 +77,9 @@ export default class AwcFileUploadExplorer extends LitElement {
   }
 
   private animateViewToggle() {
-    const container = this.shadowRoot!.querySelector(".file-explorer__body")!;
-    const items = container.querySelectorAll(".file-explorer__item");
-    
+    const container = this.shadowRoot!.querySelector(".file-explorer__body")! as HTMLDivElement;
+    const items = Array.from(container.querySelectorAll(".file-explorer__item")) as HTMLElement[];
+
     anime({
       targets: items,
       scale: [0.8, 1],
@@ -87,6 +87,12 @@ export default class AwcFileUploadExplorer extends LitElement {
       duration: 300,
       easing: 'easeOutExpo',
       delay: anime.stagger(30),
+      complete: () => {
+        items.forEach(item => {
+          item.style.transform = '';
+          item.style.opacity = '';
+        });
+      }
     });
   }
 
@@ -215,7 +221,7 @@ export default class AwcFileUploadExplorer extends LitElement {
       this.toggleFileSelection(item);
     }
   }
-  
+
   private onBreadcrumbClick(event: CustomEvent) {
     this._moveScroolTop();
 
@@ -260,31 +266,34 @@ export default class AwcFileUploadExplorer extends LitElement {
         <path fill-rule="evenodd" clip-rule="evenodd" d="M7.29289 4.29289C6.90237 4.68342 6.90237 5.31658 7.29289 5.70711L11.5858 10L7.29289 14.2929C6.90237 14.6834 6.90237 15.3166 7.29289 15.7071C7.68342 16.0976 8.31658 16.0976 8.70711 15.7071L13.7071 10.7071C14.0976 10.3166 14.0976 9.68342 13.7071 9.29289L8.70711 4.29289C8.31658 3.90237 7.68342 3.90237 7.29289 4.29289Z" fill="#919BB6"/>
       </svg>
     `;
-  
+
     return this.items.map((item) => {
       const isSelected = this._selectedFileManager.getFile(item.id);
       const formattedSize = item.isFolder ? '' : formatFileSize(item.size!, true, 'ru');
-  
+      const isDisabled = !this._selectedFileManager.isFileValid(item);
+
       return html`
         <div
-          class="file-explorer__item file-explorer__item--list 
+          class="file-explorer__item file-explorer__item--list
           ${item.isFolder ? "folder" : "file"} 
-          ${isSelected ? "file-explorer__item--selected" : ""}"
+          ${isSelected ? "file-explorer__item--selected" : ""}
+          ${isDisabled ? "file-explorer__item--disabled" : ""}"
           @click="${() => this.navigateTo(item)}"
         >
           ${item.isFolder
-            ? html`${folderArrowIcon}`
-            : html`
+          ? html`${folderArrowIcon}`
+          : html`
               <awc-checkbox
                   ?checked="${!!isSelected}"
+                  ?disabled="${isDisabled}"
                   @change="${() => this.toggleFileSelection(item)}"
                   @click="${(e: Event) => e.stopPropagation()}"
                 ></awc-checkbox>
               `}
           <div class="file-explorer__icon ${item.isFolder ? "folder" : "file"}">
             ${item.isFolder
-              ? this.renderFolderIcon(item.isPublicFolder)
-              : this.renderFileIcon(item)}
+          ? this.renderFolderIcon(item.isPublicFolder)
+          : this.renderFileIcon(item)}
           </div>
           <span class="file-explorer__name">${item.name}</span>
           <span class="file-explorer__size">${formattedSize}</span>
@@ -296,12 +305,13 @@ export default class AwcFileUploadExplorer extends LitElement {
   private renderGridItems(): TemplateResult[] {
     return this.items.map((item) => {
       const isSelected = this._selectedFileManager.getFile(item.id);
+      const isDisabled = !this._selectedFileManager.isFileValid(item);
 
       return html`
         <div
-          class="file-explorer__item file-explorer__item--grid ${item.isFolder
-          ? "folder"
-          : "file"} ${isSelected ? "file-explorer__item--selected" : ""}"
+          class="file-explorer__item file-explorer__item--grid ${item.isFolder ? "folder" : "file"} 
+          ${isSelected ? "file-explorer__item--selected" : ""}
+          ${isDisabled ? "file-explorer__item--disabled" : ""}"
           @click="${() => this.navigateTo(item)}"
         >
           <div class="file-explorer__item--card">
@@ -386,7 +396,7 @@ export default class AwcFileUploadExplorer extends LitElement {
       <div class="file-explorer__body" @scroll="${this.handleScroll}">
           <div class="file-explorer__content ${this.isGridView ? "file-explorer__content--grid" : "file-explorer__content--list"}">
             ${this.isGridView ? this.renderGridItems() : this.renderListItems()}
-            ${this.isLoading ? html`<div class="file-explorer__loading"> <awc-spinner size="l" variant="primary"></awc-spinner></div>`: ""}
+            ${this.isLoading ? html`<div class="file-explorer__loading"> <awc-spinner size="l" variant="primary"></awc-spinner></div>` : ""}
             ${this.errorMessage ? html`<awc-file-upload-error></awc-file-upload-error>` : ""}
           </div>
       </div>

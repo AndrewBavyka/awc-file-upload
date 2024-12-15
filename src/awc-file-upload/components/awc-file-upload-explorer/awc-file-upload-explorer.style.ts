@@ -124,6 +124,12 @@ export const awcFileUploadExplorerStyles = css`
         background-color: var(--colors-light-selected-background);
     }
 
+    .file-explorer__item--disabled {
+        opacity: .5;
+        pointer-events: none;
+        touch-action: none;
+    }
+
     .file-explorer__content--list .file-explorer__icon {
         display: flex;
         align-items: center;

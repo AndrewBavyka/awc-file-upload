@@ -17,7 +17,7 @@ export default class AwcFileUpload extends LitElement {
   @property({ type: String, attribute: "upload-url" }) uploadUrl = "";
 
   @property({ type: Number, attribute: "upload-limit" }) uploadLimit = 5;
-  @property({ type: Number, attribute: "max-file-size" }) maxFileSize = 300;
+  @property({ type: Number, attribute: "max-file-size" }) maxFileSize = 300000000;
 
   @property({ type: Boolean, reflect: true }) active = false;
 
@@ -41,6 +41,8 @@ export default class AwcFileUpload extends LitElement {
     this.addEventListener("awc-file-upload-switch-mode", this._toggleUploadMode);
 
     this._selectedFileManager.setExtraData(this.extraData);
+    this._selectedFileManager.setLimits(this.uploadLimit, this.maxFileSize);
+
     SelectedFilesEventBus.addEventListener(SelectedFilesEvents.FILE_SELECTION_CHANGE, () => this._refreshSelectedFiles());
     DropzoneEventsBus.addEventListener(DropzoneEvents.FILE_DROPPED, (e) => this._handleFilesDropped(e as CustomEvent));
 
