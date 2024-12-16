@@ -11,7 +11,7 @@ export const awcFileUploadFooterStyles = css`
         background-color: var(--colors-light-white);
     }
 
-     .awc-file-upload-footer {
+    .awc-file-upload-footer {
         height: inherit;
         display: flex;
         align-items: center;
@@ -41,6 +41,12 @@ export const awcFileUploadFooterStyles = css`
         display: flex;
         align-items: center;
         justify-content: space-between;
+    }
+
+    .awc-file-upload-footer__switcher{
+        display: flex;
+        align-items: center;
+        gap: var(--spacing-xs);
     }
 
     awc-file-upload-progress {
