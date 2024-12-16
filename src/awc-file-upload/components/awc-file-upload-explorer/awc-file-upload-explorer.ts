@@ -284,8 +284,8 @@ export default class AwcFileUploadExplorer extends LitElement {
           ? html`${folderArrowIcon}`
           : html`
               <awc-checkbox
+                  tabindex="${isDisabled ? -1 : 0}"
                   ?checked="${!!isSelected}"
-                  ?disabled="${isDisabled}"
                   @change="${() => this.toggleFileSelection(item)}"
                   @click="${(e: Event) => e.stopPropagation()}"
                 ></awc-checkbox>

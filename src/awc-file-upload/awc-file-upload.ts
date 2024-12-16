@@ -20,6 +20,8 @@ export default class AwcFileUpload extends LitElement {
   @property({ type: Number, attribute: "max-file-size" }) maxFileSize = 300000000;
 
   @property({ type: Boolean, reflect: true }) active = false;
+  @property({type: Boolean, attribute: "is-external-mode"}) isExternalMode: boolean = false;
+
 
   @state() private _selectedProvider: Provider | null = null;
   @state() private _navigationManager = new NavigationManager();
@@ -28,7 +30,6 @@ export default class AwcFileUpload extends LitElement {
 
   // Временное решение
   @state() private accountName: string | null = null;
-  @state() private _isExternalMode: boolean = false;
 
   @query('awc-modal') private _modal!: HTMLElement;
 
@@ -85,6 +86,8 @@ export default class AwcFileUpload extends LitElement {
       const modalContent = this._modal.shadowRoot?.querySelector(".awc-modal-container")!;
       const modalWrapper = this._modal.shadowRoot?.querySelector(".awc-modal")!;
 
+      modalWrapper.addEventListener("click", (e: Event) => this._showAlertIfFilesSelected(e))
+
       modalContent.addEventListener("dragenter", () => this.dropzone = true);
       modalContent.addEventListener("dragover", () => this.dropzone = false);
       modalWrapper.addEventListener("dragover", () => this.dropzone = false);
@@ -98,8 +101,8 @@ export default class AwcFileUpload extends LitElement {
   }
 
   private _toggleUploadMode(event: CustomEvent) {
-    this._isExternalMode = event.detail.isExternalMode;
-    this._selectedFileManager.setExternalMode(this._isExternalMode);
+    this.isExternalMode = event.detail.isExternalMode;
+    this._selectedFileManager.setExternalMode(this.isExternalMode);
   }
 
   private _handleAuthMessage(event: MessageEvent) {
@@ -151,6 +154,19 @@ export default class AwcFileUpload extends LitElement {
     this._navigationManager.setView('main');
     this._updateTitle();
     this.requestUpdate();
+  }
+
+  @state() private _showAlert:boolean = false;
+
+  private _showAlertIfFilesSelected(e: Event) {
+    const targetModalWrapper = (e.target) as HTMLDivElement;
+    if(!targetModalWrapper.classList.contains("awc-modal")) return;
+
+    if (this._selectedFileManager.getFiles().length) {
+      this._showAlert = true;
+    }else{
+      this._showAlert = false;
+    }
   }
 
   private _handleProviderSelection(event: CustomEvent) {
@@ -245,6 +261,34 @@ export default class AwcFileUpload extends LitElement {
           </awc-file-upload-view-wrapper>
         </div>
       </awc-modal>
+
+      ${this._showAlert ? html`
+          <awc-dialog
+              ?opened=${this._showAlert}
+              variant="info"
+              heading="Есть несохранённые данные"
+              description="Внесенные изменения не сохранятся"
+            >
+              <awc-button
+                slot="awc-dialog-button"
+                background="blue"
+                size="large"
+                variant="primary"
+                type="submit"
+              >
+                Ок
+              </awc-button>
+              <awc-button
+                slot="awc-dialog-button"
+                background="red"
+                size="large"
+                variant="transparent"
+                type="submit"
+              >
+                Отменить
+              </awc-button>
+            </awc-dialog>
+      ` : ""}
     `;
   }
 
@@ -274,7 +318,7 @@ export default class AwcFileUpload extends LitElement {
   private _renderFooter(): TemplateResult | string {
     const selectedFilesCount = this._selectedFileManager.getFiles().length;
 
-    if (selectedFilesCount === 0 || this._navigationManager.currentView === "main" || this._navigationManager.currentView === "auth") {
+    if (this._navigationManager.currentView === "main" || this._navigationManager.currentView === "auth") {
       return "";
     }
 

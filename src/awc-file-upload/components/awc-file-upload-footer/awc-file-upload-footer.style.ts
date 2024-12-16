@@ -12,10 +12,11 @@ export const awcFileUploadFooterStyles = css`
     }
 
      .awc-file-upload-footer {
+        height: inherit;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        padding: 16px 20px 20px 20px;
+        padding: 0 20px;
     }
 
     .awc-file-upload-footer::before {

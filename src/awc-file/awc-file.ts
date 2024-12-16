@@ -64,6 +64,12 @@ export default class AwcFile extends LitElement {
             duration: 400,
             easing: 'easeOutExpo',
             delay: anime.stagger(80),
+            complete: () => {
+                this.fileItems.forEach(item => {
+                  item.style.transform = '';
+                  item.style.opacity = '';
+                });
+            }
         });
     }
 

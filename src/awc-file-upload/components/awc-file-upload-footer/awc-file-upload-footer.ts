@@ -18,7 +18,7 @@ export default class AwcFileUploadFooter extends LitElement {
 
     @state() private _uploadedCount: number = 0;
     @state() private _isUploadStart = false;
-    private isSwitcherChecked = false;
+    @state() private _isSwitcherChecked:boolean = false;
 
     @event("awc-file-upload-switch-mode") private _onChangeMode!: EventDispatcher<{ [key: string]: boolean }>;
 
@@ -28,9 +28,9 @@ export default class AwcFileUploadFooter extends LitElement {
 
     connectedCallback(): void {
         super.connectedCallback();
-        
-        UploadEventBus.addEventListener(UploadEvents.UPLOAD_STATUS,(event) => this._handleUploadStatus(event as CustomEvent<UploadStatusEventDetail>));
-        UploadEventBus.addEventListener(UploadEvents.UPLOAD_PROGRESS,(event) => this._handleUploadProgress(event as CustomEvent<UploadProgressEventDetail>));
+
+        UploadEventBus.addEventListener(UploadEvents.UPLOAD_STATUS, (event) => this._handleUploadStatus(event as CustomEvent<UploadStatusEventDetail>));
+        UploadEventBus.addEventListener(UploadEvents.UPLOAD_PROGRESS, (event) => this._handleUploadProgress(event as CustomEvent<UploadProgressEventDetail>));
     }
 
     disconnectedCallback(): void {
@@ -55,10 +55,10 @@ export default class AwcFileUploadFooter extends LitElement {
 
         this.requestUpdate();
     }
-    
+
     private _handleUploadProgress(event: CustomEvent<UploadProgressEventDetail>) {
         const { file, progress } = event.detail;
-    
+
         if (progress !== undefined) {
             this._progressMap.set(file.file.name, progress);
             this.requestUpdate();
@@ -78,7 +78,7 @@ export default class AwcFileUploadFooter extends LitElement {
     protected update(changedProperties: PropertyValues): void {
         super.update(changedProperties);
 
-        this._onChangeMode({ isExternalMode: this.isSwitcherChecked });
+        this._onChangeMode({ isExternalMode: this._isSwitcherChecked });
     }
 
     private _toggleLinkOrFileUploading(e: Event) {
@@ -86,9 +86,9 @@ export default class AwcFileUploadFooter extends LitElement {
 
         if (!target) return;
 
-        this.isSwitcherChecked = target.checked;
+        this._isSwitcherChecked = target.checked;
 
-        this._onChangeMode({ isExternalMode: this.isSwitcherChecked });
+        this._onChangeMode({ isExternalMode: this._isSwitcherChecked });
     }
 
     private _triggerUpload() {
@@ -141,26 +141,26 @@ export default class AwcFileUploadFooter extends LitElement {
                             </awc-button>
                         `
                     : html`
-                            <awc-switcher
-                                @change=${this._toggleLinkOrFileUploading}
-                            >Загружать как ссылки</awc-switcher>
-                            <div class="awc-file-upload-footer__buttons">
-                                <awc-button
-                                    background="gray"
-                                    size="regular"
-                                    variant="transparent"
-                                    type="button"
-                                    @click=${() => this._emitEvent("cancel-selection")}
-                                >
-                                    Отменить
-                                </awc-button>
-                                <awc-button 
-                                    @click=${() => this._emitEvent("confirm-selection")}
-                                >
-                                    Выбрать ${this.fileCount > 0 ? this.fileCount : ""}
-                                </awc-button>
-                            </div>
-                        `
+                            <awc-switcher ?checked=${this._isSwitcherChecked} @change=${this._toggleLinkOrFileUploading} >Загружать как ссылки</awc-switcher>
+                             ${this._selectedFileManager.getFiles().length ? html`
+                                <div class="awc-file-upload-footer__buttons">
+                                    <awc-button
+                                        background="gray"
+                                        size="regular"
+                                        variant="transparent"
+                                        type="button"
+                                        @click=${() => this._emitEvent("cancel-selection")}
+                                    >
+                                        Отменить
+                                    </awc-button>
+                                    <awc-button 
+                                        @click=${() => this._emitEvent("confirm-selection")}
+                                    >
+                                        Выбрать ${this.fileCount > 0 ? this.fileCount : ""}
+                                    </awc-button>
+                                </div>
+                             ` : ""}
+                    `
             }
             </div>
         `;

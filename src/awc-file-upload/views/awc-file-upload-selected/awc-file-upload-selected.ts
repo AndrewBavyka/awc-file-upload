@@ -36,6 +36,7 @@ export default class AwcFileUploadSelected extends LitElement {
     if (!selectedFile) return;
 
     const { file } = selectedFile;
+    if(this._selectedFileManager.isFileValid(file)) return;
     const isExternal = file.fileSource === "fileExternal";
 
     file.fileSource = isExternal ? "file" : "fileExternal";

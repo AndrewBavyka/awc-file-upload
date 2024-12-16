@@ -11,6 +11,8 @@ export class SelectedFileManager {
     private maxFileSize: number = 0;
     private uploadLimit: number = 0;
 
+    private externalMode: boolean = false;
+
     private fileSelectionChanged() {
         EventsBus.dispatch(SelectedFilesEventBus, SelectedFilesEvents.FILE_SELECTION_CHANGE, this.getFiles());
     }
@@ -35,20 +37,34 @@ export class SelectedFileManager {
         this.maxFileSize = maxFileSize;
     }
 
+    setExternalMode(isExternalMode: boolean) {
+        this.externalMode = isExternalMode;
+        this.selectedFiles.forEach((selectedFile) => {
+            if (selectedFile.provider === "local") return;
+
+            const { file } = selectedFile;
+            file.fileSource = isExternalMode ? "fileExternal" : "file";
+        });
+
+        this.fileSelectionChanged();
+    }
+
     isFileValid(file: ProviderFile): boolean {
+        if (this.externalMode) return true;
+
         return file.size! <= this.maxFileSize;
     }
-    
-    addFile(file: ProviderFile, provider: string, providerIcon?: SVGTemplateResult) {
-        if (this.uploadLimit > 0 && this.selectedFiles.size >= this.uploadLimit) {
-            console.warn("Превышено максимальное количество файлов");
-            return;
-        }
 
-        if (this.maxFileSize > 0 && file.size! > this.maxFileSize) {
-            console.warn(`Файл ${file.name} превышает максимальный размер ${this.maxFileSize} байт`);
-            return;
-        }
+    addFile(file: ProviderFile, provider: string, providerIcon?: SVGTemplateResult) {
+        // if (this.uploadLimit > 0 && this.selectedFiles.size >= this.uploadLimit) {
+        //     console.warn("Превышено максимальное количество файлов");
+        //     return;
+        // }
+
+        // if (this.maxFileSize > 0 && file.size! > this.maxFileSize) {
+        //     console.warn(`Файл ${file.name} превышает максимальный размер ${this.maxFileSize} байт`);
+        //     return;
+        // }
 
         if (!this.selectedFiles.has(file.id)) {
             this.selectedFiles.set(file.id, { file, provider, providerIcon });
@@ -78,20 +94,9 @@ export class SelectedFileManager {
         return this.selectedFiles.get(fileId);
     }
 
-    setExternalMode(isExternalMode: boolean) {
-        this.selectedFiles.forEach((selectedFile) => {
-            if(selectedFile.provider === "local") return;
-
-            const { file } = selectedFile;
-            file.fileSource = isExternalMode ? "fileExternal" : "file";
-        });
-
-        this.fileSelectionChanged();
-    }
-
     convertToProviderFile(file: File) {
         const isImage = file.type.startsWith("image/");
-       
+
         return {
             id: file.name + Date.now().toString(),
             name: file.name,
