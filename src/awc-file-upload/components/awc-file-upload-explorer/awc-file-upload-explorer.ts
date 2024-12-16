@@ -276,7 +276,7 @@ export default class AwcFileUploadExplorer extends LitElement {
         <div
           class="file-explorer__item file-explorer__item--list
           ${item.isFolder ? "folder" : "file"} 
-          ${isSelected ? "file-explorer__item--selected" : ""}
+          ${isSelected && !isDisabled ? "file-explorer__item--selected" : ""}
           ${isDisabled ? "file-explorer__item--disabled" : ""}"
           @click="${() => this.navigateTo(item)}"
         >
@@ -285,7 +285,7 @@ export default class AwcFileUploadExplorer extends LitElement {
           : html`
               <awc-checkbox
                   tabindex="${isDisabled ? -1 : 0}"
-                  ?checked="${!!isSelected}"
+                  ?checked="${!!isSelected && !isDisabled}"
                   @change="${() => this.toggleFileSelection(item)}"
                   @click="${(e: Event) => e.stopPropagation()}"
                 ></awc-checkbox>

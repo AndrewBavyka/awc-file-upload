@@ -36,12 +36,15 @@ export default class AwcFileUploadSelected extends LitElement {
     if (!selectedFile) return;
 
     const { file } = selectedFile;
-    if(this._selectedFileManager.isFileValid(file)) return;
-    const isExternal = file.fileSource === "fileExternal";
+    if(!this._selectedFileManager.checkFileSize(file)){
+      const isExternal = file.fileSource === "fileExternal";
 
-    file.fileSource = isExternal ? "file" : "fileExternal";
-    this._linkType = file;
-    this.requestUpdate();
+      file.fileSource = isExternal ? "file" : "fileExternal";
+      this._linkType = file;
+      this.requestUpdate();
+    }else{
+      return;
+    }
   }
 
   connectedCallback() {

@@ -55,6 +55,10 @@ export class SelectedFileManager {
         return file.size! <= this.maxFileSize;
     }
 
+    checkFileSize(file: ProviderFile): boolean{
+        return this.maxFileSize > 0 && file.size! > this.maxFileSize;
+    }
+
     addFile(file: ProviderFile, provider: string, providerIcon?: SVGTemplateResult) {
         // if (this.uploadLimit > 0 && this.selectedFiles.size >= this.uploadLimit) {
         //     console.warn("Превышено максимальное количество файлов");

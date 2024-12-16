@@ -6,6 +6,7 @@ import { SelectedFileManager } from "./managers/SelectedFileManager";
 import { NavigationManager } from "./managers/NavigationManager";
 import { UploadManager } from "./managers/UploadManager";
 import { UploadEventBus, UploadEvents, EventsBus, SelectedFilesEventBus, SelectedFilesEvents, DropzoneEvents, DropzoneEventsBus } from "./managers/EventsBus";
+import { live } from "lit/directives/live.js";
 
 export const awcFileUploadTag = "awc-file-upload";
 
@@ -32,6 +33,8 @@ export default class AwcFileUpload extends LitElement {
   @state() private accountName: string | null = null;
 
   @query('awc-modal') private _modal!: HTMLElement;
+  @query('awc-dialog') private _dialog!: HTMLElement;
+
 
   connectedCallback() {
     super.connectedCallback();
@@ -237,6 +240,7 @@ export default class AwcFileUpload extends LitElement {
 
   close(): void {
     this.active = false;
+    this._navigationManager.setView('main');
     this._selectedFileManager.clearFiles();
   }
 
@@ -246,9 +250,11 @@ export default class AwcFileUpload extends LitElement {
 
   protected render(): TemplateResult {
     const hasDragAndDrop = this._navigationManager.currentView !== "list" || "auth";
-
+    // TODO: Из за awc-alert который в shadowDom не может чистить
+    if(this._modal)  this._modal.removeAttribute('inert');
+   
     return html`
-      <awc-modal customizable ?opened=${this.active}>
+      <awc-modal customizable ?opened=${live(this.active)}>
         ${hasDragAndDrop ? html`<awc-file-upload-dropzone ?active=${this.dropzone}></awc-file-upload-dropzone>` : ''}
     
         <div class="awc-file-upload-heading">
@@ -265,6 +271,7 @@ export default class AwcFileUpload extends LitElement {
       ${this._showAlert ? html`
           <awc-dialog
               ?opened=${this._showAlert}
+              @awc-dialog-close=${() => console.log('close')}
               variant="info"
               heading="Есть несохранённые данные"
               description="Внесенные изменения не сохранятся"
@@ -274,7 +281,8 @@ export default class AwcFileUpload extends LitElement {
                 background="blue"
                 size="large"
                 variant="primary"
-                type="submit"
+                type="button"
+                 @click=${() => {this._showAlert = false, this.close()}}
               >
                 Ок
               </awc-button>
@@ -283,7 +291,8 @@ export default class AwcFileUpload extends LitElement {
                 background="red"
                 size="large"
                 variant="transparent"
-                type="submit"
+                type="button"
+                @click=${() => {this._showAlert = false, this.open()}}
               >
                 Отменить
               </awc-button>

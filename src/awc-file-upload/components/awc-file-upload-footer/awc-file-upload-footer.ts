@@ -29,6 +29,7 @@ export default class AwcFileUploadFooter extends LitElement {
     connectedCallback(): void {
         super.connectedCallback();
 
+        this._loadSwitcherState();
         UploadEventBus.addEventListener(UploadEvents.UPLOAD_STATUS, (event) => this._handleUploadStatus(event as CustomEvent<UploadStatusEventDetail>));
         UploadEventBus.addEventListener(UploadEvents.UPLOAD_PROGRESS, (event) => this._handleUploadProgress(event as CustomEvent<UploadProgressEventDetail>));
     }
@@ -81,14 +82,34 @@ export default class AwcFileUploadFooter extends LitElement {
         this._onChangeMode({ isExternalMode: this._isSwitcherChecked });
     }
 
+    private _loadSwitcherState() {
+        const savedState = localStorage.getItem("isSwitcherChecked");
+        this._isSwitcherChecked = savedState === "true";
+    }
+    
+    private _saveSwitcherState() {
+        localStorage.setItem("isSwitcherChecked", String(this._isSwitcherChecked));
+    }
+
     private _toggleLinkOrFileUploading(e: Event) {
         const target = e.target as HTMLInputElement;
-
+    
         if (!target) return;
-
+    
         this._isSwitcherChecked = target.checked;
-
+    
+        this._saveSwitcherState();
         this._onChangeMode({ isExternalMode: this._isSwitcherChecked });
+       
+        if(!this._isSwitcherChecked) {
+            const files = this._selectedFileManager.getFiles();
+            files.forEach(file => {
+                const isExternalFileMathesSize = this._selectedFileManager.checkFileSize(file.file);
+                if(isExternalFileMathesSize){
+                    return this._selectedFileManager.removeFile(file.file.id);
+                }
+            })
+        }
     }
 
     private _triggerUpload() {
