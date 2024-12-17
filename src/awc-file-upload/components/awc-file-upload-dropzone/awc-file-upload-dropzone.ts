@@ -1,8 +1,7 @@
 import { CSSResult, html, LitElement, svg, TemplateResult } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { customElement, property } from "lit/decorators.js";
 import { AwcFileUploadDropzoneStyles } from "./awc-file-upload-dropzone.style";
-import { EventDispatcher, event } from "../../../util/event";
-import {EventsBus, DropzoneEventsBus, DropzoneEvents } from "../../managers/EventsBus";
+import { EventsBus, DropzoneEventsBus, DropzoneEvents } from "../../managers/EventsBus";
 
 export const awcFileUploadDropzone = "awc-file-upload-dropzone";
 
@@ -11,15 +10,40 @@ export default class AwcFileUploadDropZone extends LitElement {
     @property({ type: String }) title = "Перетащите файлы сюда";
     @property({ type: Boolean, reflect: true }) active = false;
 
-    @event('awc-file-upload-dropped') private _onFileDropped!:EventDispatcher<File[]>
-
     connectedCallback(): void {
         super.connectedCallback();
-        
+        this._initialDropzoneEvents();
+
         this.addEventListener("dragenter", this._onDragEnter);
         this.addEventListener("dragleave", this._onDragLeave);
         this.addEventListener("dragover", this._onDragOver);
         this.addEventListener("drop", this._onDrop);
+    }
+
+    private _initialDropzoneEvents() {
+        window.addEventListener("dragover", (e: Event) => e.preventDefault());
+        window.addEventListener("drop", (e: Event) => e.preventDefault());
+        window.addEventListener("dragleave", () => this.active = false);
+    }
+
+    private _addModalContentEvent(modalContent: HTMLElement) {
+        modalContent.addEventListener("dragenter", () => this.active = true);
+        modalContent.addEventListener("dragover", () => this.active = false);
+        modalContent.addEventListener("drop", () => this.active = false);
+    }
+
+    private _addModalWrapperEvent(modalWrapper: HTMLElement) {
+        modalWrapper.addEventListener("dragover", () => this.active = false);
+    }
+
+    setModalTarget(target: HTMLElement) {
+        if (!target) return;
+
+        const modalContent = target.shadowRoot?.querySelector(".awc-modal-container") as HTMLElement;
+        const modalWrapper = target.shadowRoot?.querySelector(".awc-modal")! as HTMLElement;
+
+        this._addModalContentEvent(modalContent);
+        this._addModalWrapperEvent(modalWrapper)
     }
 
     private _onDragEnter(event: DragEvent): void {
@@ -29,7 +53,7 @@ export default class AwcFileUploadDropZone extends LitElement {
 
     private _onDragLeave(event: DragEvent): void {
         event.preventDefault();
-        this.active = false;    
+        this.active = false;
     }
 
     private _onDragOver(event: DragEvent): void {
@@ -71,7 +95,6 @@ export default class AwcFileUploadDropZone extends LitElement {
 
 declare global {
     interface HTMLElementEventMap {
-      'awc-file-upload-dropped': CustomEvent<File[]>;
+        'awc-file-upload-dropped': CustomEvent<File[]>;
     }
-  }
-  
+}
