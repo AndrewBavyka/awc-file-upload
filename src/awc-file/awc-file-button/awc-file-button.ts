@@ -10,7 +10,10 @@ export default class AwcFileButton extends LitElement {
         return html`
             <button tabindex="0" class="awc-file-button" type="button">
                 <slot name="awc-file-button-icon"></slot>
-                <span class="awc-file-button__label"><slot></slot></span>
+                <span class="awc-file-button__label">
+                    <slot></slot>
+                </span>
+                <slot name="awc-file-button-google"></slot>
             </button>
         `;
     }
