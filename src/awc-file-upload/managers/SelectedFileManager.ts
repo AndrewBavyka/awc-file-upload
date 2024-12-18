@@ -60,10 +60,10 @@ export class SelectedFileManager {
     }
 
     addFile(file: ProviderFile, provider: string, providerIcon?: SVGTemplateResult) {
-        // if (this.uploadLimit > 0 && this.selectedFiles.size >= this.uploadLimit) {
-        //     console.warn("Превышено максимальное количество файлов");
-        //     return;
-        // }
+        if (this.uploadLimit > 0 && this.selectedFiles.size >= this.uploadLimit) {
+            // TODO: Notification
+            return;
+        }
 
         // if (this.maxFileSize > 0 && file.size! > this.maxFileSize) {
         //     console.warn(`Файл ${file.name} превышает максимальный размер ${this.maxFileSize} байт`);

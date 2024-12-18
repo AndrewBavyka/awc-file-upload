@@ -12,7 +12,7 @@ export default class AwcFileUploadDropZone extends LitElement {
 
     connectedCallback(): void {
         super.connectedCallback();
-        this._initialDropzoneEvents();
+        
 
         this.addEventListener("dragenter", this._onDragEnter);
         this.addEventListener("dragleave", this._onDragLeave);
@@ -20,11 +20,7 @@ export default class AwcFileUploadDropZone extends LitElement {
         this.addEventListener("drop", this._onDrop);
     }
 
-    private _initialDropzoneEvents() {
-        window.addEventListener("dragover", (e: Event) => e.preventDefault());
-        window.addEventListener("drop", (e: Event) => e.preventDefault());
-        window.addEventListener("dragleave", () => this.active = false);
-    }
+   
 
     private _addModalContentEvent(modalContent: HTMLElement) {
         modalContent.addEventListener("dragenter", () => this.active = true);

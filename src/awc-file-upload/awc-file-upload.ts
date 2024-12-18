@@ -70,7 +70,15 @@ export default class AwcFileUpload extends LitElement {
     EventsBus.autoDispatchToDOM(this, UploadEventBus, UploadEvents.UPLOAD_START);
     EventsBus.autoDispatchToDOM(this, UploadEventBus, UploadEvents.UPLOAD_STATUS);
     EventsBus.autoDispatchToDOM(this, UploadEventBus, UploadEvents.UPLOAD_END);
+
+    this._initialDropzoneEvents();
   }
+
+  private _initialDropzoneEvents() {
+    window.addEventListener("dragover", (e: Event) => e.preventDefault());
+    window.addEventListener("drop", (e: Event) => e.preventDefault());
+    // window.addEventListener("dragleave", () => this.active = false);
+}
 
   private _getDataFromDropzone(e: CustomEvent<File[]>) {
     const files = e.detail;
