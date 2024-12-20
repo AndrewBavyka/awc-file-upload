@@ -12,6 +12,10 @@ export const awcFileStyles = css`
         opacity: 0;
     }
 
+    .awc-file__accordion__wrapper {
+        overflow: hidden;
+    }
+
     :host([open]) .awc-file__accordion {
         grid-template-rows: 1fr;
         opacity: 1;

@@ -153,11 +153,13 @@ export default class AwcFile extends LitElement {
                     </div>
                 </div>
                 <div ?inert=${!this.open} class="awc-file__accordion">
-                    <div @slotchange=${this._updateFileItemsView} class="awc-file__body">
-                        <slot></slot>
-                    </div>
-                    <div class="awc-file__button">
-                        <slot name="awc-file-button"></slot>
+                    <div class="awc-file__accordion__wrapper">
+                        <div @slotchange=${this._updateFileItemsView} class="awc-file__body">
+                            <slot></slot>
+                        </div>
+                        <div class="awc-file__button">
+                            <slot name="awc-file-button"></slot>
+                        </div>
                     </div>
                 </div>
             </section>

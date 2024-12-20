@@ -1,13 +1,12 @@
 import {
     CSSResult,
-    CSSResultGroup,
     html,
     LitElement,
     PropertyValues,
     svg,
     TemplateResult,
 } from "lit";
-import { customElement, property, state } from "lit/decorators.js";
+import { customElement, property, query, state } from "lit/decorators.js";
 import {
     fileIcons,
     defaultFileIcon,
@@ -63,6 +62,7 @@ export default class AwcFileItem extends LitElement {
 
     @state() isHoveredButtons: boolean = false;
     @state() privateModeAvailable: boolean = false;
+    @query('awc-dropdown') private activeDropdown!: any;
 
     private downloadIcon = svg`
         <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -128,11 +128,11 @@ export default class AwcFileItem extends LitElement {
         `;
 
         return html`
-            <awc-dropdown  class="awc-file-item__dropdown"  width="210">
+            <awc-dropdown class="awc-file-item__dropdown"  width="210">
                 <awc-dropdown-group divider>
                 ${this.showDownload && !this.externalFileLink
                         ? html`
-                        <awc-dropdown-item @click=${this._triggerDownloadEvent}>
+                        <awc-dropdown-item @click=${(e: Event) => this._triggerDownloadEvent(e)}>
                         ${this.downloadIcon} Скачать
                         </awc-dropdown-item>
                     `
@@ -156,18 +156,19 @@ export default class AwcFileItem extends LitElement {
     }
 
     private _triggerDownloadEvent(e: Event) {
-        e.stopPropagation();
-        e.preventDefault();
-
-        // const link = document.createElement("a");
-        // link.href = this.localFile;
-        // document.body.appendChild(link);
-        // link.click();
-        // document.body.removeChild(link);
-        window.open(this.localFile, "_self", "noopener,noreferrer");
-
-        this._onDownloadEvent(this._getFileDetails());
-    }
+      e.stopPropagation();
+      e.preventDefault();
+  
+      // Убедитесь, что целевой элемент — это кнопка загрузки
+      if (!(e.target instanceof HTMLElement) || !e.target.closest('awc-dropdown-item')) {
+          return;
+      }
+  
+      // Выполнение логики загрузки
+      window.open(this.localFile, "_self", "noopener,noreferrer");
+      this._onDownloadEvent(this._getFileDetails());
+  }
+  
 
     private _triggerDeleteEvent(e: Event) {
         e.stopPropagation();
@@ -358,7 +359,7 @@ export default class AwcFileItem extends LitElement {
         }
     }
 
-    static styles?: CSSResultGroup = [awcFileItemStyles];
+    static styles?: CSSResult = awcFileItemStyles;
 }
 
 declare global {
