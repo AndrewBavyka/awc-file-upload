@@ -47,22 +47,18 @@ export default class AwcFileUploadProviderYandexDisk extends Provider {
         }
     
         try {
-            const response = await axios.get(this.listUrl, {
-                params: {
-                    path: directory ?? "/",
-                    offset: options.qs?.offset ?? 0,
-                    limit: options.qs?.limit ?? 20,
-                },
-                headers: {  
-                    Authorization: `Bearer ${this.authToken}`,
-                },
+            const response = await axios.post(this.listUrl, {
+                path: directory ?? "/",
+                offset: options.qs?.offset ?? 0,
+                limit: options.qs?.limit ?? 20,
+                token: this.authToken,
             });
-            
+    
             if (response.data.username) {
                 this.setUsername(response.data.username);
                 this.requestUpdate();
             }
-
+    
             return response.data as ProviderData;
         } catch (error) {
             throw new Error(`Не удалось получить данные от ${this.providerName}: ${error}`);
