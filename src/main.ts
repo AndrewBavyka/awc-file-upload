@@ -25,6 +25,7 @@ import AwcFileUploadDropZone from "./awc-file-upload/components/awc-file-upload-
 import AwcFileButton from "./awc-file/awc-file-button/awc-file-button";
 import AwcFileItem from "./awc-file/awc-file-item/awc-file-item";
 import AwcFile from "./awc-file/awc-file";
+import AwcFileUploadAddMore from "./awc-file-upload/views/awc-file-upload-add-more/awc-file-upload-add-more";
 
 export default {
     AwcFileUpload,
@@ -37,6 +38,7 @@ export default {
     AwcFileUploadList,
     AwcFileUploadSelected,
     AwcFileUploadError,
+    AwcFileUploadAddMore,
 
     AwcFileUploadViewWrapper,
     AwcFileUploadExplorer,

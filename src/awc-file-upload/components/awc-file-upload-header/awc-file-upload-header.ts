@@ -1,15 +1,20 @@
 import { CSSResult, html, LitElement, svg, TemplateResult } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { customElement, property, state } from "lit/decorators.js";
+import { consume } from "@lit/context";
 import { awcFileUploadHeaderStyles } from "./awc-file-upload-header.style";
 import { CurrentView } from "../../managers/NavigationManager";
+import { TextManager } from "../../managers/TextManager";
+import { textManagerContext } from "../../managers/TextManagerContext";
 
 export const awcFileUploadHeaderTag = "awc-file-upload-header";
 
 @customElement(awcFileUploadHeaderTag)
 export default class AwcFileUploadHeader extends LitElement {
     @property({ type: String }) view: CurrentView = "main";
-    @property({ type: String }) title = "";
     @property({ type: String }) accountName = "";
+    @property({ type: String }) headerText = "";
+
+    @consume({ context: textManagerContext }) textManager?: TextManager;
 
     private _handleCancel() {
         this.dispatchEvent(new CustomEvent("cancel", { bubbles: true, composed: true }));
@@ -35,21 +40,21 @@ export default class AwcFileUploadHeader extends LitElement {
         switch (this.view) {
             case "main":
                 return html`
-                <div class="awc-file-upload-heading__title awc-file-upload-heading__title--main">${this.title}</div>
+                <div class="awc-file-upload-heading__title awc-file-upload-heading__title--main">${this.headerText}</div>
             `;
             case "selected":
                 return html`
-                <button class="awc-file-upload-btn__cancel" @click=${this._handleCancel}>Отменить</button>
-                <div class="awc-file-upload-heading__title">${this.title}</div>
-                <button class="awc-file-upload-btn__add-more" @click=${this._handleAddMore}>Добавить ещё</button>
+                <button class="awc-file-upload-btn__cancel" @click=${this._handleCancel}>${this.textManager?.textState.buttonTexts.cancel}</button>
+                <div class="awc-file-upload-heading__title">${this.headerText}</div>
+                <button class="awc-file-upload-btn__add-more" @click=${this._handleAddMore}>${this.textManager?.textState.buttonTexts.addMoreFiles}</button>
             `;
             case "list":
                 return html`
-                    <button class="awc-file-upload-btn__cancel" @click=${this._handleCancel}>Отменить</button>
-                    <div class="awc-file-upload-heading__title">${this.title}</div>
+                    <button class="awc-file-upload-btn__cancel" @click=${this._handleCancel}>${this.textManager?.textState.buttonTexts.cancel}</button>
+                    <div class="awc-file-upload-heading__title">${this.headerText}</div>
                     <awc-dropdown position="bottom-end" width="180">
                         <awc-dropdown-group .label=${this.accountName}>
-                            <awc-dropdown-item @click=${this._handleLogout}>Выйти</awc-dropdown-item>
+                            <awc-dropdown-item @click=${this._handleLogout}>${this.textManager?.textState.buttonTexts.logout}</awc-dropdown-item>
                         </awc-dropdown-group>
                         <awc-icon-button size="32" slot="awc-dropdown-toggle" class="awc-file-upload-heading__account">
                             ${this._accountIconSvg}
@@ -58,8 +63,8 @@ export default class AwcFileUploadHeader extends LitElement {
             `;
             default:
                 return html`
-                    <button class="awc-file-upload-btn__cancel" @click=${this._handleCancel}>Отменить</button>
-                    <div class="awc-file-upload-heading__title awc-file-upload-heading__title--auth">${this.title}</div>
+                    <button class="awc-file-upload-btn__cancel" @click=${this._handleCancel}>${this.textManager?.textState.buttonTexts.cancel}</button>
+                    <div class="awc-file-upload-heading__title awc-file-upload-heading__title--auth">${this.headerText}</div>
             `;
         }
     }

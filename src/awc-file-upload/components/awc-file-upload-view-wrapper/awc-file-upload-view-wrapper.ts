@@ -2,30 +2,26 @@ import { CSSResult, html, LitElement, TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { awcFileUploadViewWrapperStyles } from "./awc-file-upload-view-wrapper.style";
 import { NavigationManager } from "../../managers/NavigationManager";
+import { EventsBus, NavigationEvents, NavigationEventsBus } from "../../managers/EventsBus";
 import anime from "animejs";
 
 export const awcFileUploadViewWrapperTag = "awc-file-upload-view-wrapper";
 
 @customElement(awcFileUploadViewWrapperTag)
 export default class AwcFileUploadViewWrapper extends LitElement {
-    @property({ type: Object }) navigationManager!: NavigationManager;
+    // @property({ type: Object }) navigationManager!: NavigationManager;
 
     private viewHistory: string[] = [];
 
     connectedCallback(): void {
         super.connectedCallback();
 
-        if (this.navigationManager) {
-            this.navigationManager.addEventListener("awc-file-upload-change-view", (e) => this._onChangeView(e as CustomEvent));
-        }
+        NavigationEventsBus.addEventListener(NavigationEvents.NAVIGATION_CHANGE_VIEW, (e) => this._onChangeView(e as CustomEvent));
     }
 
     disconnectedCallback(): void {
         super.disconnectedCallback();
-
-        if (this.navigationManager) {
-            this.navigationManager.removeEventListener("awc-file-upload-change-view", (e) => this._onChangeView(e as CustomEvent));
-        }
+        NavigationEventsBus.removeEventListener(NavigationEvents.NAVIGATION_CHANGE_VIEW, (e) => this._onChangeView(e as CustomEvent));
     }
 
     private _onChangeView(e: CustomEvent) {

@@ -10,6 +10,8 @@ import { fileIcons, defaultFileIcon } from "./fileIcons";
 import { formatFileSize } from "../../../util/fileSizeConverter";
 import { SelectedFilesEventBus, SelectedFilesEvents } from "../../managers/EventsBus";
 import { CacheManager } from "../../managers/CacheManager";
+import { selectedFileManagerContext } from "../../managers/SelectedFileManagerContext";
+import { consume } from "@lit/context";
 
 export const awcFileUploadExplorer = "awc-file-upload-explorer";
 
@@ -26,7 +28,7 @@ export default class AwcFileUploadExplorer extends LitElement {
   @state() private errorMessage: string | null = null;
   @state() private isGridView = false;
 
-  @state() private _selectedFileManager = SelectedFileManager.getInstance();
+  @consume({ context: selectedFileManagerContext }) fileManager?: SelectedFileManager;
 
   private cacheManager = new CacheManager();
   private abortController: AbortController | null = null;
@@ -237,13 +239,13 @@ export default class AwcFileUploadExplorer extends LitElement {
   }
 
   private toggleFileSelection(file: ProviderFile) {
-    const updatedSelectedFiles = new Set(this._selectedFileManager.getFiles().map((f) => f.file.id));
+    const updatedSelectedFiles = new Set(this.fileManager?.getFiles().map((f) => f.file.id));
 
     if (updatedSelectedFiles.has(file.id)) {
-      this._selectedFileManager.removeFile(file.id);
+      this.fileManager?.removeFile(file.id);
       updatedSelectedFiles.delete(file.id);
     } else {
-      this._selectedFileManager.addFile(
+      this.fileManager?.addFile(
         file,
         this.provider?.getProviderInfo().provider || "Unknown",
         this.provider?.getProviderInfo().icon!
@@ -268,9 +270,9 @@ export default class AwcFileUploadExplorer extends LitElement {
     `;
 
     return this.items.map((item) => {
-      const isSelected = this._selectedFileManager.getFile(item.id);
+      const isSelected = this.fileManager?.getFile(item.id);
       const formattedSize = item.isFolder ? '' : formatFileSize(item.size!, true, 'ru');
-      const isDisabled = !this._selectedFileManager.isFileValid(item);
+      const isDisabled = !this.fileManager?.isFileValid(item);
 
       return html`
         <div
@@ -304,8 +306,8 @@ export default class AwcFileUploadExplorer extends LitElement {
 
   private renderGridItems(): TemplateResult[] {
     return this.items.map((item) => {
-      const isSelected = this._selectedFileManager.getFile(item.id);
-      const isDisabled = !this._selectedFileManager.isFileValid(item);
+      const isSelected = this.fileManager?.getFile(item.id);
+      const isDisabled = !this.fileManager?.isFileValid(item);
 
       return html`
         <div

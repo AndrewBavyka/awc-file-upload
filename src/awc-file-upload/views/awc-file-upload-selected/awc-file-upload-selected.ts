@@ -9,6 +9,9 @@ import { formatFileSize } from "../../../util/fileSizeConverter";
 import { UploadStatusEventDetail, UploadProgressEventDetail } from "../../managers/UploadManager";
 import { EventsBus, SelectedFilesEventBus, SelectedFilesEvents, UploadEventBus, UploadEvents } from "../../managers/EventsBus";
 
+import { selectedFileManagerContext } from "../../managers/SelectedFileManagerContext";
+import { consume } from "@lit/context";
+
 export const awcFileUploadSelectedTag = "awc-file-upload-selected";
 
 @customElement(awcFileUploadSelectedTag)
@@ -16,9 +19,10 @@ export default class AwcFileUploadSelected extends LitElement {
   @property({ type: Object }) provider: Provider | null = null;
 
   @state() isExternalMode: boolean = false;
-  @state() private _selectedFileManager = SelectedFileManager.getInstance();
   @state() _linkType: ProviderFile | null = null;
   @state() private _uploadStatus: { [fileId: string]: { status: string; progress?: number } } = {};
+
+  @consume({ context: selectedFileManagerContext }) fileManager?: SelectedFileManager;
 
   private _formatFileSize(file: ProviderFile): string {
     if (file.fileSource === "fileExternal") return "0 B";
@@ -27,22 +31,22 @@ export default class AwcFileUploadSelected extends LitElement {
   }
 
   private handleDelete(fileId: string) {
-    this._selectedFileManager.removeFile(fileId);
+    this.fileManager?.removeFile(fileId);
     this.requestUpdate();
   }
 
   private toggleFileMode(fileId: string) {
-    const selectedFile = this._selectedFileManager.getFile(fileId);
+    const selectedFile = this.fileManager?.getFile(fileId);
     if (!selectedFile) return;
 
     const { file } = selectedFile;
-    if(!this._selectedFileManager.checkFileSize(file)){
+    if (!this.fileManager?.checkFileSize(file)) {
       const isExternal = file.fileSource === "fileExternal";
 
       file.fileSource = isExternal ? "file" : "fileExternal";
       this._linkType = file;
       this.requestUpdate();
-    }else{
+    } else {
       return;
     }
   }
@@ -128,7 +132,7 @@ export default class AwcFileUploadSelected extends LitElement {
 
     return html`
       <div class="awc-file-upload-selected">
-            ${this._selectedFileManager.getFiles().map(({ file, providerIcon, provider }) => {
+            ${this.fileManager?.getFiles().map(({ file, providerIcon, provider }) => {
       const uploadStatus = this._uploadStatus[file.id] || { status: 'pending' };
       const isUploading = uploadStatus.status === 'uploading';
       const isSuccess = uploadStatus.status === 'success';

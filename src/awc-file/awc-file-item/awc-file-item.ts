@@ -1,17 +1,7 @@
-import {
-    CSSResult,
-    html,
-    LitElement,
-    PropertyValues,
-    svg,
-    TemplateResult,
-} from "lit";
+import { CSSResult, html, LitElement, PropertyValues, svg, TemplateResult } from "lit";
 import { customElement, property, query, state } from "lit/decorators.js";
-import {
-    fileIcons,
-    defaultFileIcon,
-} from "../../awc-file-upload/components/awc-file-upload-explorer/fileIcons";
-import { providerIcons } from "../../awc-file-upload/providerIcons";
+import { fileIcons, defaultFileIcon } from "../../awc-file-upload/components/awc-file-upload-explorer/fileIcons";
+import { providerIcons } from "../provider-icons";
 import { AwcFileDisplayType } from "../awc-file";
 import { awcFileItemStyles } from "./awc-file-item.style";
 import { formatFileSize } from "../../util/fileSizeConverter";

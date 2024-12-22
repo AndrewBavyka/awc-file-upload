@@ -33,6 +33,7 @@ export const awcFileUploadSelectedStyles = css`
         position: relative;
         display: flex;
         border-radius: var(--corner-radius-s);
+        overflow: hidden;
     }
 
     .awc-file-upload-selected__preview img {
@@ -102,7 +103,11 @@ export const awcFileUploadSelectedStyles = css`
         fill: var(--colors-light-primary-hover);
     }
 
-    .awc-file-upload-selected__preview__icon svg{
+    .awc-file-upload-selected__preview__icon {
+        display: flex;
+    }
+
+    .awc-file-upload-selected__preview__icon svg {
         width: 48px;
         height: 48px;
     }

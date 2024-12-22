@@ -1,16 +1,18 @@
 import { Provider } from "../providers/Provider";
-import { EventDispatcher, event } from "../../util/event";
+import { EventsBus, NavigationEvents, NavigationEventsBus} from './EventsBus';
 
-export type CurrentView = "main" | "auth" | "list" | "selected" | "error";
+export type CurrentView = "main" | "auth" | "list" | "selected" | "error" | "more";
 export interface NavigationEventDetail {
     currentView: CurrentView;
 }
 export class NavigationManager extends EventTarget {
-    @event("awc-file-upload-change-view") private _onChangeView!: EventDispatcher<NavigationEventDetail>
-
     private _currentView: CurrentView = "main";
     private _previousView: CurrentView | null = null;
     private _selectedProvider: Provider | null = null;
+
+    private _onChangeView({currentView}: NavigationEventDetail) {
+        EventsBus.dispatch(NavigationEventsBus, NavigationEvents.NAVIGATION_CHANGE_VIEW, {currentView});
+    }
 
     setView(view: CurrentView): void {
         this._previousView = this._currentView;

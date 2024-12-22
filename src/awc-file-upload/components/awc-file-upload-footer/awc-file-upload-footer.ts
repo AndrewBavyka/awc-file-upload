@@ -5,6 +5,9 @@ import { EventDispatcher, event } from "../../../util/event";
 import { UploadManager, UploadProgressEventDetail, UploadStatusEventDetail } from "../../managers/UploadManager";
 import { SelectedFileManager } from "../../managers/SelectedFileManager";
 import { UploadEventBus, UploadEvents } from "../../managers/EventsBus";
+import { textManagerContext } from "../../managers/TextManagerContext";
+import { TextManager } from "../../managers/TextManager";
+import {consume} from '@lit/context';
 
 export const awcFileUploadFooterTag = "awc-file-upload-footer";
 
@@ -19,6 +22,8 @@ export default class AwcFileUploadFooter extends LitElement {
     @state() private _uploadedCount: number = 0;
     @state() private _isUploadStart = false;
     @state() private _isSwitcherChecked:boolean = false;
+
+    @consume({ context: textManagerContext }) textManager?: TextManager;
 
     @event("awc-file-upload-switch-mode") private _onChangeMode!: EventDispatcher<{ [key: string]: boolean }>;
 
@@ -150,7 +155,7 @@ export default class AwcFileUploadFooter extends LitElement {
                 ? html` ${Array.from(this._progressMap.entries()).map(([fileName, progress]) => html`
                         <awc-file-upload-progress .value=${overallProgress}></awc-file-upload-progress>
                         <div class="awc-file-upload-footer__progress-item">
-                            <span class="awc-file-upload-footer__progress-value">Загрузка ${overallProgress.toFixed(0)}%</span>
+                            <span class="awc-file-upload-footer__progress-value">${this.textManager?.textState.uploadStatus.status} ${overallProgress.toFixed(0)}%</span>
                             <span class="awc-file-upload-footer__progress-info">Загружены ${this._uploadedCount} из ${this._selectedFileManager.getFiles().length}</span>
                         </div>
                         <button 
@@ -166,13 +171,13 @@ export default class AwcFileUploadFooter extends LitElement {
                 : this.isSelected
                     ? html`
                             <awc-button style="width: 100%" @click=${this._triggerUpload}>
-                                Загрузить ${this.fileCount > 0 ? this.fileCount : ""}
+                               ${this.textManager?.textState.buttonTexts.upload} ${this.fileCount > 0 ? this.fileCount : ""}
                             </awc-button>
                         `
                     : html`
                             <div class="awc-file-upload-footer__switcher">
-                                <awc-switcher ?checked=${this._isSwitcherChecked} @change=${this._toggleLinkOrFileUploading} >Загружать как ссылки</awc-switcher>
-                                <awc-tooltip message="Выберите этот параметр, чтобы загружать файлы в виде ссылок. Это позволяет экономить место на диске, так как сами файлы не будут храниться локально.">${questionIcon}</awc-tooltip>
+                                <awc-switcher ?checked=${this._isSwitcherChecked} @change=${this._toggleLinkOrFileUploading}>${this.textManager?.textState.switcher.fileExternal}</awc-switcher>
+                                <awc-tooltip .message="${this.textManager?.textState.tooltip.fileExternal}">${questionIcon}</awc-tooltip>
                             </div>
                              ${this._selectedFileManager.getFiles().length ? html`
                                 <div class="awc-file-upload-footer__buttons">
@@ -183,12 +188,12 @@ export default class AwcFileUploadFooter extends LitElement {
                                         type="button"
                                         @click=${() => this._emitEvent("cancel-selection")}
                                     >
-                                        Отменить
+                                        ${this.textManager?.textState.buttonTexts.cancel}
                                     </awc-button>
                                     <awc-button 
                                         @click=${() => this._emitEvent("confirm-selection")}
                                     >
-                                        Выбрать ${this.fileCount > 0 ? this.fileCount : ""}
+                                         ${this.textManager?.textState.buttonTexts.select} ${this.fileCount > 0 ? this.fileCount : ""}
                                     </awc-button>
                                 </div>
                              ` : ""}

@@ -3,16 +3,19 @@ import { customElement, property, query, state } from "lit/decorators.js";
 import { Provider } from "./providers/Provider";
 import { awcFileUploadStyles } from "./awc-file-upload.style";
 import { SelectedFileManager } from "./managers/SelectedFileManager";
+import { TextManager } from './managers/TextManager';
 import { NavigationManager } from "./managers/NavigationManager";
 import { UploadManager } from "./managers/UploadManager";
-import { UploadEventBus, UploadEvents, EventsBus, SelectedFilesEventBus, SelectedFilesEvents, DropzoneEvents, DropzoneEventsBus } from "./managers/EventsBus";
+import { UploadEventBus, UploadEvents, EventsBus, SelectedFilesEventBus, SelectedFilesEvents, DropzoneEvents, DropzoneEventsBus, NavigationEventsBus, NavigationEvents } from "./managers/EventsBus";
 import { live } from "lit/directives/live.js";
+import { textManagerContext } from "./managers/TextManagerContext";
+import { selectedFileManagerContext } from "./managers/SelectedFileManagerContext";
+import { provide } from '@lit/context';
 
 export const awcFileUploadTag = "awc-file-upload";
 
 @customElement(awcFileUploadTag)
 export default class AwcFileUpload extends LitElement {
-  @property({ type: String }) title = "Перетащите файлы, вставьте, выберите файлы или импортируйте из:";
   @property({ type: String, attribute: "upload-url" }) uploadUrl = "";
   @property({ type: Number, attribute: "upload-limit" }) uploadLimit = 5;
   @property({ type: Number, attribute: "max-file-size" }) maxFileSize = 300000000;
@@ -21,16 +24,22 @@ export default class AwcFileUpload extends LitElement {
   @property({ type: Boolean, reflect: true }) active = false;
   @property({ type: Object, attribute: "extra-data" }) extraData = {};
 
+  @state() private _showAlert: boolean = false;
+
   @state() private _selectedProvider: Provider | null = null;
   @state() private _navigationManager = new NavigationManager();
   @state() private _selectedFileManager = SelectedFileManager.getInstance();
   @state() private _uploadManager = UploadManager.getInstance();
+  @state() private _textManager = new TextManager(this);
 
   // Временное решение
   @state() private accountName: string | null = null;
 
   @query('awc-modal') private _modal!: HTMLElement;
   @query('awc-dialog') private _dialog!: HTMLElement;
+
+  @provide({ context: textManagerContext }) textManager = new TextManager(this);
+  @provide({ context: selectedFileManagerContext }) fileManager = this._selectedFileManager;
 
   protected updated(_changedProperties: PropertyValues): void {
     super.updated(_changedProperties);
@@ -59,7 +68,7 @@ export default class AwcFileUpload extends LitElement {
     this._selectedFileManager.setExtraData(this.extraData);
     this._selectedFileManager.setLimits(this.uploadLimit, this.maxFileSize);
 
-    SelectedFilesEventBus.addEventListener(SelectedFilesEvents.FILE_SELECTION_CHANGE, () => this._refreshSelectedFiles());
+    SelectedFilesEventBus.addEventListener(SelectedFilesEvents.FILE_SELECTION_CHANGE, () => { this._refreshSelectedFiles(); this._updateTitle(); });
 
     DropzoneEventsBus.addEventListener(DropzoneEvents.FILE_DROPPED, (e) => this._getDataFromDropzone(e as CustomEvent));
 
@@ -71,14 +80,18 @@ export default class AwcFileUpload extends LitElement {
     EventsBus.autoDispatchToDOM(this, UploadEventBus, UploadEvents.UPLOAD_STATUS);
     EventsBus.autoDispatchToDOM(this, UploadEventBus, UploadEvents.UPLOAD_END);
 
+    NavigationEventsBus.addEventListener(NavigationEvents.NAVIGATION_CHANGE_VIEW, (event) => this._updateTitle());
+
+    this._updateTitle();
     this._initialDropzoneEvents();
   }
+
 
   private _initialDropzoneEvents() {
     window.addEventListener("dragover", (e: Event) => e.preventDefault());
     window.addEventListener("drop", (e: Event) => e.preventDefault());
     // window.addEventListener("dragleave", () => this.active = false);
-}
+  }
 
   private _getDataFromDropzone(e: CustomEvent<File[]>) {
     const files = e.detail;
@@ -111,31 +124,27 @@ export default class AwcFileUpload extends LitElement {
     if (token && this._selectedProvider) {
       this._selectedProvider.setAuthToken(token);
       this._navigationManager.setView("list");
-      this._updateTitle();
       this.requestUpdate();
     }
   }
 
   private _confirmSelection() {
     this._navigationManager.setView("selected");
-    this.title = `${this._selectedFileManager.getFiles().length} файлов выбрано`;
     this.requestUpdate();
   }
 
   private _clearSelectedFiles() {
     this._selectedFileManager.clearFiles();
+    this.requestUpdate();
   }
 
   private _cancel() {
     this._navigationManager.setView("main");
     this._clearSelectedFiles();
-    this._updateTitle();
-    this.requestUpdate();
   }
 
   private _cancelSelectionFiles() {
     this._clearSelectedFiles()
-    this._updateTitle();
   }
 
   private _logout() {
@@ -144,19 +153,17 @@ export default class AwcFileUpload extends LitElement {
     }
 
     this._navigationManager.setView("main");
-    this._updateTitle();
     // Стоит ли очищать при выходе из аккаунта очистку вообще всех файлов?
     this._clearSelectedFiles();
     this.requestUpdate();
   }
 
   private _addMoreFiles() {
-    this._navigationManager.setView('main');
+    this._navigationManager.setView('more');
+
     this._updateTitle();
-    this.requestUpdate();
   }
 
-  @state() private _showAlert: boolean = false;
 
   private _showAlertIfFilesSelected(e: Event) {
     const targetModalWrapper = (e.target) as HTMLDivElement;
@@ -178,7 +185,6 @@ export default class AwcFileUpload extends LitElement {
     const hasProviderToken = provider.checkLocalStorage();
     this._navigationManager.setView(hasProviderToken ? "list" : "auth");
     this._selectedProvider = provider;
-    this._updateTitle();
     this.requestUpdate();
   }
 
@@ -197,21 +203,18 @@ export default class AwcFileUpload extends LitElement {
     if (this._selectedFileManager.getFiles().length === 0 && this._navigationManager.currentView === "selected") {
       this._navigationManager.setView("main");
     }
-
-    this._updateTitle();
+  
+    this.requestUpdate()
   }
 
   private _updateTitle() {
-    const selectedFiles = this._selectedFileManager.getFiles();
-    const currentView = this._navigationManager.currentView;
+    const selectedProvider = this._navigationManager.selectedProvider?.getProviderInfo().name || null;
 
-    if (selectedFiles.length > 0) {
-      this.title = `${selectedFiles.length} файлов выбрано`;
-    } else if (currentView !== "main") {
-      this.title = `Импортируйте из ${this._selectedProvider?.getProviderInfo().name}`;
-    } else {
-      this.title = "Перетащите файлы сюда, загружайте или импортируйте из:";
-    }
+    this._textManager.updateState({
+      navigationView: this._navigationManager.currentView,
+      selectedProvider,
+      selectedFilesCount: this._selectedFileManager.getFiles().length,
+    });
   }
 
   private _getViewTemplate() {
@@ -226,12 +229,20 @@ export default class AwcFileUpload extends LitElement {
         return html`<awc-file-upload-error></awc-file-upload-error>`;
       case "main":
         return html`
-              <awc-file-upload-home @awc-file-upload-provider-selected=${this._handleProviderSelection}
-              >
+              <awc-file-upload-home @awc-file-upload-provider-selected=${this._handleProviderSelection}>
                   <slot name="awc-file-upload-provider-yandex-disk"></slot>
                   <slot name="awc-file-upload-provider-google-drive"></slot>
               </awc-file-upload-home>
           `;
+      case "more":
+        return html`
+                <awc-file-upload-add-more .subtitle=${this._textManager.textState.subtitle}>
+                  <awc-file-upload-home @awc-file-upload-provider-selected=${this._handleProviderSelection}>
+                    <slot name="awc-file-upload-provider-yandex-disk"></slot>
+                    <slot name="awc-file-upload-provider-google-drive"></slot>
+                  </awc-file-upload-home>
+                </awc-file-upload-add-more>
+            `;
     }
   }
 
@@ -314,8 +325,8 @@ export default class AwcFileUpload extends LitElement {
       <awc-file-upload-header
         .view=${this._navigationManager.currentView}
         .provider=${this._selectedProvider}
-        .title=${this.title}
         .accountName=${this.accountName!}
+        .headerText=${this._textManager.textState.header}
         @cancel=${this._cancel}
         @add-more-files=${() => this._addMoreFiles()}
         @logout=${() => {
@@ -329,7 +340,7 @@ export default class AwcFileUpload extends LitElement {
   private _renderFooter(): TemplateResult | string {
     const selectedFilesCount = this._selectedFileManager.getFiles().length;
 
-    if (this._navigationManager.currentView === "main" || this._navigationManager.currentView === "auth") {
+    if (this._navigationManager.currentView === "main" || this._navigationManager.currentView === "auth" || this._navigationManager.currentView === "more") {
       return "";
     }
 
