@@ -11,9 +11,9 @@ import { live } from "lit/directives/live.js";
 import { textManagerContext } from "./managers/TextManagerContext";
 import { selectedFileManagerContext } from "./managers/SelectedFileManagerContext";
 import { provide } from '@lit/context';
-
+import { localized } from "@lit/localize";
 export const awcFileUploadTag = "awc-file-upload";
-
+@localized()
 @customElement(awcFileUploadTag)
 export default class AwcFileUpload extends LitElement {
   @property({ type: String, attribute: "upload-url" }) uploadUrl = "";

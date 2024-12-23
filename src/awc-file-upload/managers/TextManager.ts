@@ -1,5 +1,5 @@
 import { ReactiveController, ReactiveControllerHost } from 'lit';
-import { msg, localized } from '@lit/localize';
+import { msg, localized, str} from '@lit/localize';
 
 
 interface TextState {
@@ -109,11 +109,11 @@ export class TextManager implements ReactiveController {
             case 'main':
                 return msg('Перетащите файлы, вставьте, выберите файлы или импортируйте из:');
             case 'auth':
-                return msg(`Импортировать из ${this.textState.selectedProvider || msg('провайдера')}`);
+                return msg(str`Импортировать из ${this.textState.selectedProvider}`);
             case 'list':
-                return msg(`Импортировать из ${this.textState.selectedProvider || msg('провайдера')}`);
+                return msg(str`Импортировать из ${this.textState.selectedProvider}`);
             case 'selected':
-                return msg(`${this.textState.selectedFilesCount} файлов выбрано`);
+                return msg(str`${this.textState.selectedFilesCount} файлов выбрано`);
             case 'more':
                     return msg(`Добавить ещё`);
             default:
