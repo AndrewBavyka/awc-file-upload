@@ -33,6 +33,7 @@ export const awcFileItemStyles = css`
 
     :host([view="grid"]) .awc-file-item__preview .awc-file-item__dropdown {
         position: absolute;
+        z-index: 9999;
         top: 6px;
         right: 6px;
     }
