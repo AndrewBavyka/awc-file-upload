@@ -12,7 +12,7 @@ export const awcFileUploadProviderYandexDiskTag = "awc-file-upload-provider-yand
 export default class AwcFileUploadProviderYandexDisk extends Provider {
     @property({ type: String, attribute: "provider-name", reflect: true }) providerName = "Яндекс Диск";
     @property({ type: String, attribute: "auth-url", reflect: true }) authUrl = "";
-    @property({ type: String, attribute: "list-url", reflect: true  }) listUrl = "";
+    @property({ type: String, attribute: "list-url", reflect: true }) listUrl = "";
 
     name = this.providerName;
     provider = "yandex_disk";
@@ -36,7 +36,8 @@ export default class AwcFileUploadProviderYandexDisk extends Provider {
     }
 
     async login(): Promise<void> {
-        const url = this.authUrl;
+        const accountState = { domain: window.location.origin };
+        const url = `${this.authUrl}?state=${encodeURIComponent(JSON.stringify(accountState))}`;
         const newWindow = window.open(url, "_blank");
         if (newWindow) newWindow.focus();
     }
@@ -45,23 +46,27 @@ export default class AwcFileUploadProviderYandexDisk extends Provider {
         if (!this.authToken) {
             this.authToken = localStorage.getItem(this.provider);
         }
-    
+
         try {
             const response = await axios.post(this.listUrl, {
-                path: directory ?? "/",
-                offset: options.qs?.offset ?? 0,
-                limit: options.qs?.limit ?? 20,
-                token: this.authToken,
+                params: {
+                    path: directory ?? "/",
+                    offset: options.qs?.offset ?? 0,
+                    limit: options.qs?.limit ?? 20,
+                },
+                data: {
+                    token: this.authToken,
+                },
             });
-    
+
             if (response.data.username) {
                 this.setUsername(response.data.username);
                 this.requestUpdate();
             }
-    
+
             return response.data as ProviderData;
         } catch (error) {
-            throw new Error(`Не удалось получить данные от ${this.providerName}: ${error}`);
+            throw new Error(`Failed to fetch data from ${this.providerName}: ${error}`);
         }
     }
 
