@@ -14,6 +14,7 @@ interface TextState {
         addMoreFiles: string;
         select: string;
         logout: string;
+        backward: string;
     };
     switcher: {
         fileExternal: string,
@@ -52,6 +53,7 @@ export class TextManager implements ReactiveController {
             addMoreFiles: msg('Добавить ещё'),
             select: msg('Выбрать'),
             logout: msg('Выход'),
+            backward: msg('Назад'),
         },
         switcher: {
             fileExternal: msg('Загружать как ссылки'),

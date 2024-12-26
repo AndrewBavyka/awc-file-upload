@@ -143,6 +143,11 @@ export default class AwcFileUpload extends LitElement {
     this._clearSelectedFiles();
   }
 
+  private _backward() {
+    this._navigationManager.setView("selected");
+    console.log(this._navigationManager.currentView)
+  }
+
   private _cancelSelectionFiles() {
     this._clearSelectedFiles()
   }
@@ -328,6 +333,7 @@ export default class AwcFileUpload extends LitElement {
         .accountName=${this.accountName!}
         .headerText=${this._textManager.textState.header}
         @cancel=${this._cancel}
+        @backward=${this._backward}
         @add-more-files=${() => this._addMoreFiles()}
         @logout=${() => {
         this._logout();

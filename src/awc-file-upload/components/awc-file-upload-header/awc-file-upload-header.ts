@@ -20,6 +20,10 @@ export default class AwcFileUploadHeader extends LitElement {
         this.dispatchEvent(new CustomEvent("cancel", { bubbles: true, composed: true }));
     }
 
+    private _handleBackward() {
+        this.dispatchEvent(new CustomEvent("backward", { bubbles: true, composed: true }));
+    }
+
     private _handleAddMore() {
         this.dispatchEvent(new CustomEvent("add-more-files", { bubbles: true, composed: true }));
     }
@@ -60,6 +64,11 @@ export default class AwcFileUploadHeader extends LitElement {
                             ${this._accountIconSvg}
                         </awc-icon-button>
                     </awc-dropdown>
+            `;
+            case "more":
+                return html`
+                   <button class="awc-file-upload-btn__cancel" @click=${this._handleBackward}>${this.textManager?.textState.buttonTexts.backward}</button>
+                   <div class="awc-file-upload-heading__title awc-file-upload-heading__title--auth">${this.headerText}</div>
             `;
             default:
                 return html`
