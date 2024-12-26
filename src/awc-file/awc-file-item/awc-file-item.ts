@@ -120,49 +120,46 @@ export default class AwcFileItem extends LitElement {
         `;
 
     return html`
-            <awc-dropdown ?visible=${this.dropdownActive} class="awc-file-item__dropdown"  width="210">
-                <awc-dropdown-group divider>
-                ${this.showDownload && !this.externalFileLink
-        ? html`
-                        <awc-dropdown-item @click=${(e: Event) => this._triggerDownloadEvent(e)}>
-                        ${this.downloadIcon} Скачать
-                        </awc-dropdown-item>
-                    `
-        : ""}
-                ${this.showPrivate
-        ? html`
-                        <awc-dropdown-item @click=${this._togglePrivateMode}>
-                        ${this._getPrivateModeIcon()} ${this._getPrivateModeText()}
-                        </awc-dropdown-item>
-                    `
-        : ""}
-                </awc-dropdown-group>
-                <awc-dropdown-item @click=${this._triggerDeleteEvent}>
-                    ${this.trashIcon} Удалить
+    <awc-dropdown ?visible=${this.dropdownActive} class="awc-file-item__dropdown" width="210">
+        <awc-dropdown-group ?divider=${this.showDownload && !this.externalFileLink || this.showPrivate}>
+          ${this.showDownload && !this.externalFileLink
+          ? html`
+                <awc-dropdown-item @click=${(e: Event) => this._triggerDownloadEvent(e)}>
+                  ${this.downloadIcon} Скачать
                 </awc-dropdown-item>
-                <awc-icon-button  @click=${this._handleDropdownToggle}  slot="awc-dropdown-toggle">
-                    ${dotsIcon}
-                </awc-icon-button>
-            </awc-dropdown>
-        `;
+              `
+          : ""}
+          ${this.showPrivate
+          ? html`
+                <awc-dropdown-item @click=${this._togglePrivateMode}>
+                  ${this._getPrivateModeIcon()} ${this._getPrivateModeText()}
+                </awc-dropdown-item>
+              `
+          : ""}
+        </awc-dropdown-group>
+        <awc-dropdown-item @click=${this._triggerDeleteEvent}>
+          ${this.trashIcon} Удалить
+        </awc-dropdown-item>
+        <awc-icon-button @click=${this._handleDropdownToggle} slot="awc-dropdown-toggle">
+          ${dotsIcon}
+        </awc-icon-button>
+      </awc-dropdown>
+    `;
   }
 
   private _triggerDownloadEvent(e: Event) {
     e.stopPropagation();
-    e.preventDefault();
-
-    if (!(e.target instanceof HTMLElement) || !e.target.closest('awc-dropdown-item')) {
-      return;
-    }
 
     window.open(this.localFile, "_self", "noopener,noreferrer");
     this._onDownloadEvent(this._getFileDetails());
+    this.activeDropdown.close();
   }
 
   private _triggerDeleteEvent(e: Event) {
     e.stopPropagation();
 
     this._onDeleteEvent(this._getFileDetails());
+    this.activeDropdown.close();
   }
 
   private _togglePrivateMode(e: Event) {

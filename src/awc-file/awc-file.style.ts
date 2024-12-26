@@ -42,6 +42,7 @@ export const awcFileStyles = css`
     }
 
     .awc-file__icon {
+        display: flex;
         transform: rotate(-90deg);
         transition: transform 0.3s ease;
     }

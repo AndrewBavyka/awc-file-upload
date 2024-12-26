@@ -271,25 +271,24 @@ export default class AwcFileUploadExplorer extends LitElement {
 
     return this.items.map((item) => {
       const isSelected = this.fileManager?.getFile(item.id);
+      const isFileSizeValid = !this.fileManager?.isFileSizeValid(item);
+      const isUploadLimitExceeded = this.fileManager?.isUploadLimitExceeded();
       const formattedSize = item.isFolder ? '' : formatFileSize(item.size!, true, 'ru');
-      const isDisabled = !this.fileManager?.isFileValid(item);
-
+      
       return html`
-        <div
-          class="file-explorer__item file-explorer__item--list
+        <div class="file-explorer__item file-explorer__item--list
           ${item.isFolder ? "folder" : "file"} 
-          ${isSelected && !isDisabled ? "file-explorer__item--selected" : ""}
-          ${isDisabled ? "file-explorer__item--disabled" : ""}"
+          ${isSelected && !isFileSizeValid ? "file-explorer__item--selected" : ""}
+          ${isFileSizeValid ? "file-explorer__item--disabled" : ""}"
           @click="${() => this.navigateTo(item)}"
-        >
+        > 
           ${item.isFolder
           ? html`${folderArrowIcon}`
           : html`
               <awc-checkbox
-                  tabindex="${isDisabled ? -1 : 0}"
-                  ?checked="${!!isSelected && !isDisabled}"
-                  @change="${() => this.toggleFileSelection(item)}"
-                  @click="${(e: Event) => e.stopPropagation()}"
+                  tabindex="${isFileSizeValid ? -1 : 0}"
+                  ?checked="${isSelected && !isFileSizeValid}"
+                  @click=${(e: Event) => {if(isUploadLimitExceeded) e.stopPropagation(); e.preventDefault()}}
                 ></awc-checkbox>
               `}
           <div class="file-explorer__icon ${item.isFolder ? "folder" : "file"}">
@@ -307,13 +306,14 @@ export default class AwcFileUploadExplorer extends LitElement {
   private renderGridItems(): TemplateResult[] {
     return this.items.map((item) => {
       const isSelected = this.fileManager?.getFile(item.id);
-      const isDisabled = !this.fileManager?.isFileValid(item);
+      const isFileSizeValid = !this.fileManager?.isFileSizeValid(item);
+      const isUploadLimitExceeded = this.fileManager?.isUploadLimitExceeded();
 
       return html`
         <div
           class="file-explorer__item file-explorer__item--grid ${item.isFolder ? "folder" : "file"} 
           ${isSelected ? "file-explorer__item--selected" : ""}
-          ${isDisabled ? "file-explorer__item--disabled" : ""}"
+          ${isFileSizeValid ? "file-explorer__item--disabled" : ""}"
           @click="${() => this.navigateTo(item)}"
         >
           <div class="file-explorer__item--card">
@@ -321,11 +321,9 @@ export default class AwcFileUploadExplorer extends LitElement {
           ? ""
           : html`
                 <awc-checkbox
-                  ?checked="${isSelected}"
-                  @change="${() => this.toggleFileSelection(item)}"
-                  @click="${(e: Event) => e.stopPropagation()}"
+                  ?checked="${isSelected && !isFileSizeValid}"
+                  @click=${(e: Event) => {if(isUploadLimitExceeded) e.stopPropagation(); e.preventDefault()}}
                 ></awc-checkbox>
-
                 `}
             <div
               class="file-explorer__icon ${item.thumbnail

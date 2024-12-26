@@ -7,7 +7,8 @@ import { SelectedFileManager } from "../../managers/SelectedFileManager";
 import { UploadEventBus, UploadEvents } from "../../managers/EventsBus";
 import { textManagerContext } from "../../managers/TextManagerContext";
 import { TextManager } from "../../managers/TextManager";
-import {consume} from '@lit/context';
+import { consume } from '@lit/context';
+import anime from "animejs";
 
 export const awcFileUploadFooterTag = "awc-file-upload-footer";
 
@@ -21,7 +22,7 @@ export default class AwcFileUploadFooter extends LitElement {
 
     @state() private _uploadedCount: number = 0;
     @state() private _isUploadStart = false;
-    @state() private _isSwitcherChecked:boolean = false;
+    @state() private _isSwitcherChecked: boolean = false;
 
     @consume({ context: textManagerContext }) textManager?: TextManager;
 
@@ -81,8 +82,35 @@ export default class AwcFileUploadFooter extends LitElement {
         return (uploadingProgress + completedProgress) / totalFiles;
     }
 
+    private _hasAnimated = false;
+
+    private _animateButtons() {
+        if (this._hasAnimated) return;
+
+        const container = this.shadowRoot!.querySelector(".awc-file-upload-footer__buttons")! as HTMLDivElement;
+        if (!container) return;
+        const buttons = Array.from(container.querySelectorAll("awc-button")) as HTMLElement[];
+
+        anime({
+            targets: buttons,
+            scale: [0.8, 1],
+            opacity: [0, 1],
+            duration: 200,
+            easing: 'easeOutExpo',
+            complete: () => {
+                this._hasAnimated = true;
+            },
+        });
+    }
+
     protected update(changedProperties: PropertyValues): void {
         super.update(changedProperties);
+
+        if (changedProperties.has('fileCount') && this.fileCount <= 0) {
+            this._hasAnimated = false;
+        }
+
+        this._animateButtons();
 
         this._onChangeMode({ isExternalMode: this._isSwitcherChecked });
     }
@@ -91,26 +119,26 @@ export default class AwcFileUploadFooter extends LitElement {
         const savedState = localStorage.getItem("isSwitcherChecked");
         this._isSwitcherChecked = savedState === "true";
     }
-    
+
     private _saveSwitcherState() {
         localStorage.setItem("isSwitcherChecked", String(this._isSwitcherChecked));
     }
 
     private _toggleLinkOrFileUploading(e: Event) {
         const target = e.target as HTMLInputElement;
-    
+
         if (!target) return;
-    
+
         this._isSwitcherChecked = target.checked;
-    
+
         this._saveSwitcherState();
         this._onChangeMode({ isExternalMode: this._isSwitcherChecked });
-       
-        if(!this._isSwitcherChecked) {
+
+        if (!this._isSwitcherChecked) {
             const files = this._selectedFileManager.getFiles();
             files.forEach(file => {
                 const isExternalFileMathesSize = this._selectedFileManager.checkFileSize(file.file);
-                if(isExternalFileMathesSize){
+                if (isExternalFileMathesSize) {
                     return this._selectedFileManager.removeFile(file.file.id);
                 }
             })

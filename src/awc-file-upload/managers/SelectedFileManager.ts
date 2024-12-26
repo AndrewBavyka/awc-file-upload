@@ -49,11 +49,15 @@ export class SelectedFileManager {
         this.fileSelectionChanged();
     }
 
-    isFileValid(file: ProviderFile): boolean {
+    isFileSizeValid(file: ProviderFile): boolean {
         if (this.externalMode) return true;
 
         return file.size! <= this.maxFileSize;
     }
+    
+    isUploadLimitExceeded(): boolean {
+        return this.uploadLimit > 0 && this.selectedFiles.size >= this.uploadLimit;
+    } 
 
     checkFileSize(file: ProviderFile): boolean{
         return this.maxFileSize > 0 && file.size! > this.maxFileSize;

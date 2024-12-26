@@ -30,6 +30,17 @@ export default class AwcFileUploadProviderLocal extends Provider {
 
   @state() private selectedFileManager = SelectedFileManager.getInstance();
 
+  private generateUUID(): string {
+    const template = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx";
+    return template.replace(/[xy]/g, (c) => {
+      const r = (crypto.getRandomValues(new Uint8Array(1))[0] % 16) | 0;
+      const v = c === "x" ? r : (r & 0x3) | 0x8;
+      return v.toString(16);
+    });
+  }
+
+  private uniqueId: string = `upload-${this.generateUUID()}`;
+
   private _onChange(e: Event): void {
     const target = e.target as HTMLInputElement | null;
     const files = target?.files;
@@ -64,7 +75,7 @@ export default class AwcFileUploadProviderLocal extends Provider {
       <label
         tabindex="0"
         class="awc-file-upload-provider-local--input"
-        for="upload"
+        for="${this.uniqueId}"
       >
         ${this.icon} ${this.name}
       </label>
@@ -72,7 +83,7 @@ export default class AwcFileUploadProviderLocal extends Provider {
         @change="${this._onChange}"
         multiple
         type="file"
-        id="upload"
+        id="${this.uniqueId}"
         hidden
       />
 

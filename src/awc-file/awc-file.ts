@@ -126,6 +126,10 @@ export default class AwcFile extends LitElement {
 
         if (_changedProperties.has("view")) {
             this._updateActiveButton();
+
+            if(this.view) {
+                this.fileItems.forEach((item) => item.dropdownActive = false);
+            }
         }
     }
 
@@ -164,7 +168,7 @@ export default class AwcFile extends LitElement {
                 </div>
                 <div ?inert=${!this.open} class="awc-file__accordion">
                     <div class="awc-file__accordion__wrapper">
-                        <div @awc-dropdown-toggle=${(e: CustomEvent) => this._closeAllDropdownsExcept(e)} @slotchange=${this._updateFileItemsView} class="awc-file__body">
+                        <div @awc-dropdown-toggle=${this._closeAllDropdownsExcept} @slotchange=${this._updateFileItemsView} class="awc-file__body">
                             <slot></slot>
                         </div>
                         <div class="awc-file__button">
