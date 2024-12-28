@@ -1,27 +1,49 @@
 import { Provider } from "../providers/Provider";
-import { EventsBus, NavigationEvents, NavigationEventsBus} from './EventsBus';
+import { EventsBus, NavigationEvents, NavigationEventsBus } from './EventsBus';
 
 export type CurrentView = "main" | "auth" | "list" | "selected" | "error" | "more";
 export interface NavigationEventDetail {
     currentView: CurrentView;
 }
+
 export class NavigationManager extends EventTarget {
     private _currentView: CurrentView = "main";
     private _previousView: CurrentView | null = null;
+    private _viewHistory: CurrentView[] = [];
     private _selectedProvider: Provider | null = null;
 
-    private _onChangeView({currentView}: NavigationEventDetail) {
-        EventsBus.dispatch(NavigationEventsBus, NavigationEvents.NAVIGATION_CHANGE_VIEW, {currentView});
+    private _onChangeView({ currentView }: NavigationEventDetail) {
+        EventsBus.dispatch(NavigationEventsBus, NavigationEvents.NAVIGATION_CHANGE_VIEW, { currentView });
     }
 
     setView(view: CurrentView): void {
-        this._previousView = this._currentView;
-        this._currentView = view;
-        this._onChangeView({ currentView: this._currentView });
+        if (this._currentView !== view) {
+            this._viewHistory.push(this._currentView);
+            this._previousView = this._currentView;
+            this._currentView = view;
+            this._onChangeView({ currentView: this._currentView });
+        }
+    }
+
+    goBack(): void {
+        if (this._viewHistory.length > 0) {
+            const previousView = this._viewHistory.pop()!;
+            this._previousView = this._currentView;
+            this._currentView = previousView;
+            this._onChangeView({ currentView: this._currentView });
+        }
     }
 
     setSelectedProvider(provider: Provider): void {
         this._selectedProvider = provider;
+    }
+
+    reset(): void {
+        this._currentView = "main";
+        this._previousView = null;
+        this._viewHistory = [];
+        this._selectedProvider = null;
+        this._onChangeView({ currentView: this._currentView });
     }
 
     get currentView(): CurrentView {
@@ -36,11 +58,8 @@ export class NavigationManager extends EventTarget {
         return this._selectedProvider;
     }
 
-    reset(): void {
-        this._currentView = "main";
-        this._selectedProvider = null;
-
-        this._onChangeView({ currentView: this._currentView });
+    get viewHistory(): CurrentView[] {
+        return this._viewHistory;
     }
 }
 

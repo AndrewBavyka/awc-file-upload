@@ -139,8 +139,29 @@ export default class AwcFileUpload extends LitElement {
   }
 
   private _cancel() {
-    this._navigationManager.setView("main");
-    this._clearSelectedFiles();
+    const hasFiles = this._selectedFileManager.getFiles().length > 0;
+    const currentView = this._navigationManager.currentView;
+    const hasVisitedMore = this._navigationManager.viewHistory.includes("more");
+
+    if (!hasVisitedMore) {
+      this._clearSelectedFiles();
+      this._navigationManager.reset();
+      return;
+    }
+
+    if (currentView === "list") {
+      if (hasFiles) {
+        this._navigationManager.setView("selected");
+      } else {
+        this._navigationManager.goBack();
+      }
+    } else if (currentView === "selected") {
+      this._clearSelectedFiles();
+      this._navigationManager.reset();
+    } else {
+      this._clearSelectedFiles();
+      this._navigationManager.reset();
+    }
   }
 
   private _backward() {
