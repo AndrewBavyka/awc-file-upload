@@ -56,23 +56,6 @@ export default class AwcFile extends LitElement {
         return [...this.querySelectorAll(awcFileItemTag)!];
     }
 
-    private _triggerAnimation(): void {
-        anime({
-            targets: this.fileItems,
-            scale: [0.8, 1],
-            opacity: [0, 1],
-            duration: 400,
-            easing: 'easeOutExpo',
-            delay: anime.stagger(80),
-            complete: () => {
-                this.fileItems.forEach(item => {
-                  item.style.transform = '';
-                  item.style.opacity = '';
-                });
-            }
-        });
-    }
-
     private _switchingView(e: Event) {
         e.stopPropagation();
 
@@ -113,16 +96,10 @@ export default class AwcFile extends LitElement {
                 button.removeAttribute("active");
             }
         });
-
-        this._triggerAnimation();
     }
 
     protected updated(_changedProperties: PropertyValues): void {
         super.updated(_changedProperties);
-
-        if (_changedProperties.has("open") && this.open) {
-            this._triggerAnimation()
-        }
 
         if (_changedProperties.has("view")) {
             this._updateActiveButton();

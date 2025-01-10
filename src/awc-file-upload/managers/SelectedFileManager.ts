@@ -54,13 +54,24 @@ export class SelectedFileManager {
 
         return file.size! <= this.maxFileSize;
     }
-    
+
     isUploadLimitExceeded(): boolean {
         return this.uploadLimit > 0 && this.selectedFiles.size >= this.uploadLimit;
-    } 
+    }
 
-    checkFileSize(file: ProviderFile): boolean{
+    checkFileSize(file: ProviderFile): boolean {
         return this.maxFileSize > 0 && file.size! > this.maxFileSize;
+    }
+
+    updateFile(fileId: string) {
+        const selectedFile = this.selectedFiles.get(fileId);
+        if (!selectedFile) return;
+    
+        selectedFile.file.fileSource =  selectedFile.file.fileSource === "fileExternal" ? "file" : "fileExternal";
+    
+        this.selectedFiles.set(fileId, selectedFile);
+    
+        this.fileSelectionChanged();
     }
 
     addFile(file: ProviderFile, provider: string, providerIcon?: SVGTemplateResult) {
@@ -78,6 +89,7 @@ export class SelectedFileManager {
             this.selectedFiles.set(file.id, { file, provider, providerIcon });
         }
 
+       
         this.fileSelectionChanged();
     }
 

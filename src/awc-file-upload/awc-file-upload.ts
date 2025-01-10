@@ -63,7 +63,7 @@ export default class AwcFileUpload extends LitElement {
     window.addEventListener("message", (e: MessageEvent) => this._handleAuthMessage(e));
 
     this.addEventListener("confirm-selection", this._confirmSelection.bind(this));
-    this.addEventListener("awc-file-upload-switch-mode", this._toggleUploadMode);
+    this.addEventListener("awc-file-upload-switch-mode", (e: Event) => this._toggleUploadMode(e as CustomEvent));
 
     this._selectedFileManager.setExtraData(this.extraData);
     this._selectedFileManager.setLimits(this.uploadLimit, this.maxFileSize);
@@ -166,7 +166,6 @@ export default class AwcFileUpload extends LitElement {
 
   private _backward() {
     this._navigationManager.setView("selected");
-    console.log(this._navigationManager.currentView)
   }
 
   private _cancelSelectionFiles() {

@@ -185,6 +185,7 @@ export class UploadManager {
     async uploadSelectedFiles(): Promise<void> {
         const selectedFileManager = SelectedFileManager.getInstance();
         const selectedFiles = selectedFileManager.getFiles();
+        console.log(selectedFiles);
 
         if (selectedFiles.length === 0) {
             console.log('Нет выбранных файлов для загрузки.');

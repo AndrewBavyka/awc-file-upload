@@ -35,19 +35,15 @@ export default class AwcFileUploadSelected extends LitElement {
     this.requestUpdate();
   }
 
-  private toggleFileMode(fileId: string) {
+  private _toggleFileMode(fileId: string) {
     const selectedFile = this.fileManager?.getFile(fileId);
     if (!selectedFile) return;
 
-    const { file } = selectedFile;
-    if (!this.fileManager?.checkFileSize(file)) {
-      const isExternal = file.fileSource === "fileExternal";
-
-      file.fileSource = isExternal ? "file" : "fileExternal";
-      this._linkType = file;
+    if (!this.fileManager?.checkFileSize(selectedFile.file)) {
+      this.fileManager?.updateFile(fileId);
       this.requestUpdate();
     } else {
-      return;
+      console.warn("File size exceeds the allowed limit.");
     }
   }
 
@@ -151,7 +147,7 @@ export default class AwcFileUploadSelected extends LitElement {
                             <div class="awc-file-upload-selected__description">
                                 <span class="awc-file-upload-selected__size">${this._formatFileSize(file)}</span>
                                 ${provider !== 'local' ? html`
-                                    <awc-icon-button size="20" class="awc-file-upload-selected__type" @click="${() => this.toggleFileMode(file.id)}">
+                                    <awc-icon-button size="20" class="awc-file-upload-selected__type" @click="${() => this._toggleFileMode(file.id)}">
                                         ${this.getFileIcon(file)}
                                     </awc-icon-button>` : ""}
                             </div>
