@@ -1,7 +1,6 @@
 import axios, { AxiosResponse, AxiosError, AxiosProgressEvent } from 'axios';
 import { SelectedFile } from '../interfaces/SelectedFile';
 import { EventsBus, UploadEventBus, UploadEvents } from './EventsBus';
-import { getAllSelectedFiles, getExtraData } from './SelectedFilesStore';
 
 type UploadStatus = 'pending' | 'uploading' | 'success' | 'error';
 
@@ -10,6 +9,7 @@ export interface UploadStatusEventDetail {
     status: UploadStatus;
     response?: any;
 }
+
 export interface UploadProgressEventDetail {
     file: SelectedFile;
     progress?: number;
@@ -21,6 +21,7 @@ export class UploadManager {
     private queue: SelectedFile[] = [];
     private isUploading: boolean = false;
     private masterAbortController: AbortController | null = null;
+    private extraData: Record<string, any> = {};
 
     public static getInstance(): UploadManager {
         if (!UploadManager.instance) {
@@ -33,6 +34,17 @@ export class UploadManager {
         this.uploadUrl = uploadUrl;
     }
 
+    public setExtraData(data: Record<string, any>): void {
+        this.extraData = data;
+    }
+
+    public setFiles(files: SelectedFile[]): void {
+        this.queue = files.map((file) => {
+            // this._dispatchStatus(file, 'pending');
+            return file;
+        });
+    }
+
     private _dispatchStatus(file: SelectedFile, status: UploadStatus, response?: any): void {
         EventsBus.dispatch(UploadEventBus, UploadEvents.UPLOAD_STATUS, { file, status, response });
     }
@@ -42,21 +54,15 @@ export class UploadManager {
     }
 
     private _dispatchStart(): void {
-        EventsBus.dispatch(UploadEventBus, UploadEvents.UPLOAD_START);
+        // EventsBus.dispatch(UploadEventBus, UploadEvents.UPLOAD_START);
     }
 
     private _dispatchEnd(): void {
-        const fileManager = getAllSelectedFiles();
-        EventsBus.dispatch(UploadEventBus, UploadEvents.UPLOAD_END, fileManager);
+        EventsBus.dispatch(UploadEventBus, UploadEvents.UPLOAD_END, this.queue);
     }
 
     private _dispatchProgress(file: SelectedFile, progress: number): void {
         EventsBus.dispatch(UploadEventBus, UploadEvents.UPLOAD_PROGRESS, { file, progress });
-    }
-
-    private _addFile(file: SelectedFile): void {
-        this.queue.push(file);
-        this._dispatchStatus(file, 'pending');
     }
 
     private async uploadLocalFile(selectedFile: SelectedFile, signal: AbortSignal): Promise<void> {
@@ -70,9 +76,8 @@ export class UploadManager {
         const formData = new FormData();
         formData.append(provider, file.file, file.name);
 
-        const extraData = getExtraData();
-        for (const key in extraData) {
-            formData.append(key, extraData[key]);
+        for (const key in this.extraData) {
+            formData.append(key, this.extraData[key]);
         }
 
         try {
@@ -99,8 +104,8 @@ export class UploadManager {
             const errorMessage = signal.aborted
                 ? 'Отмена загрузки'
                 : error instanceof AxiosError
-                    ? error.message
-                    : 'Неизвестная ошибка';
+                ? error.message
+                : 'Неизвестная ошибка';
 
             this._dispatchStatus(selectedFile, 'error');
             this._dispatchError(new Error(errorMessage));
@@ -108,9 +113,12 @@ export class UploadManager {
         }
     }
 
-    private async uploadCloudProviderFile(selectedFile: SelectedFile): Promise<void> {
+    private async uploadCloudProviderFile(selectedFile: SelectedFile, signal: AbortSignal): Promise<void> {
         const { provider, file } = selectedFile;
-        const extraData = getExtraData();
+        const extraData = this.extraData;
+
+        // console.log(selectedFile); return;
+
 
         if (!file.fileExternal || !file.file) {
             console.error('Нет URL для загрузки удаленного файла:', file);
@@ -121,10 +129,11 @@ export class UploadManager {
             this._dispatchStatus(selectedFile, 'uploading');
             this._dispatchProgress(selectedFile, 0);
 
-            const response: AxiosResponse = await axios.post(this.uploadUrl, { provider, file }, {
+            const response: AxiosResponse = await axios.post(this.uploadUrl, { provider, file, extraData }, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                signal,
             });
 
             if (response.status === 200) {
@@ -141,18 +150,11 @@ export class UploadManager {
         }
     }
 
-    public cancelAllUploads(): void {
-        if (this.masterAbortController) {
-            this.masterAbortController.abort();
-            this.masterAbortController = null;
-        }
-    }
-
     private async uploadFile(selectedFile: SelectedFile, signal: AbortSignal): Promise<void> {
         if (selectedFile.file.file instanceof File) {
             await this.uploadLocalFile(selectedFile, signal);
         } else {
-            await this.uploadCloudProviderFile(selectedFile);
+            await this.uploadCloudProviderFile(selectedFile, signal);
         }
     }
 
@@ -177,23 +179,14 @@ export class UploadManager {
         } finally {
             this.isUploading = false;
             this.masterAbortController = null;
-            this.queue = [];
             this._dispatchEnd();
         }
     }
 
-    async uploadSelectedFiles(): Promise<void> {
-        const selectedFiles = getAllSelectedFiles();
-
-        if (selectedFiles.length === 0) {
-            console.log('Нет выбранных файлов для загрузки.');
-            return;
+    public cancelAllUploads(): void {
+        if (this.masterAbortController) {
+            this.masterAbortController.abort();
+            this.masterAbortController = null;
         }
-
-        for (const selectedFile of selectedFiles) {
-            this._addFile(selectedFile);
-        }
-
-        await this.startUpload();
     }
 }

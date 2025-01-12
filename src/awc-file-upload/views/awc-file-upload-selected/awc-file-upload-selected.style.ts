@@ -39,6 +39,7 @@ export const awcFileUploadSelectedStyles = css`
         width: 48px;
         height: 48px;
         object-fit: cover;
+        border-radius: inherit;
     }
 
     .awc-file-upload-selected__provider {

@@ -5,32 +5,27 @@ import { Provider } from "../../providers/Provider";
 import { ProviderFile } from "../../interfaces/ProviderFile";
 import { RequestOptions } from "../../interfaces/ProviderInfo";
 import { awcFileUploadExplorerStyles } from "./awc-file-upload-explorer.style";
-// import { SelectedFileManager } from "../../managers/SelectedFileManager";
 import { fileIcons, defaultFileIcon } from "./fileIcons";
 import { formatFileSize } from "../../../util/fileSizeConverter";
-import { SelectedFilesEventBus, SelectedFilesEvents } from "../../managers/EventsBus";
 import { CacheManager } from "../../managers/CacheManager";
 import { addSelectedFile, checkFileSize, checkNumberOfFiles, getAllSelectedFiles, getSelectedFileById, removeSelectedFile, selectedFilesStore } from "../../managers/SelectedFilesStore";
-
+import { CurrentView } from "../../managers/NavigationManager";
 
 export const awcFileUploadExplorer = "awc-file-upload-explorer";
 
 @customElement(awcFileUploadExplorer)
 export default class AwcFileUploadExplorer extends LitElement {
   @property({ type: Object }) provider: Provider | null = null;
-
-  @state() private currentPath = "/";
   @state() private items: ProviderFile[] = [];
-  @state() private offset = 0;
-  @state() private limit = 20;
-  @state() private allItemsLoaded = false;
-  @state() private isLoading = false;
-  @state() private errorMessage: string | null = null;
-  @state() private isGridView = false;
-  // @state() fileManager = SelectedFileManager.getInstance();
+  @property({type: Array}) getViewHistory: CurrentView[] = [];
 
-  // @consume({ context: selectedFileManagerContext }) fileManager?: SelectedFileManager;
-
+  private currentPath = "/";
+  private offset = 0;
+  private limit = 20;
+  private allItemsLoaded = false;
+  private isLoading = false;
+  private errorMessage: string | null = null;
+  private isGridView = false;
   private cacheManager = new CacheManager();
   private abortController: AbortController | null = null;
 
@@ -53,19 +48,19 @@ export default class AwcFileUploadExplorer extends LitElement {
   async connectedCallback() {
     super.connectedCallback();
 
-    this.loadViewMode();
+    this._loadViewMode();
     await this.loadItems(this.currentPath, true);
     selectedFilesStore.subscribe(() => this.requestUpdate())
   }
 
-  private loadViewMode() {
+  private _loadViewMode() {
     const providerName = this.provider?.getProviderInfo().provider || "";
     const savedViewMode = localStorage.getItem(`awc-file-explorer-${providerName}`);
 
     this.isGridView = savedViewMode === "grid";
   }
 
-  private saveViewMode() {
+  private _saveViewMode() {
     const providerName = this.provider?.getProviderInfo().provider || "";
 
     localStorage.setItem(`awc-file-explorer-${providerName}`, this.isGridView ? "grid" : "list");
@@ -75,11 +70,11 @@ export default class AwcFileUploadExplorer extends LitElement {
     super.updated(_changedProperties);
 
     if (_changedProperties.has("isGridView")) {
-      this.animateViewToggle();
+      this._animateViewToggle();
     }
   }
 
-  private animateViewToggle() {
+  private _animateViewToggle() {
     const container = this.shadowRoot!.querySelector(".file-explorer__body")! as HTMLDivElement;
     const items = Array.from(container.querySelectorAll(".file-explorer__item")) as HTMLElement[];
 
@@ -99,10 +94,10 @@ export default class AwcFileUploadExplorer extends LitElement {
     });
   }
 
-  private toggleView() {
+  private _toggleView() {
     this.isGridView = !this.isGridView;
-    this.animateViewToggle();
-    this.saveViewMode();
+    this._animateViewToggle();
+    this._saveViewMode();
   }
 
   private currentRequestId: number = 0;
@@ -215,7 +210,7 @@ export default class AwcFileUploadExplorer extends LitElement {
     }
   }
 
-  private navigateTo(item: ProviderFile) {
+  private _navigateTo(item: ProviderFile) {
     if (item.isFolder) {
       this.currentPath = item.requestPath;
       this.loadItems(this.currentPath, true);
@@ -232,7 +227,7 @@ export default class AwcFileUploadExplorer extends LitElement {
     this.loadItems(decodeURIComponent(this.currentPath), true);
   }
 
-  private getPathArray(): string[] {
+  private _getPathArray(): string[] {
     const currentPathDecoded = decodeURIComponent(
       this.currentPath.replace(/\+/g, " ")
     );
@@ -240,9 +235,11 @@ export default class AwcFileUploadExplorer extends LitElement {
   }
 
   private _toggleFileSelection(file: ProviderFile) {
+    if (!file.fileSource) file.fileSource = 'file';
+
     const getProvider = this.provider?.getProviderInfo().provider!;
     const getProviderIcon = this.provider?.getProviderInfo().icon!;
-   
+
     const allFiles = getAllSelectedFiles() || [];
     const hasFileId = allFiles.some(item => item.file.id === file.id);
 
@@ -251,8 +248,6 @@ export default class AwcFileUploadExplorer extends LitElement {
     } else {
       addSelectedFile(file, getProvider, getProviderIcon);
     }
-
-    this.requestUpdate();
   }
 
   private _moveScroolTop(): void {
@@ -260,19 +255,23 @@ export default class AwcFileUploadExplorer extends LitElement {
     scrollContainer?.scrollTo(0, 0);
   }
 
-  private hasSelectedFiles(): boolean {
-    const selectedFiles = getAllSelectedFiles();
-    return selectedFiles && selectedFiles.length > 0;
-  }
-
-  private renderListItems(): TemplateResult[] {
+  private _renderListItems(): TemplateResult[] {
     const folderArrowIcon = svg`
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path fill-rule="evenodd" clip-rule="evenodd" d="M7.29289 4.29289C6.90237 4.68342 6.90237 5.31658 7.29289 5.70711L11.5858 10L7.29289 14.2929C6.90237 14.6834 6.90237 15.3166 7.29289 15.7071C7.68342 16.0976 8.31658 16.0976 8.70711 15.7071L13.7071 10.7071C14.0976 10.3166 14.0976 9.68342 13.7071 9.29289L8.70711 4.29289C8.31658 3.90237 7.68342 3.90237 7.29289 4.29289Z" fill="#919BB6"/>
       </svg>
     `;
 
-    return this.items.map((item) => {
+
+    // Доработать момент с отображением файлов в списке
+    const selectedFiles = getAllSelectedFiles().map((file) => file.file.id);
+    const hasMoreInViewHistory = this.getViewHistory.includes('more');
+
+    const filteredItems = hasMoreInViewHistory
+        ? this.items.filter(item => !selectedFiles.includes(item.id) || getSelectedFileById(item.id))
+        : this.items;
+
+    return filteredItems.map((item) => {
       const isSelected = getSelectedFileById(item.id);
       const isFileSizeValid = checkFileSize(item);
       const isUploadLimitExceeded = checkNumberOfFiles();
@@ -283,7 +282,7 @@ export default class AwcFileUploadExplorer extends LitElement {
           ${item.isFolder ? "folder" : "file"} 
           ${isSelected && !isFileSizeValid ? "file-explorer__item--selected" : ""}
           ${isFileSizeValid ? "file-explorer__item--disabled" : ""}"
-          @click="${() => this.navigateTo(item)}"
+          @click="${() => this._navigateTo(item)}"
         > 
           ${item.isFolder
           ? html`${folderArrowIcon}`
@@ -296,8 +295,8 @@ export default class AwcFileUploadExplorer extends LitElement {
               `}
           <div class="file-explorer__icon ${item.isFolder ? "folder" : "file"}">
             ${item.isFolder
-          ? this.renderFolderIcon(item.isPublicFolder)
-          : this.renderFileIcon(item)}
+          ? this._renderFolderIcon(item.isPublicFolder)
+          : this._renderFileIcon(item)}
           </div>
           <span class="file-explorer__name">${item.name}</span>
           <span class="file-explorer__size">${formattedSize}</span>
@@ -306,7 +305,7 @@ export default class AwcFileUploadExplorer extends LitElement {
     });
   }
 
-  private renderGridItems(): TemplateResult[] {
+  private _renderGridItems(): TemplateResult[] {
     return this.items.map((item) => {
       const isSelected = getSelectedFileById(item.id);
       const isFileSizeValid = checkFileSize(item);
@@ -317,7 +316,7 @@ export default class AwcFileUploadExplorer extends LitElement {
           class="file-explorer__item file-explorer__item--grid ${item.isFolder ? "folder" : "file"} 
           ${isSelected ? "file-explorer__item--selected" : ""}
           ${isFileSizeValid ? "file-explorer__item--disabled" : ""}"
-          @click="${() => this.navigateTo(item)}"
+          @click="${() => this._navigateTo(item)}"
         >
           <div class="file-explorer__item--card">
             ${item.isFolder
@@ -336,8 +335,8 @@ export default class AwcFileUploadExplorer extends LitElement {
             : "file"}"
             >
             ${item.isFolder
-          ? this.renderFolderIcon(item.isPublicFolder)
-          : this.renderFileIcon(item)}
+          ? this._renderFolderIcon(item.isPublicFolder)
+          : this._renderFileIcon(item)}
             </div>
           </div>
           <span class="file-explorer__name">${item.name}</span>
@@ -346,13 +345,13 @@ export default class AwcFileUploadExplorer extends LitElement {
     });
   }
 
-  private renderFolderIcon(isPublicFolder: boolean): TemplateResult {
+  private _renderFolderIcon(isPublicFolder: boolean): TemplateResult {
     return isPublicFolder
       ? AwcFileUploadExplorer.publicFolderIcon
       : AwcFileUploadExplorer.folderIcon;
   }
 
-  private renderFileIcon(item: ProviderFile): TemplateResult {
+  private _renderFileIcon(item: ProviderFile): TemplateResult {
     const fileFormat = item.name.split(".").pop()!;
     const icon = fileIcons[fileFormat] || defaultFileIcon;
 
@@ -382,21 +381,21 @@ export default class AwcFileUploadExplorer extends LitElement {
     return html`
       <div class="file-explorer__header">
         <awc-file-upload-breadcrumbs
-          .path="${this.getPathArray()}"
+          .path="${this._getPathArray()}"
           .rootName="${this.provider?.getProviderInfo().name || ""}"
           .rootIcon="${this.provider?.getProviderInfo().icon || ""}"
           @breadcrumb-click="${this.onBreadcrumbClick}"
         >
         </awc-file-upload-breadcrumbs>
         
-        <awc-icon-button size="32" class="file-explorer__view-toggle" @click="${this.toggleView}">
+        <awc-icon-button size="32" class="file-explorer__view-toggle" @click="${this._toggleView}">
           ${this.isGridView ? listIcon : gridIcon}
         </awc-icon-button>
       </div>
 
       <div class="file-explorer__body" @scroll="${this.handleScroll}">
           <div class="file-explorer__content ${this.isGridView ? "file-explorer__content--grid" : "file-explorer__content--list"}">
-            ${this.isGridView ? this.renderGridItems() : this.renderListItems()}
+            ${this.isGridView ? this._renderGridItems() : this._renderListItems()}
             ${this.isLoading ? html`<div class="file-explorer__loading"> <awc-spinner size="l" variant="primary"></awc-spinner></div>` : ""}
             ${this.errorMessage ? html`<awc-file-upload-error></awc-file-upload-error>` : ""}
           </div>

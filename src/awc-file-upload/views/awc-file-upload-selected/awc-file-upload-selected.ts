@@ -6,18 +6,17 @@ import { awcFileUploadSelectedStyles } from "./awc-file-upload-selected.style";
 import { ProviderFile } from "../../interfaces/ProviderFile";
 import { formatFileSize } from "../../../util/fileSizeConverter";
 import { UploadStatusEventDetail, UploadProgressEventDetail } from "../../managers/UploadManager";
-import { EventsBus, SelectedFilesEventBus, SelectedFilesEvents, UploadEventBus, UploadEvents } from "../../managers/EventsBus";
-import { checkFileSize, getAllSelectedFiles, getSelectedFileById, removeSelectedFile } from "../../managers/SelectedFilesStore";
+import { UploadEventBus, UploadEvents } from "../../managers/EventsBus";
+import { checkFileSize, getAllSelectedFiles, getSelectedFileById, removeSelectedFile, toogleFileSourceMode, selectedFilesStore } from "../../managers/SelectedFilesStore";
+import { SelectedFile } from "../../interfaces/SelectedFile";
 
 export const awcFileUploadSelectedTag = "awc-file-upload-selected";
 
 @customElement(awcFileUploadSelectedTag)
 export default class AwcFileUploadSelected extends LitElement {
-  @property({ type: Object }) provider: Provider | null = null;
-
   @state() isExternalMode: boolean = false;
-  @state() _linkType: ProviderFile | null = null;
   @state() private _uploadStatus: { [fileId: string]: { status: string; progress?: number } } = {};
+  private selectedFiles: SelectedFile[] = [];
 
   private _formatFileSize(file: ProviderFile): string {
     if (file.fileSource === "fileExternal") return "0 B";
@@ -25,18 +24,16 @@ export default class AwcFileUploadSelected extends LitElement {
     return formatFileSize(file.size!, true, 'ru');
   }
 
-  private handleDelete(fileId: string) {
+  private _handleDelete(fileId: string) {
     removeSelectedFile(fileId);
-    this.requestUpdate();
   }
 
-  private _toggleFileMode(fileId: string) {
-    const selectedFile = getSelectedFileById(fileId);
+  private _toggleFileMode(fileID: string) {
+    const selectedFile = getSelectedFileById(fileID);
     if (!selectedFile) return;
 
     if (!checkFileSize(selectedFile.file)) {
-      // this.fileManager?.updateFile(fileId);
-      
+      toogleFileSourceMode(fileID);
       this.requestUpdate();
     }
   }
@@ -44,30 +41,34 @@ export default class AwcFileUploadSelected extends LitElement {
   connectedCallback() {
     super.connectedCallback();
 
-    UploadEventBus.addEventListener(UploadEvents.UPLOAD_STATUS, (event) => this._handleUploadStatus(event as CustomEvent<UploadStatusEventDetail>))
-    UploadEventBus.addEventListener(UploadEvents.UPLOAD_PROGRESS, (event) => this._handleUploadProgress(event as CustomEvent<UploadProgressEventDetail>));
+    // UploadEventBus.addEventListener(UploadEvents.UPLOAD_STATUS, (event) => this._handleUploadStatus(event as CustomEvent<UploadStatusEventDetail>))
+    // UploadEventBus.addEventListener(UploadEvents.UPLOAD_PROGRESS, (event) => this._handleUploadProgress(event as CustomEvent<UploadProgressEventDetail>));
+
+    selectedFilesStore.subscribe(() => {
+      this.selectedFiles = getAllSelectedFiles();
+    });
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
 
-    UploadEventBus.removeEventListener(UploadEvents.UPLOAD_STATUS, (event) => this._handleUploadStatus(event as CustomEvent<UploadStatusEventDetail>));
-    UploadEventBus.removeEventListener(UploadEvents.UPLOAD_PROGRESS, (event) => this._handleUploadProgress(event as CustomEvent<UploadProgressEventDetail>));
+    // UploadEventBus.removeEventListener(UploadEvents.UPLOAD_STATUS, (event) => this._handleUploadStatus(event as CustomEvent<UploadStatusEventDetail>));
+    // UploadEventBus.removeEventListener(UploadEvents.UPLOAD_PROGRESS, (event) => this._handleUploadProgress(event as CustomEvent<UploadProgressEventDetail>));
   }
 
   private _handleUploadProgress(event: CustomEvent<UploadProgressEventDetail>) {
     const { file, progress } = event.detail;
     this._uploadStatus[file.file.id].progress = progress;
-    this.requestUpdate();
+    // this.requestUpdate();
   }
 
   private _handleUploadStatus(event: CustomEvent<UploadStatusEventDetail>) {
     const { file, status } = event.detail;
     this._uploadStatus[file.file.id] = { status };
-    this.requestUpdate();
+    // this.requestUpdate();
   }
 
-  private renderFileIcon(item: ProviderFile): TemplateResult {
+  private _renderFileIcon(item: ProviderFile): TemplateResult {
     const fileFormat = item.name.split(".").pop()!;
     const icon = fileIcons[fileFormat] || defaultFileIcon;
 
@@ -76,7 +77,7 @@ export default class AwcFileUploadSelected extends LitElement {
       : html`<span class="awc-file-upload-selected__preview__icon">${icon}</span>`;
   }
 
-  private getFileIcon(file: ProviderFile): TemplateResult {
+  private _getFileIcon(file: ProviderFile): TemplateResult {
     const isLinkFile = svg`
       <svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
         <g opacity="0.7">
@@ -105,57 +106,58 @@ export default class AwcFileUploadSelected extends LitElement {
     `;
 
     const successIcon = svg`
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <g clip-path="url(#clip0_52628_2439)">
-      <rect width="20" height="20" rx="10" fill="#35D3AC"/>
-      <path d="M6 10L8.97585 13L15 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-      </g>
-      <defs>
-      <clipPath id="clip0_52628_2439">
-      <rect width="20" height="20" fill="white"/>
-      </clipPath>
-      </defs>
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <g clip-path="url(#clip0_52628_2439)">
+          <rect width="20" height="20" rx="10" fill="#35D3AC"/>
+          <path d="M6 10L8.97585 13L15 7" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+        <defs>
+          <clipPath id="clip0_52628_2439">
+            <rect width="20" height="20" fill="white"/>
+          </clipPath>
+        </defs>
       </svg>
     `;
 
     return html`
       <div class="awc-file-upload-selected">
-            ${getAllSelectedFiles().map(({ file, providerIcon, provider }) => {
-      const uploadStatus = this._uploadStatus[file.id] || { status: 'pending' };
-      const isUploading = uploadStatus.status === 'uploading';
-      const isSuccess = uploadStatus.status === 'success';
-      const progress = uploadStatus.progress || 0;
+        ${this.selectedFiles.map(({ file, providerIcon, provider }) => {
+          const uploadStatus = this._uploadStatus[file.id] || { status: 'pending' };
+          const isUploading = uploadStatus.status === 'uploading';
+          const isSuccess = uploadStatus.status === 'success';
+          const progress = uploadStatus.progress || 0;
 
-      return html`
-                    <div class="awc-file-upload-selected__file">
-                        <div class="awc-file-upload-selected__preview">
-                            ${this.renderFileIcon(file)}
-                            <span class="awc-file-upload-selected__provider">
-                                ${provider !== "local" ? providerIcon : ""}
-                            </span>
-                        </div>
-                        <div class="awc-file-upload-selected__info">
-                            <span title=${file.name} class="awc-file-upload-selected__name">${file.name}</span>
-                            <div class="awc-file-upload-selected__description">
-                                <span class="awc-file-upload-selected__size">${this._formatFileSize(file)}</span>
-                                ${provider !== 'local' ? html`
-                                    <awc-icon-button size="20" class="awc-file-upload-selected__type" @click="${() => this._toggleFileMode(file.id)}">
-                                        ${this.getFileIcon(file)}
-                                    </awc-icon-button>` : ""}
-                            </div>
-                        </div>
+          return html`
+            <div class="awc-file-upload-selected__file">
+              <div class="awc-file-upload-selected__preview">
+                ${this._renderFileIcon(file)}
+                <span class="awc-file-upload-selected__provider">
+                  ${provider !== "local" ? providerIcon : ""}
+                </span>
+              </div>
+              <div class="awc-file-upload-selected__info">
+                <span title=${file.name} class="awc-file-upload-selected__name">${file.name}</span>
+                <div class="awc-file-upload-selected__description">
+                  <span class="awc-file-upload-selected__size">${this._formatFileSize(file)}</span>
+                  ${provider !== 'local' ? html`
+                    <awc-icon-button size="20" class="awc-file-upload-selected__type" @click="${() => { this._toggleFileMode(file.id)}}">
+                      ${this._getFileIcon(file)}
+                    </awc-icon-button>` : ""}
+                </div>
+              </div>
 
-                        ${isUploading
-          ? html`<awc-file-upload-progress compact .value=${progress}></awc-file-upload-progress>`
-          : isSuccess
-            ? html`<div class="awc-file-upload-selected__success">${successIcon}</div>`
-            : html`<awc-icon-button size="20" class="awc-file-upload-selected__delete" @click="${() => this.handleDelete(file.id)}">
-                            ${clearIcon}
-                        </awc-icon-button>`}
-                    </div>
-                `;
-    })}
-        </div>
+              ${isUploading
+                ? html`<awc-file-upload-progress compact .value=${progress}></awc-file-upload-progress>`
+                : isSuccess
+                  ? html`<div class="awc-file-upload-selected__success">${successIcon}</div>`
+                  : html`
+                    <awc-icon-button size="20" class="awc-file-upload-selected__delete" @click="${() => this._handleDelete(file.id)}">
+                      ${clearIcon}
+                    </awc-icon-button>`}
+            </div>
+          `;
+        })}
+      </div>
     `;
   }
 

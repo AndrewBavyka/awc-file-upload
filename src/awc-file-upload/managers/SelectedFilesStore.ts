@@ -95,3 +95,13 @@ export const clearSelectedFiles = () => {
     state.selectedFiles.clear();
     selectedFilesStore.setKey('selectedFiles', new Map(state.selectedFiles));
 };
+
+export const toogleFileSourceMode = (fileId: string) => {
+    const state = selectedFilesStore.get();
+    const selectedFile = state.selectedFiles.get(fileId);
+
+    if (selectedFile) {
+        selectedFile.file.fileSource = selectedFile.file.fileSource === 'file' ? 'fileExternal' : 'file';
+        selectedFilesStore.setKey('selectedFiles', new Map(state.selectedFiles));
+    }
+};

@@ -11,7 +11,7 @@ import { live } from "lit/directives/live.js";
 import { textManagerContext } from "./managers/TextManagerContext";
 import { provide } from '@lit/context';
 import { localized } from "@lit/localize";
-import { clearSelectedFiles, getAllSelectedFiles, selectedFilesStore, setExtraData, setFileLimits, toggleExternalMode } from "./managers/SelectedFilesStore";
+import { clearSelectedFiles, getAllSelectedFiles, selectedFilesStore, setExtraData, setFileLimits, toggleExternalMode, getExtraData } from "./managers/SelectedFilesStore";
 export const awcFileUploadTag = "awc-file-upload";
 @localized()
 @customElement(awcFileUploadTag)
@@ -75,9 +75,9 @@ export default class AwcFileUpload extends LitElement {
     UploadEventBus.addEventListener(UploadEvents.UPLOAD_END, () => this.close());
 
     EventsBus.autoDispatchToDOM(this, DropzoneEventsBus, DropzoneEvents.FILE_DROPPED);
-    EventsBus.autoDispatchToDOM(this, UploadEventBus, UploadEvents.UPLOAD_START);
-    EventsBus.autoDispatchToDOM(this, UploadEventBus, UploadEvents.UPLOAD_STATUS);
-    EventsBus.autoDispatchToDOM(this, UploadEventBus, UploadEvents.UPLOAD_END);
+    // EventsBus.autoDispatchToDOM(this, UploadEventBus, UploadEvents.UPLOAD_START);
+    // EventsBus.autoDispatchToDOM(this, UploadEventBus, UploadEvents.UPLOAD_STATUS);
+    // EventsBus.autoDispatchToDOM(this, UploadEventBus, UploadEvents.UPLOAD_END);
 
     NavigationEventsBus.addEventListener(NavigationEvents.NAVIGATION_CHANGE_VIEW, (event) => this._updateTitle());
 
@@ -85,10 +85,9 @@ export default class AwcFileUpload extends LitElement {
     this._updateTitle();
     selectedFilesStore.subscribe(() => {
       this._refreshSelectedFiles();
-      this._updateTitle()
+      this._updateTitle();
     });
   }
-
 
   private _initialDropzoneEvents() {
     window.addEventListener("dragover", (e: Event) => e.preventDefault());
@@ -218,12 +217,14 @@ export default class AwcFileUpload extends LitElement {
 
   private _uploadFiles() {
     if (this.uploadUrl) {
-      this._uploadManager.setUploadUrl(this.uploadUrl);
-      this._uploadManager.uploadSelectedFiles().catch((error) => {
-        console.error("Ошибка при загрузке файлов:", error);
-      });
+        this._uploadManager.setUploadUrl(this.uploadUrl);
+        this._uploadManager.setExtraData(getExtraData());   
+        this._uploadManager.setFiles(getAllSelectedFiles());
+        this._uploadManager.startUpload().catch((error) => {
+            console.error("Ошибка при загрузке файлов:", error);
+        });
     } else {
-      console.error("Не удалось получить URL для загрузки.");
+        console.error("Не удалось получить URL для загрузки.");
     }
   }
 
@@ -250,7 +251,7 @@ export default class AwcFileUpload extends LitElement {
       case "auth":
         return html`<awc-file-upload-auth .provider=${this._selectedProvider}></awc-file-upload-auth>`;
       case "list":
-        return html`<awc-file-upload-list .provider=${this._selectedProvider}></awc-file-upload-list>`;
+        return html`<awc-file-upload-list .viewHistory=${this._navigationManager.viewHistory} .provider=${this._selectedProvider}></awc-file-upload-list>`;
       case "selected":
         return html`<awc-file-upload-selected></awc-file-upload-selected>`;
       case "error":

@@ -8,26 +8,27 @@ import { UploadEventBus, UploadEvents } from "../../managers/EventsBus";
 import { textManagerContext } from "../../managers/TextManagerContext";
 import { TextManager } from "../../managers/TextManager";
 import { consume } from '@lit/context';
+import { toggleExternalMode } from "../../managers/SelectedFilesStore";
 
 export const awcFileUploadFooterTag = "awc-file-upload-footer";
 
 @customElement(awcFileUploadFooterTag)
 export default class AwcFileUploadFooter extends LitElement {
-    @state() private _uploadedCount: number = 0;
-    @state() private _isUploadStart = false;
-    @state() private _isSwitcherChecked: boolean = false;
-    @state() private _progressMap: Map<string, number> = new Map();
-    @state() private _uploadManager = UploadManager.getInstance();
     @property({ type: Number }) fileCount = 0;
-
     @property({ type: Boolean }) isSelected = false;
-   
-    @consume({ context: textManagerContext }) textManager?: TextManager;
+    @property({ type: Number }) private _uploadedCount: number = 0;
+    @property({ type: Boolean }) private _isUploadStart: boolean = false;
+
+    @state() private _uploadManager = UploadManager.getInstance();
+    @state() _progressMap: Map<string, number> = new Map();
 
     @event("awc-file-upload-switch-mode") private _onChangeMode!: EventDispatcher<{ [key: string]: boolean }>;
+    @consume({ context: textManagerContext }) textManager?: TextManager;
+
+    private _isSwitcherChecked: boolean = false;
 
     private _emitEvent(eventName: string) {
-        this.dispatchEvent(new CustomEvent(eventName, { bubbles: true, composed: true }));
+        this.dispatchEvent(new CustomEvent(eventName, { bubbles: true, composed: false }));
     }
 
     connectedCallback(): void {
@@ -84,19 +85,8 @@ export default class AwcFileUploadFooter extends LitElement {
         return (uploadingProgress + completedProgress) / totalFiles;
     }
 
-    protected update(changedProperties: PropertyValues): void {
-        super.update(changedProperties);
-
-        this._onChangeMode({ isExternalMode: this._isSwitcherChecked });
-    }
-
     private _loadSwitcherState() {
-        const savedState = localStorage.getItem("isSwitcherChecked");
-        this._isSwitcherChecked = savedState === "true";
-    }
-
-    private _saveSwitcherState() {
-        localStorage.setItem("isSwitcherChecked", String(this._isSwitcherChecked));
+        toggleExternalMode(this._isSwitcherChecked);
     }
 
     private _toggleLinkOrFileUploading(e: Event) {
@@ -106,7 +96,6 @@ export default class AwcFileUploadFooter extends LitElement {
 
         this._isSwitcherChecked = target.checked;
 
-        this._saveSwitcherState();
         this._onChangeMode({ isExternalMode: this._isSwitcherChecked });
 
         if (!this._isSwitcherChecked) {
@@ -129,8 +118,6 @@ export default class AwcFileUploadFooter extends LitElement {
         this._uploadManager.cancelAllUploads();
         this._progressMap.clear();
         this._isUploadStart = false;
-
-        this.requestUpdate();
     }
 
     protected render(): TemplateResult {
