@@ -169,6 +169,12 @@ export const awcFileUploadExplorerStyles = css`
         height: 40px;
     }
 
+    .file-explorer__file-type {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
     .file-explorer__content--grid .file-explorer__file-type svg {
         width: 40px;
         height: 40px;

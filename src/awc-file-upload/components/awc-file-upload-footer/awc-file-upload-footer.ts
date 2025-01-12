@@ -3,27 +3,25 @@ import { customElement, property, state } from "lit/decorators.js";
 import { awcFileUploadFooterStyles } from "./awc-file-upload-footer.style";
 import { EventDispatcher, event } from "../../../util/event";
 import { UploadManager, UploadProgressEventDetail, UploadStatusEventDetail } from "../../managers/UploadManager";
-import { SelectedFileManager } from "../../managers/SelectedFileManager";
+import { getAllSelectedFiles, checkFileSize, removeSelectedFile, selectedFilesStore, } from "../../managers/SelectedFilesStore";
 import { UploadEventBus, UploadEvents } from "../../managers/EventsBus";
 import { textManagerContext } from "../../managers/TextManagerContext";
 import { TextManager } from "../../managers/TextManager";
 import { consume } from '@lit/context';
-import anime from "animejs";
 
 export const awcFileUploadFooterTag = "awc-file-upload-footer";
 
 @customElement(awcFileUploadFooterTag)
 export default class AwcFileUploadFooter extends LitElement {
-    @property({ type: Boolean }) isSelected = false;
-    @property({ type: Number }) fileCount = 0;
-    @state() private _progressMap: Map<string, number> = new Map();
-    @state() private _uploadManager = UploadManager.getInstance();
-    @state() private _selectedFileManager = SelectedFileManager.getInstance();
-
     @state() private _uploadedCount: number = 0;
     @state() private _isUploadStart = false;
     @state() private _isSwitcherChecked: boolean = false;
+    @state() private _progressMap: Map<string, number> = new Map();
+    @state() private _uploadManager = UploadManager.getInstance();
+    @property({ type: Number }) fileCount = 0;
 
+    @property({ type: Boolean }) isSelected = false;
+   
     @consume({ context: textManagerContext }) textManager?: TextManager;
 
     @event("awc-file-upload-switch-mode") private _onChangeMode!: EventDispatcher<{ [key: string]: boolean }>;
@@ -35,9 +33,13 @@ export default class AwcFileUploadFooter extends LitElement {
     connectedCallback(): void {
         super.connectedCallback();
 
-        this._loadSwitcherState();
+        this._loadSwitcherState();        
         UploadEventBus.addEventListener(UploadEvents.UPLOAD_STATUS, (event) => this._handleUploadStatus(event as CustomEvent<UploadStatusEventDetail>));
         UploadEventBus.addEventListener(UploadEvents.UPLOAD_PROGRESS, (event) => this._handleUploadProgress(event as CustomEvent<UploadProgressEventDetail>));
+
+        selectedFilesStore.subscribe(state => {
+            this.fileCount = state.selectedFiles.size;
+        });
     }
 
     disconnectedCallback(): void {
@@ -73,7 +75,7 @@ export default class AwcFileUploadFooter extends LitElement {
     }
 
     private _getOverallProgress(): number {
-        const totalFiles = this._selectedFileManager.getFiles().length;
+        const totalFiles = getAllSelectedFiles().length;
         if (totalFiles === 0) return 0;
 
         const uploadingProgress = Array.from(this._progressMap.values()).reduce((sum, progress) => sum + progress, 0);
@@ -82,35 +84,8 @@ export default class AwcFileUploadFooter extends LitElement {
         return (uploadingProgress + completedProgress) / totalFiles;
     }
 
-    private _hasAnimated = false;
-
-    private _animateButtons() {
-        if (this._hasAnimated) return;
-
-        const container = this.shadowRoot!.querySelector(".awc-file-upload-footer__buttons")! as HTMLDivElement;
-        if (!container) return;
-        const buttons = Array.from(container.querySelectorAll("awc-button")) as HTMLElement[];
-
-        anime({
-            targets: buttons,
-            scale: [0.8, 1],
-            opacity: [0, 1],
-            duration: 200,
-            easing: 'easeOutExpo',
-            complete: () => {
-                this._hasAnimated = true;
-            },
-        });
-    }
-
     protected update(changedProperties: PropertyValues): void {
         super.update(changedProperties);
-
-        if (changedProperties.has('fileCount') && this.fileCount <= 0) {
-            this._hasAnimated = false;
-        }
-
-        this._animateButtons();
 
         this._onChangeMode({ isExternalMode: this._isSwitcherChecked });
     }
@@ -135,11 +110,11 @@ export default class AwcFileUploadFooter extends LitElement {
         this._onChangeMode({ isExternalMode: this._isSwitcherChecked });
 
         if (!this._isSwitcherChecked) {
-            const files = this._selectedFileManager.getFiles();
+            const files = getAllSelectedFiles();
             files.forEach(file => {
-                const isExternalFileMathesSize = this._selectedFileManager.checkFileSize(file.file);
+                const isExternalFileMathesSize = checkFileSize(file.file);
                 if (isExternalFileMathesSize) {
-                    return this._selectedFileManager.removeFile(file.file.id);
+                    return removeSelectedFile(file.file.id);
                 }
             })
         }
@@ -184,7 +159,7 @@ export default class AwcFileUploadFooter extends LitElement {
                         <awc-file-upload-progress .value=${overallProgress}></awc-file-upload-progress>
                         <div class="awc-file-upload-footer__progress-item">
                             <span class="awc-file-upload-footer__progress-value">${this.textManager?.textState.uploadStatus.status} ${overallProgress.toFixed(0)}%</span>
-                            <span class="awc-file-upload-footer__progress-info">Загружены ${this._uploadedCount} из ${this._selectedFileManager.getFiles().length}</span>
+                            <span class="awc-file-upload-footer__progress-info">Загружены ${this._uploadedCount} из ${getAllSelectedFiles().length}</span>
                         </div>
                         <button 
                             tabindex="0" 
@@ -207,7 +182,7 @@ export default class AwcFileUploadFooter extends LitElement {
                                 <awc-switcher ?checked=${this._isSwitcherChecked} @change=${this._toggleLinkOrFileUploading}>${this.textManager?.textState.switcher.fileExternal}</awc-switcher>
                                 <awc-tooltip .message="${this.textManager?.textState.tooltip.fileExternal}">${questionIcon}</awc-tooltip>
                             </div>
-                             ${this._selectedFileManager.getFiles().length ? html`
+                             ${getAllSelectedFiles().length ? html`
                                 <div class="awc-file-upload-footer__buttons">
                                     <awc-button
                                         background="gray"

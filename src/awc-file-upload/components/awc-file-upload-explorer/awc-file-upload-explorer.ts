@@ -5,13 +5,13 @@ import { Provider } from "../../providers/Provider";
 import { ProviderFile } from "../../interfaces/ProviderFile";
 import { RequestOptions } from "../../interfaces/ProviderInfo";
 import { awcFileUploadExplorerStyles } from "./awc-file-upload-explorer.style";
-import { SelectedFileManager } from "../../managers/SelectedFileManager";
+// import { SelectedFileManager } from "../../managers/SelectedFileManager";
 import { fileIcons, defaultFileIcon } from "./fileIcons";
 import { formatFileSize } from "../../../util/fileSizeConverter";
 import { SelectedFilesEventBus, SelectedFilesEvents } from "../../managers/EventsBus";
 import { CacheManager } from "../../managers/CacheManager";
-import { selectedFileManagerContext } from "../../managers/SelectedFileManagerContext";
-import { consume } from "@lit/context";
+import { addSelectedFile, checkFileSize, checkNumberOfFiles, getAllSelectedFiles, getSelectedFileById, removeSelectedFile, selectedFilesStore } from "../../managers/SelectedFilesStore";
+
 
 export const awcFileUploadExplorer = "awc-file-upload-explorer";
 
@@ -27,8 +27,9 @@ export default class AwcFileUploadExplorer extends LitElement {
   @state() private isLoading = false;
   @state() private errorMessage: string | null = null;
   @state() private isGridView = false;
+  // @state() fileManager = SelectedFileManager.getInstance();
 
-  @consume({ context: selectedFileManagerContext }) fileManager?: SelectedFileManager;
+  // @consume({ context: selectedFileManagerContext }) fileManager?: SelectedFileManager;
 
   private cacheManager = new CacheManager();
   private abortController: AbortController | null = null;
@@ -54,7 +55,7 @@ export default class AwcFileUploadExplorer extends LitElement {
 
     this.loadViewMode();
     await this.loadItems(this.currentPath, true);
-    SelectedFilesEventBus.addEventListener(SelectedFilesEvents.FILE_SELECTION_CHANGE, () => this.requestUpdate())
+    selectedFilesStore.subscribe(() => this.requestUpdate())
   }
 
   private loadViewMode() {
@@ -220,7 +221,7 @@ export default class AwcFileUploadExplorer extends LitElement {
       this.loadItems(this.currentPath, true);
       this._moveScroolTop();
     } else {
-      this.toggleFileSelection(item);
+      this._toggleFileSelection(item);
     }
   }
 
@@ -238,20 +239,17 @@ export default class AwcFileUploadExplorer extends LitElement {
     return currentPathDecoded.split("/").filter(Boolean);
   }
 
-  private toggleFileSelection(file: ProviderFile) {
-    const updatedSelectedFiles = new Set(this.fileManager?.getFiles().map((f) => f.file.id));
+  private _toggleFileSelection(file: ProviderFile) {
+    const getProvider = this.provider?.getProviderInfo().provider!;
+    const getProviderIcon = this.provider?.getProviderInfo().icon!;
+   
+    const allFiles = getAllSelectedFiles() || [];
+    const hasFileId = allFiles.some(item => item.file.id === file.id);
 
-    if (updatedSelectedFiles.has(file.id)) {
-      this.fileManager?.removeFile(file.id);
-      updatedSelectedFiles.delete(file.id);
+    if (hasFileId) {
+      removeSelectedFile(file.id);
     } else {
-      this.fileManager?.addFile(
-        file,
-        this.provider?.getProviderInfo().provider || "Unknown",
-        this.provider?.getProviderInfo().icon!
-      );
-
-      updatedSelectedFiles.add(file.id);
+      addSelectedFile(file, getProvider, getProviderIcon);
     }
 
     this.requestUpdate();
@@ -262,6 +260,11 @@ export default class AwcFileUploadExplorer extends LitElement {
     scrollContainer?.scrollTo(0, 0);
   }
 
+  private hasSelectedFiles(): boolean {
+    const selectedFiles = getAllSelectedFiles();
+    return selectedFiles && selectedFiles.length > 0;
+  }
+
   private renderListItems(): TemplateResult[] {
     const folderArrowIcon = svg`
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -270,11 +273,11 @@ export default class AwcFileUploadExplorer extends LitElement {
     `;
 
     return this.items.map((item) => {
-      const isSelected = this.fileManager?.getFile(item.id);
-      const isFileSizeValid = !this.fileManager?.isFileSizeValid(item);
-      const isUploadLimitExceeded = this.fileManager?.isUploadLimitExceeded();
+      const isSelected = getSelectedFileById(item.id);
+      const isFileSizeValid = checkFileSize(item);
+      const isUploadLimitExceeded = checkNumberOfFiles();
       const formattedSize = item.isFolder ? '' : formatFileSize(item.size!, true, 'ru');
-      
+
       return html`
         <div class="file-explorer__item file-explorer__item--list
           ${item.isFolder ? "folder" : "file"} 
@@ -288,7 +291,7 @@ export default class AwcFileUploadExplorer extends LitElement {
               <awc-checkbox
                   tabindex="${isFileSizeValid ? -1 : 0}"
                   ?checked="${isSelected && !isFileSizeValid}"
-                  @click=${(e: Event) => {if(isUploadLimitExceeded) e.stopPropagation(); e.preventDefault()}}
+                  @click=${(e: Event) => { if (isUploadLimitExceeded) e.stopPropagation(); e.preventDefault() }}
                 ></awc-checkbox>
               `}
           <div class="file-explorer__icon ${item.isFolder ? "folder" : "file"}">
@@ -305,9 +308,9 @@ export default class AwcFileUploadExplorer extends LitElement {
 
   private renderGridItems(): TemplateResult[] {
     return this.items.map((item) => {
-      const isSelected = this.fileManager?.getFile(item.id);
-      const isFileSizeValid = !this.fileManager?.isFileSizeValid(item);
-      const isUploadLimitExceeded = this.fileManager?.isUploadLimitExceeded();
+      const isSelected = getSelectedFileById(item.id);
+      const isFileSizeValid = checkFileSize(item);
+      const isUploadLimitExceeded = checkNumberOfFiles();
 
       return html`
         <div
@@ -322,7 +325,7 @@ export default class AwcFileUploadExplorer extends LitElement {
           : html`
                 <awc-checkbox
                   ?checked="${isSelected && !isFileSizeValid}"
-                  @click=${(e: Event) => {if(isUploadLimitExceeded) e.stopPropagation(); e.preventDefault()}}
+                  @click=${(e: Event) => { if (isUploadLimitExceeded) e.stopPropagation(); e.preventDefault() }}
                 ></awc-checkbox>
                 `}
             <div
@@ -377,8 +380,6 @@ export default class AwcFileUploadExplorer extends LitElement {
         `;
 
     return html`
-      
-
       <div class="file-explorer__header">
         <awc-file-upload-breadcrumbs
           .path="${this.getPathArray()}"

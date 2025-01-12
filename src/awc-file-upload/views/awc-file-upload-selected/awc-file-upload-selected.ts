@@ -2,15 +2,12 @@ import { CSSResult, html, LitElement, PropertyValues, svg, TemplateResult } from
 import { customElement, property, state } from "lit/decorators.js";
 import { fileIcons, defaultFileIcon } from "../../components/awc-file-upload-explorer/fileIcons";
 import { Provider } from "../../providers/Provider";
-import { SelectedFileManager } from "../../managers/SelectedFileManager";
 import { awcFileUploadSelectedStyles } from "./awc-file-upload-selected.style";
 import { ProviderFile } from "../../interfaces/ProviderFile";
 import { formatFileSize } from "../../../util/fileSizeConverter";
 import { UploadStatusEventDetail, UploadProgressEventDetail } from "../../managers/UploadManager";
 import { EventsBus, SelectedFilesEventBus, SelectedFilesEvents, UploadEventBus, UploadEvents } from "../../managers/EventsBus";
-
-import { selectedFileManagerContext } from "../../managers/SelectedFileManagerContext";
-import { consume } from "@lit/context";
+import { checkFileSize, getAllSelectedFiles, getSelectedFileById, removeSelectedFile } from "../../managers/SelectedFilesStore";
 
 export const awcFileUploadSelectedTag = "awc-file-upload-selected";
 
@@ -22,8 +19,6 @@ export default class AwcFileUploadSelected extends LitElement {
   @state() _linkType: ProviderFile | null = null;
   @state() private _uploadStatus: { [fileId: string]: { status: string; progress?: number } } = {};
 
-  @consume({ context: selectedFileManagerContext }) fileManager?: SelectedFileManager;
-
   private _formatFileSize(file: ProviderFile): string {
     if (file.fileSource === "fileExternal") return "0 B";
 
@@ -31,26 +26,24 @@ export default class AwcFileUploadSelected extends LitElement {
   }
 
   private handleDelete(fileId: string) {
-    this.fileManager?.removeFile(fileId);
+    removeSelectedFile(fileId);
     this.requestUpdate();
   }
 
   private _toggleFileMode(fileId: string) {
-    const selectedFile = this.fileManager?.getFile(fileId);
+    const selectedFile = getSelectedFileById(fileId);
     if (!selectedFile) return;
 
-    if (!this.fileManager?.checkFileSize(selectedFile.file)) {
-      this.fileManager?.updateFile(fileId);
+    if (!checkFileSize(selectedFile.file)) {
+      // this.fileManager?.updateFile(fileId);
+      
       this.requestUpdate();
-    } else {
-      console.warn("File size exceeds the allowed limit.");
     }
   }
 
   connectedCallback() {
     super.connectedCallback();
 
-    SelectedFilesEventBus.addEventListener(SelectedFilesEvents.FILE_SELECTION_CHANGE, () => this.requestUpdate())
     UploadEventBus.addEventListener(UploadEvents.UPLOAD_STATUS, (event) => this._handleUploadStatus(event as CustomEvent<UploadStatusEventDetail>))
     UploadEventBus.addEventListener(UploadEvents.UPLOAD_PROGRESS, (event) => this._handleUploadProgress(event as CustomEvent<UploadProgressEventDetail>));
   }
@@ -58,7 +51,6 @@ export default class AwcFileUploadSelected extends LitElement {
   disconnectedCallback() {
     super.disconnectedCallback();
 
-    SelectedFilesEventBus.removeEventListener(SelectedFilesEvents.FILE_SELECTION_CHANGE, () => this.requestUpdate())
     UploadEventBus.removeEventListener(UploadEvents.UPLOAD_STATUS, (event) => this._handleUploadStatus(event as CustomEvent<UploadStatusEventDetail>));
     UploadEventBus.removeEventListener(UploadEvents.UPLOAD_PROGRESS, (event) => this._handleUploadProgress(event as CustomEvent<UploadProgressEventDetail>));
   }
@@ -128,7 +120,7 @@ export default class AwcFileUploadSelected extends LitElement {
 
     return html`
       <div class="awc-file-upload-selected">
-            ${this.fileManager?.getFiles().map(({ file, providerIcon, provider }) => {
+            ${getAllSelectedFiles().map(({ file, providerIcon, provider }) => {
       const uploadStatus = this._uploadStatus[file.id] || { status: 'pending' };
       const isUploading = uploadStatus.status === 'uploading';
       const isSuccess = uploadStatus.status === 'success';

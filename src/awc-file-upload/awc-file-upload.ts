@@ -2,16 +2,16 @@ import { CSSResult, html, LitElement, PropertyValues, TemplateResult } from "lit
 import { customElement, property, query, state } from "lit/decorators.js";
 import { Provider } from "./providers/Provider";
 import { awcFileUploadStyles } from "./awc-file-upload.style";
-import { SelectedFileManager } from "./managers/SelectedFileManager";
+// import { SelectedFileManager } from "./managers/SelectedFileManager";
 import { TextManager } from './managers/TextManager';
 import { NavigationManager } from "./managers/NavigationManager";
 import { UploadManager } from "./managers/UploadManager";
 import { UploadEventBus, UploadEvents, EventsBus, SelectedFilesEventBus, SelectedFilesEvents, DropzoneEvents, DropzoneEventsBus, NavigationEventsBus, NavigationEvents } from "./managers/EventsBus";
 import { live } from "lit/directives/live.js";
 import { textManagerContext } from "./managers/TextManagerContext";
-import { selectedFileManagerContext } from "./managers/SelectedFileManagerContext";
 import { provide } from '@lit/context';
 import { localized } from "@lit/localize";
+import { clearSelectedFiles, getAllSelectedFiles, selectedFilesStore, setExtraData, setFileLimits, toggleExternalMode } from "./managers/SelectedFilesStore";
 export const awcFileUploadTag = "awc-file-upload";
 @localized()
 @customElement(awcFileUploadTag)
@@ -28,7 +28,7 @@ export default class AwcFileUpload extends LitElement {
 
   @state() private _selectedProvider: Provider | null = null;
   @state() private _navigationManager = new NavigationManager();
-  @state() private _selectedFileManager = SelectedFileManager.getInstance();
+  // @state() private _selectedFileManager = SelectedFileManager.getInstance();
   @state() private _uploadManager = UploadManager.getInstance();
   @state() private _textManager = new TextManager(this);
 
@@ -39,7 +39,6 @@ export default class AwcFileUpload extends LitElement {
   @query('awc-dialog') private _dialog!: HTMLElement;
 
   @provide({ context: textManagerContext }) textManager = new TextManager(this);
-  @provide({ context: selectedFileManagerContext }) fileManager = this._selectedFileManager;
 
   protected updated(_changedProperties: PropertyValues): void {
     super.updated(_changedProperties);
@@ -65,10 +64,10 @@ export default class AwcFileUpload extends LitElement {
     this.addEventListener("confirm-selection", this._confirmSelection.bind(this));
     this.addEventListener("awc-file-upload-switch-mode", (e: Event) => this._toggleUploadMode(e as CustomEvent));
 
-    this._selectedFileManager.setExtraData(this.extraData);
-    this._selectedFileManager.setLimits(this.uploadLimit, this.maxFileSize);
+    setExtraData(this.extraData);
+    setFileLimits(this.uploadLimit, this.maxFileSize);
 
-    SelectedFilesEventBus.addEventListener(SelectedFilesEvents.FILE_SELECTION_CHANGE, () => { this._refreshSelectedFiles(); this._updateTitle(); });
+    // SelectedFilesEventBus.addEventListener(SelectedFilesEvents.FILE_SELECTION_CHANGE, () => { this._refreshSelectedFiles(); this._updateTitle(); });
 
     DropzoneEventsBus.addEventListener(DropzoneEvents.FILE_DROPPED, (e) => this._getDataFromDropzone(e as CustomEvent));
 
@@ -82,8 +81,12 @@ export default class AwcFileUpload extends LitElement {
 
     NavigationEventsBus.addEventListener(NavigationEvents.NAVIGATION_CHANGE_VIEW, (event) => this._updateTitle());
 
-    this._updateTitle();
     this._initialDropzoneEvents();
+    this._updateTitle();
+    selectedFilesStore.subscribe(() => {
+      this._refreshSelectedFiles();
+      this._updateTitle()
+    });
   }
 
 
@@ -96,10 +99,10 @@ export default class AwcFileUpload extends LitElement {
   private _getDataFromDropzone(e: CustomEvent<File[]>) {
     const files = e.detail;
 
-    files.forEach(file => {
-      const providerFile = this._selectedFileManager.convertToProviderFile(file);
-      this._selectedFileManager.addFile(providerFile, "local");
-    });
+    // files.forEach(file => {
+    //   const providerFile = this._selectedFileManager.convertToProviderFile(file);
+    //   this._selectedFileManager.addFile(providerFile, "local");
+    // });
 
     this._navigationManager.setView("selected");
     this.requestUpdate();
@@ -115,7 +118,7 @@ export default class AwcFileUpload extends LitElement {
 
   private _toggleUploadMode(event: CustomEvent) {
     this.isExternalMode = event.detail.isExternalMode;
-    this._selectedFileManager.setExternalMode(this.isExternalMode);
+    toggleExternalMode(this.isExternalMode);
   }
 
   private _handleAuthMessage(event: MessageEvent) {
@@ -133,13 +136,8 @@ export default class AwcFileUpload extends LitElement {
     this.requestUpdate();
   }
 
-  private _clearSelectedFiles() {
-    this._selectedFileManager.clearFiles();
-    this.requestUpdate();
-  }
-
   private _cancel() {
-    const hasFiles = this._selectedFileManager.getFiles().length > 0;
+    const hasFiles = getAllSelectedFiles().length > 0;
     const currentView = this._navigationManager.currentView;
     const hasVisitedMore = this._navigationManager.viewHistory.includes("more");
 
@@ -168,8 +166,13 @@ export default class AwcFileUpload extends LitElement {
     this._navigationManager.setView("selected");
   }
 
+  private _clearSelectedFiles(): void {
+    clearSelectedFiles();
+  }
+
   private _cancelSelectionFiles() {
-    this._clearSelectedFiles()
+    this._clearSelectedFiles();
+    this.requestUpdate();
   }
 
   private _logout() {
@@ -189,12 +192,12 @@ export default class AwcFileUpload extends LitElement {
     this._updateTitle();
   }
 
-
   private _showAlertIfFilesSelected(e: Event) {
     const targetModalWrapper = (e.target) as HTMLDivElement;
+
     if (!targetModalWrapper.classList.contains("awc-modal")) return;
 
-    if (this._selectedFileManager.getFiles().length) {
+    if (getAllSelectedFiles().length) {
       this._showAlert = true;
     } else {
       this._showAlert = false;
@@ -225,7 +228,7 @@ export default class AwcFileUpload extends LitElement {
   }
 
   private _refreshSelectedFiles() {
-    if (this._selectedFileManager.getFiles().length === 0 && this._navigationManager.currentView === "selected") {
+    if (getAllSelectedFiles().length === 0 && this._navigationManager.currentView === "selected") {
       this._navigationManager.setView("main");
     }
   
@@ -238,7 +241,7 @@ export default class AwcFileUpload extends LitElement {
     this._textManager.updateState({
       navigationView: this._navigationManager.currentView,
       selectedProvider,
-      selectedFilesCount: this._selectedFileManager.getFiles().length,
+      selectedFilesCount: getAllSelectedFiles().length,
     });
   }
 
@@ -274,7 +277,7 @@ export default class AwcFileUpload extends LitElement {
   close(): void {
     this.active = false;
     this._navigationManager.setView('main');
-    this._selectedFileManager.clearFiles();
+    this._clearSelectedFiles();
   }
 
   open(): void {
@@ -364,8 +367,6 @@ export default class AwcFileUpload extends LitElement {
   }
 
   private _renderFooter(): TemplateResult | string {
-    const selectedFilesCount = this._selectedFileManager.getFiles().length;
-
     if (this._navigationManager.currentView === "main" || this._navigationManager.currentView === "auth" || this._navigationManager.currentView === "more") {
       return "";
     }
@@ -373,7 +374,6 @@ export default class AwcFileUpload extends LitElement {
     return html`
       <awc-file-upload-footer
         .isSelected=${this._navigationManager.currentView === "selected"}
-        .fileCount=${selectedFilesCount}
         @cancel-selection=${this._cancelSelectionFiles}
         @confirm-selection=${this._confirmSelection}
         @upload=${this._uploadFiles}

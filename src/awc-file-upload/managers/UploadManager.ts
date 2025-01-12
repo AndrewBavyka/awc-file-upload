@@ -1,7 +1,7 @@
 import axios, { AxiosResponse, AxiosError, AxiosProgressEvent } from 'axios';
 import { SelectedFile } from '../interfaces/SelectedFile';
-import { SelectedFileManager } from './SelectedFileManager';
 import { EventsBus, UploadEventBus, UploadEvents } from './EventsBus';
+import { getAllSelectedFiles, getExtraData } from './SelectedFilesStore';
 
 type UploadStatus = 'pending' | 'uploading' | 'success' | 'error';
 
@@ -46,7 +46,7 @@ export class UploadManager {
     }
 
     private _dispatchEnd(): void {
-        const fileManager = SelectedFileManager.getInstance().getFiles();
+        const fileManager = getAllSelectedFiles();
         EventsBus.dispatch(UploadEventBus, UploadEvents.UPLOAD_END, fileManager);
     }
 
@@ -70,7 +70,7 @@ export class UploadManager {
         const formData = new FormData();
         formData.append(provider, file.file, file.name);
 
-        const extraData = SelectedFileManager.getInstance().getExtraData();
+        const extraData = getExtraData();
         for (const key in extraData) {
             formData.append(key, extraData[key]);
         }
@@ -110,7 +110,7 @@ export class UploadManager {
 
     private async uploadCloudProviderFile(selectedFile: SelectedFile): Promise<void> {
         const { provider, file } = selectedFile;
-        const extraData = SelectedFileManager.getInstance().getExtraData();
+        const extraData = getExtraData();
 
         if (!file.fileExternal || !file.file) {
             console.error('Нет URL для загрузки удаленного файла:', file);
@@ -121,7 +121,7 @@ export class UploadManager {
             this._dispatchStatus(selectedFile, 'uploading');
             this._dispatchProgress(selectedFile, 0);
 
-            const response: AxiosResponse = await axios.post(this.uploadUrl, { provider, file, extraData }, {
+            const response: AxiosResponse = await axios.post(this.uploadUrl, { provider, file }, {
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -183,9 +183,7 @@ export class UploadManager {
     }
 
     async uploadSelectedFiles(): Promise<void> {
-        const selectedFileManager = SelectedFileManager.getInstance();
-        const selectedFiles = selectedFileManager.getFiles();
-        console.log(selectedFiles);
+        const selectedFiles = getAllSelectedFiles();
 
         if (selectedFiles.length === 0) {
             console.log('Нет выбранных файлов для загрузки.');

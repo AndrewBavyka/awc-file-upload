@@ -1,9 +1,10 @@
 import { html, svg, CSSResult, TemplateResult, SVGTemplateResult } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { awcFileUploadProviderStyles } from "../styles/awc-file-upload-provider.style";
-import { SelectedFileManager } from "../../managers/SelectedFileManager";
+// import { SelectedFileManager } from "../../managers/SelectedFileManager";
 import { ProviderFile } from "../../interfaces/ProviderFile";
 import { Provider } from "../Provider";
+import { addSelectedFile } from "../../managers/SelectedFilesStore";
 
 export const awcFileUploadProviderLocalTag = "awc-file-upload-provider-local";
 
@@ -28,7 +29,7 @@ export default class AwcFileUploadProviderLocal extends Provider {
       `;
   }
 
-  @state() private selectedFileManager = SelectedFileManager.getInstance();
+  // @state() private selectedFileManager = SelectedFileManager.getInstance();
 
   private generateUUID(): string {
     const template = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx";
@@ -54,10 +55,29 @@ export default class AwcFileUploadProviderLocal extends Provider {
     );
   }
 
-  private _processFile(file: File): void {
-    const providerFile = this.selectedFileManager.convertToProviderFile(file);
-    this.selectedFileManager.addFile(providerFile, "local");
+  private _convertToProviderFileFormat(file: File) {
+    const isImage = file.type.startsWith("image/");
 
+    return {
+        id: file.name + Date.now().toString(),
+        name: file.name,
+        isFolder: false,
+        isPublicFolder: false,
+        icon: "",
+        requestPath: "",
+        modifiedDate: new Date().toISOString(),
+        size: file.size,
+        mimeType: file.type,
+        file: file,
+        thumbnail: isImage ? URL.createObjectURL(file) : "",
+        fileExternal: "",
+    };
+}
+
+  private _processFile(file: File): void {
+    const providerFile = this._convertToProviderFileFormat(file);
+    addSelectedFile(providerFile, "local");
+    
     if (file.type.startsWith("image/")) {
       this._generateImagePreview(file, providerFile);
     }
@@ -66,7 +86,7 @@ export default class AwcFileUploadProviderLocal extends Provider {
   private _generateImagePreview(file: File, providerFile: ProviderFile): void {
     const reader = new FileReader();
 
-    reader.onload = () => this.selectedFileManager.addFile(providerFile, this.provider);
+    reader.onload = () => addSelectedFile(providerFile, this.provider);
     reader.readAsDataURL(file);
   }
 

@@ -1,7 +1,6 @@
 import { CSSResult, html, LitElement, TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { awcFileUploadViewWrapperStyles } from "./awc-file-upload-view-wrapper.style";
-import { NavigationManager } from "../../managers/NavigationManager";
 import { EventsBus, NavigationEvents, NavigationEventsBus } from "../../managers/EventsBus";
 import anime from "animejs";
 
@@ -9,8 +8,6 @@ export const awcFileUploadViewWrapperTag = "awc-file-upload-view-wrapper";
 
 @customElement(awcFileUploadViewWrapperTag)
 export default class AwcFileUploadViewWrapper extends LitElement {
-    // @property({ type: Object }) navigationManager!: NavigationManager;
-
     private viewHistory: string[] = [];
 
     connectedCallback(): void {

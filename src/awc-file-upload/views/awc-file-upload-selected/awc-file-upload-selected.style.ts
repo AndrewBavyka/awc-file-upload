@@ -33,7 +33,6 @@ export const awcFileUploadSelectedStyles = css`
         position: relative;
         display: flex;
         border-radius: var(--corner-radius-s);
-        overflow: hidden;
     }
 
     .awc-file-upload-selected__preview img {
