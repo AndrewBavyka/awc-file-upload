@@ -3,7 +3,7 @@ import { customElement, property, state } from "lit/decorators.js";
 import { awcFileUploadFooterStyles } from "./awc-file-upload-footer.style";
 import { EventDispatcher, event } from "../../../util/event";
 import { UploadManager, UploadProgressEventDetail, UploadStatusEventDetail } from "../../managers/UploadManager";
-import { getAllSelectedFiles, checkFileSize, removeSelectedFile, selectedFilesStore, } from "../../managers/SelectedFilesStore";
+import { getAllSelectedFiles, checkFileSize, removeSelectedFile, selectedFilesStore, toggleGlobalExternalMode, } from "../../managers/SelectedFilesStore";
 import { UploadEventBus, UploadEvents } from "../../managers/EventsBus";
 import { textManagerContext } from "../../managers/TextManagerContext";
 import { TextManager } from "../../managers/TextManager";
@@ -25,7 +25,7 @@ export default class AwcFileUploadFooter extends LitElement {
     @event("awc-file-upload-switch-mode") private _onChangeMode!: EventDispatcher<{ [key: string]: boolean }>;
     @consume({ context: textManagerContext }) textManager?: TextManager;
 
-    private _isSwitcherChecked: boolean = false;
+    @state() private _isSwitcherChecked: boolean = false;
 
     private _emitEvent(eventName: string) {
         this.dispatchEvent(new CustomEvent(eventName, { bubbles: true, composed: false }));
@@ -86,7 +86,15 @@ export default class AwcFileUploadFooter extends LitElement {
     }
 
     private _loadSwitcherState() {
-        toggleExternalMode(this._isSwitcherChecked);
+        toggleGlobalExternalMode(this._isSwitcherChecked);
+    }
+
+    protected update(changedProperties: PropertyValues): void {
+        super.update(changedProperties);
+
+        if(changedProperties.has('_isSwitcherChecked')) {
+            this._loadSwitcherState();
+        }
     }
 
     private _toggleLinkOrFileUploading(e: Event) {
@@ -97,16 +105,6 @@ export default class AwcFileUploadFooter extends LitElement {
         this._isSwitcherChecked = target.checked;
 
         this._onChangeMode({ isExternalMode: this._isSwitcherChecked });
-
-        if (!this._isSwitcherChecked) {
-            const files = getAllSelectedFiles();
-            files.forEach(file => {
-                const isExternalFileMathesSize = checkFileSize(file.file);
-                if (isExternalFileMathesSize) {
-                    return removeSelectedFile(file.file.id);
-                }
-            })
-        }
     }
 
     private _triggerUpload() {

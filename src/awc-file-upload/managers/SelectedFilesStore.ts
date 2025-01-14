@@ -8,7 +8,8 @@ interface SelectedFilesState {
     extraData: Record<string, any>;
     uploadLimit: number;
     maxFileSize: number;
-    externalMode: boolean;
+    globalExternalMode: boolean; // Глобальный режим
+    externalMode: boolean; // Локальный режим
 }
 
 export const selectedFilesStore: MapStore<SelectedFilesState> = map({
@@ -16,8 +17,18 @@ export const selectedFilesStore: MapStore<SelectedFilesState> = map({
     extraData: {},
     uploadLimit: 0,
     maxFileSize: 0,
+    globalExternalMode: false,
     externalMode: false,
 });
+
+export const toggleExternalMode = (isExternalMode: boolean) => {
+    selectedFilesStore.setKey('externalMode', isExternalMode);
+};
+
+export const toggleGlobalExternalMode = (isGlobalMode: boolean) => {
+    selectedFilesStore.setKey('globalExternalMode', isGlobalMode);
+};
+
 
 export const getAllSelectedFiles = (): SelectedFile[] => {
     return Array.from(selectedFilesStore.get().selectedFiles.values());
@@ -27,7 +38,9 @@ export const addSelectedFile = (file: ProviderFile, provider: string, providerIc
     const state = selectedFilesStore.get();
 
     if (!state.selectedFiles.has(file.id)) {
-        state.selectedFiles.set(file.id, { file, provider, providerIcon });
+        const isGlobalMode = state.globalExternalMode && provider !== 'local';
+        const fileSource = isGlobalMode ? 'fileExternal' : 'file';
+        state.selectedFiles.set(file.id, { file: { ...file, fileSource }, provider, providerIcon });
         selectedFilesStore.setKey('selectedFiles', new Map(state.selectedFiles));
     }
 };
@@ -50,28 +63,20 @@ export const setFileLimits = (uploadLimit: number, maxFileSize: number) => {
     selectedFilesStore.setKey('maxFileSize', maxFileSize);
 };
 
-export const toggleExternalMode = (isExternalMode: boolean) => {
-    const state = selectedFilesStore.get();
-    state.selectedFiles.forEach((file, id) => {
-        if (file.provider !== 'local') {
-            file.file.fileSource = isExternalMode ? 'fileExternal' : 'file';
-        }
-    });
-    selectedFilesStore.set({
-        ...state,
-        externalMode: isExternalMode,
-        selectedFiles: new Map(state.selectedFiles),
-    });
-};
-
+/**
+ * Проверяет, соответствует ли размер файла максимальному лимиту.
+ *
+ * @param {ProviderFile} file - Объект файла, который нужно проверить. Должен содержать свойство `size` (размер файла).
+ * @returns {boolean} - Возвращает `true`, если размер файла не превышает `maxFileSize`, и `false`, если превышает.
+ */
 export const checkFileSize = (file: ProviderFile): boolean => {
     const state = selectedFilesStore.get();
-    return state.maxFileSize > 0 && file.size! > state.maxFileSize;
+    return state.maxFileSize > 0 && file.size! <= state.maxFileSize;
 }
 
-export const checkNumberOfFiles = (): boolean => {
+export const getUploadLimit = (): number => {
     const state = selectedFilesStore.get();
-    return state.uploadLimit > 0 && state.selectedFiles.size >= state.uploadLimit;
+    return state.uploadLimit;
 }
 
 export const setExtraData = (extraData: Record<string, any>) => {

@@ -26,6 +26,7 @@ export default class AwcFileUploadSelected extends LitElement {
 
   private _handleDelete(fileId: string) {
     removeSelectedFile(fileId);
+    this.requestUpdate();
   }
 
   private _toggleFileMode(fileID: string) {
