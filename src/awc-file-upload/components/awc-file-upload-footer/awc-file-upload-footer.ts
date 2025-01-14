@@ -8,7 +8,6 @@ import { UploadEventBus, UploadEvents } from "../../managers/EventsBus";
 import { textManagerContext } from "../../managers/TextManagerContext";
 import { TextManager } from "../../managers/TextManager";
 import { consume } from '@lit/context';
-import { toggleExternalMode } from "../../managers/SelectedFilesStore";
 
 export const awcFileUploadFooterTag = "awc-file-upload-footer";
 

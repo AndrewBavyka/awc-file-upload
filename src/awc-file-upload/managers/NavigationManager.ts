@@ -4,6 +4,7 @@ import { EventsBus, NavigationEvents, NavigationEventsBus } from './EventsBus';
 export type CurrentView = "main" | "auth" | "list" | "selected" | "error" | "more";
 export interface NavigationEventDetail {
     currentView: CurrentView;
+    viewHistory: CurrentView[];
 }
 
 export class NavigationManager extends EventTarget {
@@ -13,7 +14,10 @@ export class NavigationManager extends EventTarget {
     private _selectedProvider: Provider | null = null;
 
     private _onChangeView({ currentView }: NavigationEventDetail) {
-        EventsBus.dispatch(NavigationEventsBus, NavigationEvents.NAVIGATION_CHANGE_VIEW, { currentView });
+        EventsBus.dispatch(NavigationEventsBus, NavigationEvents.NAVIGATION_CHANGE_VIEW, {
+            currentView,
+            viewHistory: this._viewHistory,
+        });
     }
 
     setView(view: CurrentView): void {
@@ -21,7 +25,7 @@ export class NavigationManager extends EventTarget {
             this._viewHistory.push(this._currentView);
             this._previousView = this._currentView;
             this._currentView = view;
-            this._onChangeView({ currentView: this._currentView });
+            this._onChangeView({ currentView: this._currentView, viewHistory: this._viewHistory });
         }
     }
 
@@ -30,7 +34,7 @@ export class NavigationManager extends EventTarget {
             const previousView = this._viewHistory.pop()!;
             this._previousView = this._currentView;
             this._currentView = previousView;
-            this._onChangeView({ currentView: this._currentView });
+            this._onChangeView({ currentView: this._currentView, viewHistory: this._viewHistory });
         }
     }
 
@@ -43,7 +47,7 @@ export class NavigationManager extends EventTarget {
         this._previousView = null;
         this._viewHistory = [];
         this._selectedProvider = null;
-        this._onChangeView({ currentView: this._currentView });
+        this._onChangeView({ currentView: this._currentView, viewHistory: this._viewHistory });
     }
 
     get currentView(): CurrentView {

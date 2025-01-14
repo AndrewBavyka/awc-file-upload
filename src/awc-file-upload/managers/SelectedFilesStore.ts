@@ -1,4 +1,4 @@
-import { map, MapStore, computed } from 'nanostores';
+import { map, MapStore } from 'nanostores';
 import { SVGTemplateResult } from "lit";
 import { ProviderFile } from "../interfaces/ProviderFile";
 import { SelectedFile } from "../interfaces/SelectedFile";
@@ -28,7 +28,6 @@ export const toggleExternalMode = (isExternalMode: boolean) => {
 export const toggleGlobalExternalMode = (isGlobalMode: boolean) => {
     selectedFilesStore.setKey('globalExternalMode', isGlobalMode);
 };
-
 
 export const getAllSelectedFiles = (): SelectedFile[] => {
     return Array.from(selectedFilesStore.get().selectedFiles.values());

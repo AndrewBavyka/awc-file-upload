@@ -19,7 +19,7 @@ import AwcFileUploadBreadcrumbs from "./awc-file-upload/components/awc-file-uplo
 import AwcFileUploadFooter from "./awc-file-upload/components/awc-file-upload-footer/awc-file-upload-footer";
 import AwcFileUploadHeader from "./awc-file-upload/components/awc-file-upload-header/awc-file-upload-header";
 import AwcFileUploadProgress from "./awc-file-upload/components/awc-file-upload-progress/awc-file-upload-progress";
-import AwcFileUploadDropZone from "./awc-file-upload/components/awc-file-upload-dropzone/awc-file-upload-dropzone";
+import AwcFileUploadDropZone from "./awc-file-upload/providers/awc-file-upload-provider-local/awc-file-upload-dropzone/awc-file-upload-dropzone";
 
 // awc-file
 import AwcFileButton from "./awc-file/awc-file-button/awc-file-button";

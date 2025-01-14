@@ -4,8 +4,6 @@ import { ProviderInfo, RequestOptions } from "../interfaces/ProviderInfo";
 import { ProviderData } from "../interfaces/ProviderFile";
 
 export class Provider extends LitElement implements ProviderInfo {
-    @event("awc-file-upload-provider-selected") private _onSelected!: EventDispatcher<ProviderInfo>;
-
     name!: string;
     provider!: string;
     
@@ -64,9 +62,5 @@ export class Provider extends LitElement implements ProviderInfo {
             logout: this.logout.bind(this),
             list: this.list.bind(this),
         };
-    }
-
-    emitProviderSelected(): void {
-        this._onSelected(this.getProviderInfo());
     }
 }

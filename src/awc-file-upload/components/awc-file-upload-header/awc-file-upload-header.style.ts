@@ -7,22 +7,46 @@ export const awcFileUploadHeaderStyles = css`
     }
 
     .awc-file-upload-header {
-        padding: 16px 20px;
+        position: relative;
+        padding: 0 20px;
         display: flex;
         align-items: center;
         justify-content: space-between;
-        border-bottom: 1px solid var(--colors-light-stroke);
+        height: 56px;
+    }
+
+    .awc-file-upload-header--main {
+        height: 80px;
+    }
+
+    .awc-file-upload-header::after {
+        content: "";
+        display: block;
+        position: absolute;
+        left: 0;
+        bottom: 0;
+        margin: 0 auto;
+        width: 100%;
+        border-top: 1px solid var(--colors-light-stroke);
     }
 
     .awc-file-upload-heading__title {
-        max-width: 510px;
         font: var(--awc-font-h5-medium);
         color: var(--colors-light-titles);
-        margin: 0 auto;
+        position: absolute;
+        text-align: center;
+        width: 100%;
+        left: 0;
+        z-index: -1;
     }
 
     .awc-file-upload-heading__title--main {
+        position: static;
+        text-align: start;
         margin: 0;
+        max-width: 510px;
+        font: var(--awc-font-h5-medium);
+        color: var(--colors-light-titles);
     }
 
     .awc-file-upload-btn__cancel,

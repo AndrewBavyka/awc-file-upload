@@ -2,7 +2,7 @@ import { css } from "lit";
 
 export const awcFileUploadViewWrapperStyles = css`
     :host {
-        position: absolute;
+        /* position: absolute; */
         display: flex;
         flex-direction: column;
         width: 100%;

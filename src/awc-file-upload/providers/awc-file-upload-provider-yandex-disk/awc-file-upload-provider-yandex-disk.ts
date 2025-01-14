@@ -72,7 +72,7 @@ export default class AwcFileUploadProviderYandexDisk extends Provider {
 
     protected render(): TemplateResult {
         return html`
-            <div tabindex="0" class="awc-file-upload-provider" @click=${this.emitProviderSelected}>
+            <div tabindex="0" class="awc-file-upload-provider">
                 ${this.icon}
                 <p class="awc-file-upload-provider__name">${this.providerName}</p>
             </div>

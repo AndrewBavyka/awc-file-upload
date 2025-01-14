@@ -33,22 +33,21 @@ export const awcFileUploadExplorerStyles = css`
     }
 
     .file-explorer__body {
-        box-sizing: border-box;
-        flex: 1;
-        position: relative;
         padding: 12px 0px 12px 20px;
-        margin-bottom: 2px;
         overflow-x: hidden;
         overflow-y: auto;
+        min-height: 374px;
+        max-height: 374px;
+        box-sizing: border-box;
     }
 
     .file-explorer__content {
-        position: absolute;
+        /* position: absolute; */
         box-sizing: border-box;
-        height: 100%;
+        /* height: 100%; */
         display: flex;
         flex-direction: column;
-        width: calc(100% - 25px);
+        /* width: calc(100% - 25px); */
     }
 
     .file-explorer__content--list .file-explorer__item {
@@ -194,12 +193,17 @@ export const awcFileUploadExplorerStyles = css`
     }
     
     .file-explorer__name {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
         font: var(--awc-font-text-regular-14);
         color: var(--colors-light-titles);
         word-break: break-word;
     }
 
     .file-explorer__size {
+        white-space: nowrap;
         margin-left: auto;
         font: var(--awc-font-text-regular-14);
         color: var(--colors-light-secondary);

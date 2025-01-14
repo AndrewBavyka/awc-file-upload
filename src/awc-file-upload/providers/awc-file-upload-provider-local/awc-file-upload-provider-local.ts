@@ -1,7 +1,6 @@
 import { html, svg, CSSResult, TemplateResult, SVGTemplateResult } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { awcFileUploadProviderStyles } from "../styles/awc-file-upload-provider.style";
-// import { SelectedFileManager } from "../../managers/SelectedFileManager";
 import { ProviderFile } from "../../interfaces/ProviderFile";
 import { Provider } from "../Provider";
 import { addSelectedFile } from "../../managers/SelectedFilesStore";
@@ -28,9 +27,7 @@ export default class AwcFileUploadProviderLocal extends Provider {
           </svg>
       `;
   }
-
-  // @state() private selectedFileManager = SelectedFileManager.getInstance();
-
+ 
   private generateUUID(): string {
     const template = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx";
     return template.replace(/[xy]/g, (c) => {
@@ -48,14 +45,10 @@ export default class AwcFileUploadProviderLocal extends Provider {
 
     if (!files || files.length === 0) return;
 
-    Array.from(files).forEach((file) => this._processFile(file));
-
-    this.dispatchEvent(
-      new CustomEvent("confirm-selection", { bubbles: true, composed: true })
-    );
+    Array.from(files).forEach((file) => this.processFile(file));
   }
 
-  private _convertToProviderFileFormat(file: File) {
+   convertToProviderFileFormat(file: File) {
     const isImage = file.type.startsWith("image/");
 
     return {
@@ -71,11 +64,11 @@ export default class AwcFileUploadProviderLocal extends Provider {
         file: file,
         thumbnail: isImage ? URL.createObjectURL(file) : "",
         fileExternal: "",
-    };
-}
+      };
+  }
 
-  private _processFile(file: File): void {
-    const providerFile = this._convertToProviderFileFormat(file);
+   processFile(file: File): void {
+    const providerFile = this.convertToProviderFileFormat(file);
     addSelectedFile(providerFile, "local");
     
     if (file.type.startsWith("image/")) {
@@ -88,6 +81,10 @@ export default class AwcFileUploadProviderLocal extends Provider {
 
     reader.onload = () => addSelectedFile(providerFile, this.provider);
     reader.readAsDataURL(file);
+  }
+
+  checkLocalStorage(): boolean {
+    return false;
   }
 
   protected render(): TemplateResult {
@@ -106,10 +103,6 @@ export default class AwcFileUploadProviderLocal extends Provider {
         id="${this.uniqueId}"
         hidden
       />
-
-      <style>
-        ${AwcFileUploadProviderLocal.styles.cssText}
-      </style>
     `;
   }
 

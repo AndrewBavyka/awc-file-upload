@@ -16,8 +16,10 @@ export const awcFileUploadExplorer = "awc-file-upload-explorer";
 @customElement(awcFileUploadExplorer)
 export default class AwcFileUploadExplorer extends LitElement {
   @property({ type: Object }) provider: Provider | null = null;
-  @state() private items: ProviderFile[] = [];
   @property({type: Array}) getViewHistory: CurrentView[] = [];
+  @property({ type: String }) currentView: CurrentView = "list";
+
+  @state() private items: ProviderFile[] = [];
 
   private currentPath = "/";
   private offset = 0;
@@ -206,6 +208,7 @@ export default class AwcFileUploadExplorer extends LitElement {
       && !this.isLoading
       && !this.allItemsLoaded
     ) {
+      this.isLoading = true;
       this.loadItems(this.currentPath);
     }
   }
@@ -234,123 +237,109 @@ export default class AwcFileUploadExplorer extends LitElement {
     return currentPathDecoded.split("/").filter(Boolean);
   }
 
-  private _toggleFileSelection(file: ProviderFile) {
-    if (!file.fileSource) file.fileSource = 'file';
-
-    const getProvider = this.provider?.getProviderInfo().provider!;
-    const getProviderIcon = this.provider?.getProviderInfo().icon!;
-
-    const allFiles = getAllSelectedFiles() || [];
-    const hasFileId = allFiles.some(item => item.file.id === file.id);
-
-    if (hasFileId) {
-      removeSelectedFile(file.id);
-    } else {
-      addSelectedFile(file, getProvider, getProviderIcon);
-    }
-  }
-
   private _moveScroolTop(): void {
     const scrollContainer = this.shadowRoot?.querySelector(".file-explorer__body");
     scrollContainer?.scrollTo(0, 0);
   }
 
-  private _isGlobalExternal: boolean = selectedFilesStore.get().globalExternalMode;
+  private _toggleFileSelection(file: ProviderFile) {
+    if (!file.fileSource) file.fileSource = 'file';
 
-  private formattedCurrentListItems() {
+    const getProvider = this.provider?.getProviderInfo().provider!;
+    const getProviderIcon = this.provider?.getProviderInfo().icon!;
+    const allFiles = getAllSelectedFiles() || [];
+    const hasFileId = allFiles.some(item => item.file.id === file.id);
+
+    hasFileId
+    ? removeSelectedFile(file.id) 
+    : addSelectedFile(file, getProvider, getProviderIcon);
+  }
+
+  private _formattedCurrentListItems() {
+    const isGlobalExternal: boolean = selectedFilesStore.get().globalExternalMode;
     const isFileLimitExceeded = getUploadLimit();
     const selectedFilesCount = this.items.filter(item => !item.isFolder && getSelectedFileById(item.id)).length;
 
-    return this.items.map((file) => {
-      // Проверяем, является ли элемент файлом, а не папкой
-      if (file.isFolder) {
+    return this.items
+      .map((file) => {
+        if (file.isFolder) {
+          return {
+            ...file,
+            isSelected: false,
+            isDisabled: false,
+            isFileSizeValid: true,
+            isFileLimitExceeded,
+          };
+        }
+
+        const isFileSelected = !!getSelectedFileById(file.id);
+        const isFileSizeValid = checkFileSize(file);
+        const isDisabled = !isGlobalExternal && !isFileSizeValid;
+        const isFileLimitReached = isFileLimitExceeded < selectedFilesCount;
+        const isSelected = isFileSelected && !isDisabled && !isFileLimitReached;
+
+        if (isDisabled) removeSelectedFile(file.id);
+
         return {
           ...file,
-          isSelected: false,
-          isDisabled: false,
-          isFileSizeValid: true,
+          isSelected,
+          isDisabled,
+          isFileSizeValid,
           isFileLimitExceeded,
         };
-      }
-
-      const isFileSelected = !!getSelectedFileById(file.id);
-      const isFileSizeValid = checkFileSize(file);
-      const isDisabled = !this._isGlobalExternal && !isFileSizeValid;
-
-      // Если лимит выбранных файлов превышен, нельзя выбрать больше файлов
-      const isFileLimitReached = isFileLimitExceeded < selectedFilesCount;
-      const isSelected = isFileSelected && !isDisabled && !isFileLimitReached;
-
-      // Если файл прошел проверку размера, выводим его имя в консоль
-      // if (isFileSizeValid) {
-      //   console.log(file.name);
-      // }
-
-      return {
-        ...file,
-        isSelected,
-        isDisabled,
-        isFileSizeValid,
-        isFileLimitExceeded,
-      };
-    });
-}
-
-private _renderListItems(): TemplateResult[] {
+      });
+  }
+  
+  private _renderListItems(): TemplateResult[] {
     const folderArrowIcon = svg`
       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path fill-rule="evenodd" clip-rule="evenodd" d="M7.29289 4.29289C6.90237 4.68342 6.90237 5.31658 7.29289 5.70711L11.5858 10L7.29289 14.2929C6.90237 14.6834 6.90237 15.3166 7.29289 15.7071C7.68342 16.0976 8.31658 16.0976 8.70711 15.7071L13.7071 10.7071C14.0976 10.3166 14.0976 9.68342 13.7071 9.29289L8.70711 4.29289C8.31658 3.90237 7.68342 3.90237 7.29289 4.29289Z" fill="#919BB6"/>
       </svg>
     `;
-  
-    const itemsWithState = this.formattedCurrentListItems();
-  
+
+    const itemsWithState = this._formattedCurrentListItems();
+
     return itemsWithState.map((item) => {
       const formattedSize = item.isFolder ? '' : formatFileSize(item.size!, true, 'ru');
-  
-      return html`
-        <div 
-          class="file-explorer__item file-explorer__item--list
-            ${item.isFolder ? "folder" : "file"} 
-            ${item.isSelected ? "file-explorer__item--selected" : ""}
-            ${item.isDisabled ? "file-explorer__item--disabled" : ""}"
-           @click="${(e: Event) => {e.stopPropagation(); this._navigateTo(item)}}"
-        > 
-          ${item.isFolder
-            ? html`${folderArrowIcon}`
-            : html`
-                <awc-checkbox
-                  tabindex="${item.isDisabled ? -1 : 0}"
-                  .checked=${item.isSelected}
-                 
-                ></awc-checkbox>
-              `}
-          <div class="file-explorer__icon ${item.isFolder ? "folder" : "file"}">
-            ${item.isFolder
-              ? this._renderFolderIcon(item.isPublicFolder)
-              : this._renderFileIcon(item)}
-          </div>
-          <span class="file-explorer__name">${item.name}</span>
-          <span class="file-explorer__size">${formattedSize}</span>
-        </div>
-      `;
-    });
-}
 
+      return html`
+          <div 
+            class="file-explorer__item file-explorer__item--list
+              ${item.isFolder ? "folder" : "file"} 
+              ${item.isSelected ? "file-explorer__item--selected" : ""}
+              ${item.isDisabled ? "file-explorer__item--disabled" : ""}"
+              @click="${() => this._navigateTo(item)}"
+          > 
+            ${item.isFolder
+          ? html`${folderArrowIcon}`
+          : html`
+                  <awc-checkbox
+                    tabindex="${item.isDisabled ? -1 : 0}"
+                    .checked=${item.isSelected}
+                  ></awc-checkbox>
+                `}
+            <div class="file-explorer__icon ${item.isFolder ? "folder" : "file"}">
+              ${item.isFolder
+          ? this._renderFolderIcon(item.isPublicFolder)
+          : this._renderFileIcon(item)}
+            </div>
+            <span class="file-explorer__name">${item.name}</span>
+            <span class="file-explorer__size">${formattedSize}</span>
+          </div>
+        `;
+    });
+  }
 
   private _renderGridItems(): TemplateResult[] {
-    return this.items.map((item) => {
-      const isSelected = getSelectedFileById(item.id);
-      const isFileSizeValid = checkFileSize(item);
-      const isUploadLimitExceeded = getUploadLimit();
-      const formattedSize = item.isFolder ? '' : formatFileSize(item.size!, true, 'ru');
-      const isExternal = selectedFilesStore.get().globalExternalMode;
-
+    const itemsWithState = this._formattedCurrentListItems();
+   
+    return itemsWithState.map((item) => {
       return html`
         <div
           class="file-explorer__item file-explorer__item--grid ${item.isFolder ? "folder" : "file"} 
-          ${isSelected && !isFileSizeValid ? "file-explorer__item--selected" : ""}
-          ${isFileSizeValid && !isExternal ? "file-explorer__item--disabled" : ""}"
+          ${item.isFolder ? "folder" : "file"} 
+          ${item.isSelected ? "file-explorer__item--selected" : ""}
+          ${item.isDisabled ? "file-explorer__item--disabled" : ""}"
           @click="${() => this._navigateTo(item)}"
         >
           <div class="file-explorer__item--card">
@@ -358,8 +347,8 @@ private _renderListItems(): TemplateResult[] {
           ? ""
           : html`
                 <awc-checkbox
-                  ?checked="${isSelected}"
-                  @click=${(e: Event) => { if (isUploadLimitExceeded) e.stopPropagation(); e.preventDefault() }}
+                  tabindex="${item.isDisabled ? -1 : 0}"
+                  .checked=${item.isSelected}
                 ></awc-checkbox>
                 `}
             <div
@@ -423,7 +412,7 @@ private _renderListItems(): TemplateResult[] {
         >
         </awc-file-upload-breadcrumbs>
         
-        <awc-icon-button size="32" class="file-explorer__view-toggle" @click="${this._toggleView}">
+        <awc-icon-button size="24" class="file-explorer__view-toggle" @click="${this._toggleView}">
           ${this.isGridView ? listIcon : gridIcon}
         </awc-icon-button>
       </div>

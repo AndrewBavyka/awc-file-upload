@@ -80,7 +80,7 @@ export default class AwcFileUploadHeader extends LitElement {
 
     protected render(): TemplateResult {
         return html`
-            <div class="awc-file-upload-header">
+            <div class="awc-file-upload-header awc-file-upload-header--${this.view}">
                 ${this._renderCurrentHeader()}
             </div>
         `;
