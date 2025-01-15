@@ -36,6 +36,19 @@ export const getAllSelectedFiles = (): SelectedFile[] => {
 export const addSelectedFile = (file: ProviderFile, provider: string, providerIcon?: SVGTemplateResult) => {
     const state = selectedFilesStore.get();
 
+    // Проверка превышения лимита количества файлов
+    const currentFileCount = state.selectedFiles.size;
+    if (currentFileCount >= state.uploadLimit) {
+        console.warn(`Cannot add file: upload limit of ${state.uploadLimit} reached.`);
+        return;
+    }
+
+    // Проверка размера файла
+    // if (!checkFileSize(file)) {
+    //     console.warn(`Cannot add file: size exceeds the maximum limit of ${state.maxFileSize} bytes.`);
+    //     return;
+    // }
+
     if (!state.selectedFiles.has(file.id)) {
         const isGlobalMode = state.globalExternalMode && provider !== 'local';
         const fileSource = isGlobalMode ? 'fileExternal' : 'file';

@@ -1,6 +1,11 @@
 import { css } from "lit";
 
 export const awcFileUploadAuthStyles = css`
+    :host {
+        height: inherit;
+        min-height: inherit;
+    }
+
     .awc-auth-view__description {
         margin: 0;
         font: var(--awc-font-text-regular-15);

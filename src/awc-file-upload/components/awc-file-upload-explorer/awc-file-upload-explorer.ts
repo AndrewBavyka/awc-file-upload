@@ -316,6 +316,7 @@ export default class AwcFileUploadExplorer extends LitElement {
                   <awc-checkbox
                     tabindex="${item.isDisabled ? -1 : 0}"
                     .checked=${item.isSelected}
+                    @click=${(e: Event) => e.preventDefault()}
                   ></awc-checkbox>
                 `}
             <div class="file-explorer__icon ${item.isFolder ? "folder" : "file"}">
@@ -349,6 +350,7 @@ export default class AwcFileUploadExplorer extends LitElement {
                 <awc-checkbox
                   tabindex="${item.isDisabled ? -1 : 0}"
                   .checked=${item.isSelected}
+                  @click=${(e: Event) => e.preventDefault()}
                 ></awc-checkbox>
                 `}
             <div

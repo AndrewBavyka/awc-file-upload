@@ -2,8 +2,9 @@ import { css } from "lit";
 
 export const awcFileUploadStyles = css`
     :host {
-        --awc-file-upload-file-title: var(--awc-font-h5-medium);
         position: relative;
+        --awc-file-upload-file-title: var(--awc-font-h5-medium);
+        --awc-file-upload-height: 550px;
     }
 
     awc-modal {
@@ -11,13 +12,14 @@ export const awcFileUploadStyles = css`
     }
 
     .awc-file-upload-wrapper {
-        height: 550px;
-        max-height: 550px;
+        height: var(--awc-file-upload-height);
+        max-height: var(---awc-file-upload-height);
         box-sizing: border-box;
+        position: relative;
+        contain: content;
     }
 
-    /* .awc-file-upload-body {
-        min-height: 100%;
-        position: relative;
-    } */
+    .awc-file-upload-body {
+        min-height: calc(var(--awc-file-upload-height) - 56px);
+    }
 `;
