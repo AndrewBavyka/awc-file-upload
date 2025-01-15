@@ -155,7 +155,7 @@ export const awcFileItemStyles = css`
         max-height: 56px;
         height: 56px;
         border-radius: var(--corner-radius-m);
-        outline: 1px solid var(--colors-light-stroke);
+        border: 1px solid var(--colors-light-stroke);
     }
 
     :host([view="list_block"]) .awc-file-item__subinfo {

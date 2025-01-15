@@ -88,7 +88,7 @@ export const awcFileStyles = css`
         display: flex;
         flex-wrap: wrap;
         overflow: hidden;
-        padding: 8px 2px;
+        padding: 10px 0 12px 0;
     }
 
     :host([view="grid"]) .awc-file__body {
@@ -108,6 +108,5 @@ export const awcFileStyles = css`
 
     .awc-file__button {
         display: inline-flex;
-        margin-top: 10px;
     }
 `;

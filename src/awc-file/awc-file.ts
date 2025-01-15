@@ -108,6 +108,12 @@ export default class AwcFile extends LitElement {
                 this.fileItems.forEach((item) => item.dropdownActive = false);
             }
         }
+
+        if(_changedProperties.has("compact")) {
+            if(this.compact) {
+                this.view = 'list_block';
+            }
+        }
     }
 
     private _toogleAccordion() {
@@ -123,7 +129,7 @@ export default class AwcFile extends LitElement {
 
         return html`
             <section class="awc-file">
-                <div class="awc-file__header" @click="${this._toogleAccordion}">
+                ${!this.compact ? html`<div class="awc-file__header" @click="${this._toogleAccordion}">
                     <div class="awc-file__icon">
                         ${awcFileArrowIcon}
                     </div>
@@ -140,9 +146,9 @@ export default class AwcFile extends LitElement {
                                     ${config.icon}
                                 </awc-icon-button>
                             `
-        )}
+                        )}
                     </div>
-                </div>
+                </div>` : ""}
                 <div ?inert=${!this.open} class="awc-file__accordion">
                     <div class="awc-file__accordion__wrapper">
                         <div @awc-dropdown-toggle=${this._closeAllDropdownsExcept} @slotchange=${this._updateFileItemsView} class="awc-file__body">
