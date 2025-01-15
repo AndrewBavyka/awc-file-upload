@@ -9,5 +9,8 @@ export default defineConfig({
       fileName: (format) => `index.${format}.js`,
       formats: ['iife']
     },
-  }
+  },
+  define: {
+    'process.env.NODE_ENV': JSON.stringify('production'),
+  },
 });
