@@ -51,6 +51,8 @@ export default class AwcFileItem extends LitElement {
   private _onPrivateEvent!: EventDispatcher<FileDetails>;
   @event("awc-file-delete")
   private _onDeleteEvent!: EventDispatcher<FileDetails>;
+  @event("awc-file-preview")
+  private _onPreviewEvent!: EventDispatcher<CustomEvent>;
 
   @state() isHoveredButtons: boolean = false;
   @state() privateModeAvailable: boolean = false;
@@ -123,19 +125,19 @@ export default class AwcFileItem extends LitElement {
     <awc-dropdown ?visible=${this.dropdownActive} class="awc-file-item__dropdown" width="210">
         <awc-dropdown-group ?divider=${this.showDownload && !this.externalFileLink || this.showPrivate}>
           ${this.showDownload && !this.externalFileLink
-          ? html`
+        ? html`
                 <awc-dropdown-item @click=${(e: Event) => this._triggerDownloadEvent(e)}>
                   ${this.downloadIcon} Скачать
                 </awc-dropdown-item>
               `
-          : ""}
+        : ""}
           ${this.showPrivate
-          ? html`
+        ? html`
                 <awc-dropdown-item @click=${this._togglePrivateMode}>
                   ${this._getPrivateModeIcon()} ${this._getPrivateModeText()}
                 </awc-dropdown-item>
               `
-          : ""}
+        : ""}
         </awc-dropdown-group>
         <awc-dropdown-item @click=${this._triggerDeleteEvent}>
           ${this.trashIcon} Удалить
@@ -177,11 +179,31 @@ export default class AwcFileItem extends LitElement {
     return this.private ? "Закрыть доступ" : "Открыть доступ";
   }
 
-  private _openExternalLink(e: Event) {
+  private _openExternalLink() {
     if (this.externalFileLink) {
       window.open(this.externalFileLink, "_blank", "noopener,noreferrer");
     }
   }
+
+  private _onClickPreview(e: Event) {
+    const target = e.target as HTMLDivElement;
+
+    if (target && target.classList.contains('awc-file-item__preview')) {
+      const previewEventData = {
+        target: target,
+      };
+
+      const customEvent = new CustomEvent('awc-file-preview', {
+        detail: previewEventData,  // Данные события
+        bubbles: true,
+        cancelable: false,
+        composed: true
+      });
+
+      this._onPreviewEvent(customEvent);
+    }
+  }
+
 
   private _handleDropdownToggle(e: Event) {
     e.stopPropagation();
@@ -198,7 +220,7 @@ export default class AwcFileItem extends LitElement {
 
   private _renderGridItem(): TemplateResult {
     return html`
-      <div class="awc-file-item__preview" @click=${this._openExternalLink}>
+      <div class="awc-file-item__preview" @click=${(e: Event) => { this._openExternalLink(); this._onClickPreview(e) }}>
         ${this.thumbnail
         ? html`<img
               class="awc-file-item__image"
@@ -227,7 +249,7 @@ export default class AwcFileItem extends LitElement {
 
   private _renderListItem(): TemplateResult {
     return html`
-      <div class="awc-file-item__preview">
+      <div class="awc-file-item__preview" @click=${this._onClickPreview}>
         ${this.thumbnail
         ? html`<img
               class="awc-file-item__image"
@@ -259,7 +281,7 @@ export default class AwcFileItem extends LitElement {
 
   private _renderListBlockItem(): TemplateResult {
     return html`
-      <div class="awc-file-item__preview">
+      <div class="awc-file-item__preview" @click=${this._onClickPreview}>
         ${this.thumbnail
         ? html`<img
               class="awc-file-item__image"
