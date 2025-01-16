@@ -186,15 +186,16 @@ export default class AwcFileItem extends LitElement {
   }
 
   private _onClickPreview(e: Event) {
-    const target = e.target as HTMLDivElement;
+    const target = e.target as HTMLElement;
+    const previewElement = target.closest('.awc-file-item__preview') as HTMLElement;
 
-    if (target && target.classList.contains('awc-file-item__preview')) {
+    if (previewElement) {
       const previewEventData = {
-        target: target,
+        target: previewElement,
       };
 
       const customEvent = new CustomEvent('awc-file-preview', {
-        detail: previewEventData,  // Данные события
+        detail: previewEventData,
         bubbles: true,
         cancelable: false,
         composed: true
