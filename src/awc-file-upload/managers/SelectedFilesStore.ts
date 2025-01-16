@@ -5,7 +5,7 @@ import { SelectedFile } from "../interfaces/SelectedFile";
 
 interface SelectedFilesState {
     selectedFiles: Map<string, SelectedFile>;
-    extraData: Record<string, any>;
+    extraData: Record<string, Record<string, any>>;
     uploadLimit: number;
     maxFileSize: number;
     globalExternalMode: boolean; // Глобальный режим
@@ -100,6 +100,18 @@ export const setExtraData = (extraData: Record<string, any>) => {
             ...extraData,
         },
     });
+};
+
+export const setExtraDataForComponent = (componentId: string, extraData: Record<string, any>) => {
+    const state = selectedFilesStore.get();
+    const newExtraData = { ...state.extraData };
+    newExtraData[componentId] = { ...extraData };
+    selectedFilesStore.setKey('extraData', newExtraData);
+};
+
+export const getExtraDataForComponent = (componentId: string): Record<string, any> => {
+    const state = selectedFilesStore.get();
+    return state.extraData[componentId] || {};
 };
 
 export const getExtraData = () => {

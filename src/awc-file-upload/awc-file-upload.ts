@@ -11,7 +11,7 @@ import { live } from "lit/directives/live.js";
 import { textManagerContext } from "./managers/TextManagerContext";
 import { provide } from '@lit/context';
 import { localized } from "@lit/localize";
-import { clearSelectedFiles, getAllSelectedFiles, selectedFilesStore, setExtraData, setFileLimits, toggleExternalMode, getExtraData } from "./managers/SelectedFilesStore";
+import { clearSelectedFiles, getAllSelectedFiles, selectedFilesStore, setExtraDataForComponent, setFileLimits, toggleExternalMode, getExtraData, getExtraDataForComponent } from "./managers/SelectedFilesStore";
 export const awcFileUploadTag = "awc-file-upload";
 @localized()
 @customElement(awcFileUploadTag)
@@ -53,6 +53,17 @@ export default class AwcFileUpload extends LitElement {
         }
       }
     }
+
+    if (_changedProperties.has('extraData')) {
+      setExtraDataForComponent(this.componentId, this.extraData);
+    }
+  }
+
+  private componentId: string;
+
+  constructor() {
+    super();
+    this.componentId = `awc-file-upload-${Math.random().toString(36).substr(2, 9)}`; // Генерация уникального ID для компонента
   }
 
   connectedCallback() {
@@ -77,7 +88,7 @@ export default class AwcFileUpload extends LitElement {
       this._updateTitle();
       this._onChangeLocalProvider();
     });
-    setExtraData(this.extraData);
+    setExtraDataForComponent(this.componentId, this.extraData);
     setFileLimits(this.uploadLimit, this.maxFileSize);
   }
 
@@ -201,7 +212,7 @@ export default class AwcFileUpload extends LitElement {
   private _uploadFiles() {
     if (this.uploadUrl) {
         this._uploadManager.setUploadUrl(this.uploadUrl);
-        this._uploadManager.setExtraData(getExtraData());   
+        this._uploadManager.setExtraData(getExtraDataForComponent(this.componentId));   
         this._uploadManager.setFiles(getAllSelectedFiles());
         this._uploadManager.startUpload().catch((error) => {
             console.error("Error while downloading files:", error);

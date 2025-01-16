@@ -117,9 +117,6 @@ export class UploadManager {
         const { provider, file } = selectedFile;
         const extraData = this.extraData;
 
-        // console.log(selectedFile); return;
-
-
         if (!file.fileExternal || !file.file) {
             console.error('Нет URL для загрузки удаленного файла:', file);
             return;

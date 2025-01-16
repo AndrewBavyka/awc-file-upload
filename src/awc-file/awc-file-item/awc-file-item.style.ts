@@ -22,7 +22,7 @@ export const awcFileItemStyles = css`
         position: relative;
         width: 120px;
         height: 120px;
-        outline: 1px solid var(--colors-light-stroke);
+        border: 1px solid var(--colors-light-stroke);
         border-radius: var(--corner-radius-m);
         transition: background-color 0.3s ease;
     }
