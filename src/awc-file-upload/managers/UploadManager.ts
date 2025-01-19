@@ -22,6 +22,7 @@ export class UploadManager {
     private isUploading: boolean = false;
     private masterAbortController: AbortController | null = null;
     private extraData: Record<string, any> = {};
+    private _componentId:string = "";
 
     public static getInstance(): UploadManager {
         if (!UploadManager.instance) {
@@ -46,7 +47,7 @@ export class UploadManager {
     }
 
     private _dispatchStatus(file: SelectedFile, status: UploadStatus, response?: any): void {
-        EventsBus.dispatch(UploadEventBus, UploadEvents.UPLOAD_STATUS, { file, status, response });
+        EventsBus.dispatch(UploadEventBus, UploadEvents.UPLOAD_STATUS, { file, status, response,  componentID: this._componentId });
     }
 
     private _dispatchError(error: Error): void {
@@ -54,16 +55,16 @@ export class UploadManager {
     }
 
     private _dispatchStart(): void {
-        // EventsBus.dispatch(UploadEventBus, UploadEvents.UPLOAD_START);
+        EventsBus.dispatch(UploadEventBus, UploadEvents.UPLOAD_START, {componentID: this._componentId});
     }
 
     private _dispatchEnd(): void {
-        EventsBus.dispatch(UploadEventBus, UploadEvents.UPLOAD_END, this.queue);
+        EventsBus.dispatch(UploadEventBus, UploadEvents.UPLOAD_END, {...this.queue, componentID: this._componentId });
     }
 
     private _dispatchProgress(file: SelectedFile, progress: number): void {
         EventsBus.dispatch(UploadEventBus, UploadEvents.UPLOAD_PROGRESS, { file, progress });
-    }
+    }   
 
     private async uploadLocalFile(selectedFile: SelectedFile, signal: AbortSignal): Promise<void> {
         const { provider, file } = selectedFile;
@@ -155,7 +156,9 @@ export class UploadManager {
         }
     }
 
-    async startUpload(): Promise<void> {
+    async startUpload(componentId: string): Promise<void> {
+        this._componentId = componentId;
+
         if (this.isUploading) {
             return;
         }

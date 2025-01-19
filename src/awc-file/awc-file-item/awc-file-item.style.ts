@@ -175,6 +175,7 @@ export const awcFileItemStyles = css`
         display: flex;
         align-items: center;
         justify-content: center;
+        cursor: pointer;
     }
 
     .awc-file-item__preview .awc-file-item__image {

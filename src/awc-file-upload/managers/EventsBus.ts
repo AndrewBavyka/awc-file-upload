@@ -54,19 +54,23 @@ export class EventsBus {
     }
 
     static autoDispatchToDOM(
-        component: LitElement,
+        component: any,
         eventBus: EventTarget,
         eventName: string
     ): void {
         eventBus.addEventListener(eventName, (e: Event) => {
             const customEvent = e as CustomEvent;
-            component.dispatchEvent(
-                new CustomEvent(eventName, {
-                    detail: customEvent.detail,
-                    bubbles: true,
-                    composed: true,
-                })
-            );
+            const { componentID } = customEvent.detail;
+
+            if (componentID === component.componentId) {
+                component.dispatchEvent(
+                    new CustomEvent(eventName, {
+                        detail: customEvent.detail,
+                        bubbles: true,
+                        composed: true,
+                    })
+                );
+            }
         });
     }
 }

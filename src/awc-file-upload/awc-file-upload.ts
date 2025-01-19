@@ -2,7 +2,6 @@ import { CSSResult, html, LitElement, PropertyValues, TemplateResult } from "lit
 import { customElement, property, query, state } from "lit/decorators.js";
 import { Provider } from "./providers/Provider";
 import { awcFileUploadStyles } from "./awc-file-upload.style";
-// import { SelectedFileManager } from "./managers/SelectedFileManager";
 import { TextManager } from './managers/TextManager';
 import { NavigationManager } from "./managers/NavigationManager";
 import { UploadManager } from "./managers/UploadManager";
@@ -12,6 +11,7 @@ import { textManagerContext } from "./managers/TextManagerContext";
 import { provide } from '@lit/context';
 import { localized } from "@lit/localize";
 import { clearSelectedFiles, getAllSelectedFiles, selectedFilesStore, setExtraDataForComponent, setFileLimits, toggleExternalMode, getExtraData, getExtraDataForComponent } from "./managers/SelectedFilesStore";
+import AwcFileUploadProviderLocal from "./providers/awc-file-upload-provider-local/awc-file-upload-provider-local";
 export const awcFileUploadTag = "awc-file-upload";
 @localized()
 @customElement(awcFileUploadTag)
@@ -63,7 +63,7 @@ export default class AwcFileUpload extends LitElement {
 
   constructor() {
     super();
-    this.componentId = `awc-file-upload-${Math.random().toString(36).substr(2, 9)}`; // Генерация уникального ID для компонента
+    this.componentId = `awc-file-upload-${Math.random().toString(36).substr(2, 9)}`;
   }
 
   connectedCallback() {
@@ -77,6 +77,7 @@ export default class AwcFileUpload extends LitElement {
     UploadEventBus.addEventListener(UploadEvents.UPLOAD_END, () => this.close());
 
     EventsBus.autoDispatchToDOM(this, DropzoneEventsBus, DropzoneEvents.FILE_DROPPED);
+
     EventsBus.autoDispatchToDOM(this, UploadEventBus, UploadEvents.UPLOAD_START);
     EventsBus.autoDispatchToDOM(this, UploadEventBus, UploadEvents.UPLOAD_STATUS);
     EventsBus.autoDispatchToDOM(this, UploadEventBus, UploadEvents.UPLOAD_END);
@@ -92,14 +93,42 @@ export default class AwcFileUpload extends LitElement {
     setFileLimits(this.uploadLimit, this.maxFileSize);
   }
 
+  setCustomFileData(files: File[] | FileList) {
+    if(!this.active) return;
+
+    const filesArray = Array.isArray(files) ? files : Array.from(files);
+
+    filesArray.forEach(file => {
+        const localProvider = new AwcFileUploadProviderLocal();
+        localProvider.processFile(file);
+    });
+
+    this._navigationManager.setView('selected');
+  }
+
+  private _uploadFiles() {
+    if (this.uploadUrl) {
+        this._uploadManager.setUploadUrl(this.uploadUrl);
+        this._uploadManager.setExtraData(getExtraDataForComponent(this.componentId));   
+        this._uploadManager.setFiles(getAllSelectedFiles());
+        this._uploadManager.startUpload(this.componentId).catch((error) => {
+            console.error("Error while downloading files:", error);
+        });
+    } else {
+        console.error("Failed to obtain download URL.");
+    }
+  }
+
   private _onChangeLocalProvider() {
     const hasFilesLocalProvider = getAllSelectedFiles().filter(file => file.provider === 'local');
     if (hasFilesLocalProvider.length > 0) this._navigationManager.setView('selected');
   }
 
   private _initialDropzoneEvents() {
-    window.addEventListener("dragover", (e: Event) => e.preventDefault());
-    window.addEventListener("drop", (e: Event) => e.preventDefault());
+    if(this.active) {
+      window.addEventListener("dragover", (e: Event) => e.preventDefault());
+      window.addEventListener("drop", (e: Event) => e.preventDefault());
+    } 
     window.addEventListener("dragleave", () => this.active = false);
   }
 
@@ -209,19 +238,7 @@ export default class AwcFileUpload extends LitElement {
     }
   }
 
-  private _uploadFiles() {
-    if (this.uploadUrl) {
-        this._uploadManager.setUploadUrl(this.uploadUrl);
-        this._uploadManager.setExtraData(getExtraDataForComponent(this.componentId));   
-        this._uploadManager.setFiles(getAllSelectedFiles());
-        this._uploadManager.startUpload().catch((error) => {
-            console.error("Error while downloading files:", error);
-        });
-    } else {
-        console.error("Failed to obtain download URL.");
-    }
-  }
-
+ 
   private _refreshSelectedFiles() {
     if (getAllSelectedFiles().length === 0 && this._navigationManager.currentView === "selected") {
       this._navigationManager.setView("main");

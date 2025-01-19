@@ -9,7 +9,7 @@ export const awcFileUploadProviderLocalTag = "awc-file-upload-provider-local";
 
 @customElement(awcFileUploadProviderLocalTag)
 export default class AwcFileUploadProviderLocal extends Provider {
-  name = "Моё устройство";
+  name = "My device";
   provider = "local";
 
   get icon(): SVGTemplateResult {
@@ -27,7 +27,7 @@ export default class AwcFileUploadProviderLocal extends Provider {
           </svg>
       `;
   }
- 
+
   private generateUUID(): string {
     const template = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx";
     return template.replace(/[xy]/g, (c) => {
@@ -48,29 +48,29 @@ export default class AwcFileUploadProviderLocal extends Provider {
     Array.from(files).forEach((file) => this.processFile(file));
   }
 
-   convertToProviderFileFormat(file: File) {
+  convertToProviderFileFormat(file: File) {
     const isImage = file.type.startsWith("image/");
 
     return {
-        id: file.name + Date.now().toString(),
-        name: file.name,
-        isFolder: false,
-        isPublicFolder: false,
-        icon: "",
-        requestPath: "",
-        modifiedDate: new Date().toISOString(),
-        size: file.size,
-        mimeType: file.type,
-        file: file,
-        thumbnail: isImage ? URL.createObjectURL(file) : "",
-        fileExternal: "",
-      };
+      id: file.name + Date.now().toString(),
+      name: file.name,
+      isFolder: false,
+      isPublicFolder: false,
+      icon: "",
+      requestPath: "",
+      modifiedDate: new Date().toISOString(),
+      size: file.size,
+      mimeType: file.type,
+      file: file,
+      thumbnail: isImage ? URL.createObjectURL(file) : "",
+      fileExternal: "",
+    };
   }
 
-   processFile(file: File): void {
+  processFile(file: File): void {
     const providerFile = this.convertToProviderFileFormat(file);
     addSelectedFile(providerFile, "local");
-    
+
     if (file.type.startsWith("image/")) {
       this._generateImagePreview(file, providerFile);
     }
