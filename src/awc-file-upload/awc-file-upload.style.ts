@@ -2,7 +2,7 @@ import { css } from "lit";
 
 export const awcFileUploadStyles = css`
     :host {
-        position: relative;
+        /* position: relative; */
         --awc-file-upload-file-title: var(--awc-font-h5-medium);
         --awc-file-upload-height: 550px;
     }
@@ -16,7 +16,6 @@ export const awcFileUploadStyles = css`
         max-height: var(---awc-file-upload-height);
         box-sizing: border-box;
         position: relative;
-        contain: content;
     }
 
     .awc-file-upload-body {

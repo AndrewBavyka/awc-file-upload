@@ -34,13 +34,13 @@ export default class AwcFileUploadViewWrapper extends LitElement {
     }
 
     private animateViewChange(direction: 'forward' | 'reverse') {
-        const translateXValue = direction === 'forward' ? ['100%', '0%'] : ['-100%', '0%'];
-        anime({
-            targets: this,
-            translateX: translateXValue,
-            easing: 'easeInOutQuad',
-            duration: 300,
-        });
+        // const translateXValue = direction === 'forward' ? ['100%', '0%'] : ['-100%', '0%'];
+        // anime({
+        //     targets: this,
+        //     translateX: translateXValue,
+        //     easing: 'easeInOutQuad',
+        //     duration: 300,
+        // });
     }
 
     protected render(): TemplateResult {

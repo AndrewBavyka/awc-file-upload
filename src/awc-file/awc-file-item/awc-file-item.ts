@@ -179,10 +179,9 @@ export default class AwcFileItem extends LitElement {
     return this.private ? "Закрыть доступ" : "Открыть доступ";
   }
 
-  private _openExternalLink() {
-    if (this.externalFileLink) {
-      window.open(this.externalFileLink, "_blank", "noopener,noreferrer");
-    }
+  private _openExternalLink(e: Event) {
+    e.stopImmediatePropagation();
+    window.open(this.externalFileLink, "_blank", "noopener,noreferrer");
   }
 
   private _onClickPreview(e: Event) {
@@ -221,7 +220,7 @@ export default class AwcFileItem extends LitElement {
 
   private _renderGridItem(): TemplateResult {
     return html`
-      <div class="awc-file-item__preview" @click=${(e: Event) => { this._openExternalLink(); this._onClickPreview(e) }}>
+      <div class="awc-file-item__preview" @click=${(e: Event) => { this._openExternalLink(e); this._onClickPreview(e) }}>
         ${this.thumbnail
         ? html`<img
               class="awc-file-item__image"

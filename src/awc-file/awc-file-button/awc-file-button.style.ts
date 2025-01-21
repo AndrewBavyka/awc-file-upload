@@ -5,6 +5,7 @@ export const awcFileButtonStyles = css`
         display: var(--awc-file-button-display, inline-flex);
         max-width: 100%;
         position: relative;
+        margin-top: var(--spacing-sm);
     }
 
     .awc-file-button {

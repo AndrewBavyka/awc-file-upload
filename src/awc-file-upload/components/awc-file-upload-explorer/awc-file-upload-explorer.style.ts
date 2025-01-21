@@ -33,7 +33,7 @@ export const awcFileUploadExplorerStyles = css`
     }
 
     .file-explorer__body {
-        padding: 12px 0px 12px 20px;
+        position: relative;
         overflow-x: hidden;
         overflow-y: auto;
         min-height: 374px;
@@ -41,18 +41,17 @@ export const awcFileUploadExplorerStyles = css`
         box-sizing: border-box;
     }
 
-    .file-explorer__content {
-        /* position: absolute; */
+    .file-explorer__content--list {
+        position: absolute;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        padding: 12px 0px 12px 20px;
         box-sizing: border-box;
-        /* height: 100%; */
-        display: flex;
-        flex-direction: column;
-        /* width: calc(100% - 25px); */
     }
 
-    .file-explorer__content--list .file-explorer__item {
+    .file-explorer__item--list{
         display: flex;
-        flex-direction: row;
         align-items: center;
         font: var(--awc-font-text-regular-14);
         padding: 6px 8px;
@@ -79,6 +78,7 @@ export const awcFileUploadExplorerStyles = css`
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
         gap: 12px;
+        padding: 12px 0px 12px 20px;
     }
 
     .file-explorer__content--grid .file-explorer__item  {

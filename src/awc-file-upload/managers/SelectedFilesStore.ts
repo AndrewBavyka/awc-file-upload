@@ -25,7 +25,7 @@ export const toggleExternalMode = (isExternalMode: boolean) => {
     selectedFilesStore.setKey('externalMode', isExternalMode);
 };
 
-export const toggleGlobalExternalMode = (isGlobalMode: boolean) => {
+export const toggleGlobalExternalMode = (isGlobalMode: boolean)=> {
     selectedFilesStore.setKey('globalExternalMode', isGlobalMode);
 };
 
@@ -44,16 +44,42 @@ export const addSelectedFile = (file: ProviderFile, provider: string, providerIc
     }
 
     // Проверка размера файла
-    // if (!checkFileSize(file)) {
-    //     console.warn(`Cannot add file: size exceeds the maximum limit of ${state.maxFileSize} bytes.`);
-    //     return;
-    // }
+    if (!checkFileSize(file)) {
+        console.warn(`Cannot add file: size exceeds the maximum limit of ${state.maxFileSize} bytes.`);
+        return; 
+    }
 
     if (!state.selectedFiles.has(file.id)) {
         const isGlobalMode = state.globalExternalMode && provider !== 'local';
         const fileSource = isGlobalMode ? 'fileExternal' : 'file';
         state.selectedFiles.set(file.id, { file: { ...file, fileSource }, provider, providerIcon });
         selectedFilesStore.setKey('selectedFiles', new Map(state.selectedFiles));
+    }
+};
+
+
+let hasUpdated = false;
+export const updateStoreState = (once: boolean) => {
+    if (once && hasUpdated) {
+        return;
+    }
+
+    const state = selectedFilesStore.get();
+    const updatedFiles = new Map(state.selectedFiles);
+
+    updatedFiles.forEach((selectedFile, fileId) => {
+        const isExternalMode = state.globalExternalMode && selectedFile.provider !== 'local';
+        const newFileSource = isExternalMode ? 'fileExternal' : 'file';
+
+        if (selectedFile.file.fileSource !== newFileSource) {
+            selectedFile.file.fileSource = newFileSource;
+        }
+    });
+
+    selectedFilesStore.setKey('selectedFiles', updatedFiles);
+
+    if (once) {
+        hasUpdated = true;
     }
 };
 

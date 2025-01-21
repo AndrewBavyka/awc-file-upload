@@ -10,8 +10,9 @@ import { live } from "lit/directives/live.js";
 import { textManagerContext } from "./managers/TextManagerContext";
 import { provide } from '@lit/context';
 import { localized } from "@lit/localize";
-import { clearSelectedFiles, getAllSelectedFiles, selectedFilesStore, setExtraDataForComponent, setFileLimits, toggleExternalMode, getExtraData, getExtraDataForComponent } from "./managers/SelectedFilesStore";
+import { clearSelectedFiles, getAllSelectedFiles, selectedFilesStore, setExtraDataForComponent, setFileLimits, toggleExternalMode, getExtraData, getExtraDataForComponent, updateStoreState } from "./managers/SelectedFilesStore";
 import AwcFileUploadProviderLocal from "./providers/awc-file-upload-provider-local/awc-file-upload-provider-local";
+import AwcFileUploadDropZone from "./providers/awc-file-upload-provider-local/awc-file-upload-dropzone/awc-file-upload-dropzone";
 export const awcFileUploadTag = "awc-file-upload";
 @localized()
 @customElement(awcFileUploadTag)
@@ -47,7 +48,7 @@ export default class AwcFileUpload extends LitElement {
         const modalWrapper = this._modal.shadowRoot?.querySelector(".awc-modal")!;
         modalWrapper.addEventListener("click", (e: Event) => this._showAlertIfFilesSelected(e));
 
-        const dropzone = this.shadowRoot?.querySelector("awc-file-upload-dropzone") as any;
+        const dropzone = this.shadowRoot?.querySelector("awc-file-upload-dropzone") as AwcFileUploadDropZone;
         if (dropzone && dropzone.setModalTarget) {
           dropzone.setModalTarget(this._modal);
         }
@@ -126,8 +127,8 @@ export default class AwcFileUpload extends LitElement {
 
   private _initialDropzoneEvents() {
     if(this.active) {
-      window.addEventListener("dragover", (e: Event) => e.preventDefault());
-      window.addEventListener("drop", (e: Event) => e.preventDefault());
+      window.addEventListener("dragover", (e: DragEvent) => e.preventDefault());
+      window.addEventListener("drop", (e: DragEvent) => e.preventDefault());
     } 
     window.addEventListener("dragleave", () => this.active = false);
   }
@@ -151,6 +152,8 @@ export default class AwcFileUpload extends LitElement {
 
   private _confirmSelection() {
     this._navigationManager.setView("selected");
+    // Мега костыль, но правит баг с тем что если выбрать файлы а потом переключить глобальное состояние то оно не применятся.
+    updateStoreState(true);
   }
 
   private _cancel() {
@@ -237,7 +240,6 @@ export default class AwcFileUpload extends LitElement {
       this.requestUpdate();
     }
   }
-
  
   private _refreshSelectedFiles() {
     if (getAllSelectedFiles().length === 0 && this._navigationManager.currentView === "selected") {
@@ -319,18 +321,19 @@ export default class AwcFileUpload extends LitElement {
             <awc-file-upload-view-wrapper .navigationManager=${this._navigationManager}>
               ${this._getViewTemplate()}
             </awc-file-upload-view-wrapper>
-            ${this._renderFooter()}
           </div>
+          ${this._renderFooter()}
         </div>
-      </awc-modal>
 
-      ${hasDragAndDrop
+        ${hasDragAndDrop
         ? html`
             <awc-file-upload-dropzone
               .active=${this.dropzone}
             ></awc-file-upload-dropzone>
           `
         : ""}
+      </awc-modal>
+
       ${this._showAlert ? html`
           <awc-dialog
               ?opened=${this._showAlert}
@@ -394,7 +397,7 @@ export default class AwcFileUpload extends LitElement {
 
     return html`
       <awc-file-upload-footer
-        .isSelected=${this._navigationManager.currentView === "selected"}
+        .currentView=${this._navigationManager.currentView}
         @cancel-selection=${this._cancelSelectionFiles}
         @confirm-selection=${this._confirmSelection}
         @upload=${this._uploadFiles}

@@ -72,6 +72,15 @@ export const awcFileStyles = css`
         align-items: center;
         gap: var(--spacing-xs);
         margin-left: auto;
+        opacity: 1;
+        visibility: visible;
+        transition: visibility .3s ease, opacity .3s ease;
+    }
+
+    .awc-file__views--hidden {
+        opacity: 0;
+        visibility: hidden;
+        transition: visibility .3s ease, opacity .3s ease;
     }
 
     /* Icon Button */
@@ -85,10 +94,10 @@ export const awcFileStyles = css`
     }
 
     .awc-file__body {
+        margin-top: 10px;
         display: flex;
         flex-wrap: wrap;
         overflow: hidden;
-        padding: 10px 0 12px 0;
     }
 
     :host([view="grid"]) .awc-file__body {

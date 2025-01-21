@@ -52,7 +52,7 @@ export default class AwcFileUploadExplorer extends LitElement {
 
     this._loadViewMode();
     await this.loadItems(this.currentPath, true);
-    selectedFilesStore.subscribe(() => this.requestUpdate())
+    selectedFilesStore.subscribe(() => this.requestUpdate());
   }
 
   private _loadViewMode() {

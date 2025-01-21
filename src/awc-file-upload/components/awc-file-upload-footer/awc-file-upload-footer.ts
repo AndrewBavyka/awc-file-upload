@@ -8,18 +8,20 @@ import { UploadEventBus, UploadEvents } from "../../managers/EventsBus";
 import { textManagerContext } from "../../managers/TextManagerContext";
 import { TextManager } from "../../managers/TextManager";
 import { consume } from '@lit/context';
+import { CurrentView } from "../../managers/NavigationManager";
 
 export const awcFileUploadFooterTag = "awc-file-upload-footer";
 
 @customElement(awcFileUploadFooterTag)
 export default class AwcFileUploadFooter extends LitElement {
     @property({ type: Number }) fileCount = 0;
-    @property({ type: Boolean }) isSelected = false;
+    @property({ type: String }) currentView: CurrentView = "list";
     @property({ type: Number }) private _uploadedCount: number = 0;
-    @property({ type: Boolean }) private _isUploadStart: boolean = false;
+
+    @state() private _isUploadStart = false;
 
     @state() private _uploadManager = UploadManager.getInstance();
-    @state() _progressMap: Map<string, number> = new Map();
+    @state() private _progressMap: { [key: string]: number } = {};
 
     @event("awc-file-upload-switch-mode") private _onChangeMode!: EventDispatcher<{ [key: string]: boolean }>;
     @consume({ context: textManagerContext }) textManager?: TextManager;
@@ -33,7 +35,7 @@ export default class AwcFileUploadFooter extends LitElement {
     connectedCallback(): void {
         super.connectedCallback();
 
-        this._loadSwitcherState();        
+        this._loadSwitcherState();
         UploadEventBus.addEventListener(UploadEvents.UPLOAD_STATUS, (event) => this._handleUploadStatus(event as CustomEvent<UploadStatusEventDetail>));
         UploadEventBus.addEventListener(UploadEvents.UPLOAD_PROGRESS, (event) => this._handleUploadProgress(event as CustomEvent<UploadProgressEventDetail>));
 
@@ -53,34 +55,33 @@ export default class AwcFileUploadFooter extends LitElement {
         const { file, status } = event.detail;
 
         if (status === "success") {
-            this._progressMap.delete(file.file.name);
+            delete this._progressMap[file.file.name];
             this._uploadedCount++;
         } else if (status === "error") {
-            this._progressMap.delete(file.file.name);
+            delete this._progressMap[file.file.name];
         }
-        if (this._progressMap.size === 0) {
-            this._isUploadStart = false;
-        }
-
-        this.requestUpdate();
     }
 
     private _handleUploadProgress(event: CustomEvent<UploadProgressEventDetail>) {
         const { file, progress } = event.detail;
-
+    
         if (progress !== undefined) {
-            this._progressMap.set(file.file.name, progress);
-            this.requestUpdate();
+            this._progressMap = {
+                ...this._progressMap,
+                [file.file.name]: progress,
+            };
         }
     }
 
     private _getOverallProgress(): number {
         const totalFiles = getAllSelectedFiles().length;
         if (totalFiles === 0) return 0;
-
-        const uploadingProgress = Array.from(this._progressMap.values()).reduce((sum, progress) => sum + progress, 0);
+    
+        const uploadingProgress = Object.values(this._progressMap).reduce(
+            (sum, progress) => sum + progress, 0
+        );
         const completedProgress = this._uploadedCount * 100;
-
+    
         return (uploadingProgress + completedProgress) / totalFiles;
     }
 
@@ -91,8 +92,16 @@ export default class AwcFileUploadFooter extends LitElement {
     protected update(changedProperties: PropertyValues): void {
         super.update(changedProperties);
 
-        if(changedProperties.has('_isSwitcherChecked')) {
+        if (changedProperties.has('_isSwitcherChecked')) {
             this._loadSwitcherState();
+        }
+    }
+
+    protected updated(_changedProperties: PropertyValues): void {
+        super.updated(_changedProperties);
+
+        if (_changedProperties.has('_progressMap')) {
+            console.log('Ok', this._progressMap);
         }
     }
 
@@ -108,16 +117,17 @@ export default class AwcFileUploadFooter extends LitElement {
 
     private _triggerUpload() {
         this._isUploadStart = true;
+        this.requestUpdate('');
         this._emitEvent("upload");
     }
 
     private _cancelAllUploads(): void {
         this._uploadManager.cancelAllUploads();
-        this._progressMap.clear();
+        this._progressMap = {};
         this._isUploadStart = false;
     }
 
-    protected render(): TemplateResult {
+    private _getViewTemplate() {
         const cancelIcon = svg`
             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <rect width="20" height="20" rx="10" fill="#919BB6"/>
@@ -136,56 +146,85 @@ export default class AwcFileUploadFooter extends LitElement {
         const uploading = this._progressMap.size > 0;
         const overallProgress = this._getOverallProgress();
 
+        switch (this.currentView) {
+            case 'selected':
+        return html`
+            ${!this._isUploadStart
+                ? html`<awc-button style="width: 100%" @click=${this._triggerUpload}>
+                    ${this.textManager?.textState.buttonTexts.upload} 
+                    ${this.fileCount > 0 ? this.fileCount : ""}
+                </awc-button>`
+                : ''
+            }
+
+            ${this._isUploadStart
+                ? html`
+                    ${Object.entries(this._progressMap).map(([fileName, progress]) => {
+                        const overallProgress = this._getOverallProgress();
+                        return html`
+                            <awc-file-upload-progress .value=${progress}></awc-file-upload-progress>
+                            <div class="awc-file-upload-footer__progress-item">
+                                <span class="awc-file-upload-footer__progress-value">
+                                    ${this.textManager?.textState.uploadStatus.status} ${progress.toFixed(0)}%
+                                </span>
+                                <span class="awc-file-upload-footer__progress-info">
+                                    Загружены ${this._uploadedCount} из ${getAllSelectedFiles().length}
+                                </span>
+                            </div>
+                            <button 
+                                tabindex="0" 
+                                type="button" 
+                                class="awc-file-upload-footer__progress-button" 
+                                @click=${this._cancelAllUploads}
+                            > 
+                                ${cancelIcon}
+                            </button>
+                        `;
+                    })}
+                `
+                : ''
+            }
+        `;
+            default:
+                return html`
+                    <div class="awc-file-upload-footer__switcher">
+                        <awc-switcher 
+                            ?checked=${this._isSwitcherChecked} 
+                            @change=${this._toggleLinkOrFileUploading}
+                        >
+                            ${this.textManager?.textState.switcher.fileExternal}
+                        </awc-switcher>
+                        <awc-tooltip .message="${this.textManager?.textState.tooltip.fileExternal}">
+                            ${questionIcon}
+                        </awc-tooltip>
+                    </div>
+                    ${getAllSelectedFiles().length ? html`
+                        <div class="awc-file-upload-footer__buttons">
+                            <awc-button
+                                background="gray"
+                                size="regular"
+                                variant="transparent"
+                                type="button"
+                                @click=${() => this._emitEvent("cancel-selection")}
+                            >
+                                ${this.textManager?.textState.buttonTexts.cancel}
+                            </awc-button>
+                            <awc-button 
+                                @click=${() => this._emitEvent("confirm-selection")}
+                            >
+                                ${this.textManager?.textState.buttonTexts.select} ${this.fileCount > 0 ? this.fileCount : ""}
+                            </awc-button>
+                        </div>
+                    ` : ''}
+                `;
+        }
+    }
+
+
+    protected render(): TemplateResult {
         return html`
             <div class="awc-file-upload-footer">
-                ${uploading
-                ? html` ${Array.from(this._progressMap.entries()).map(([fileName, progress]) => html`
-                        <awc-file-upload-progress .value=${overallProgress}></awc-file-upload-progress>
-                        <div class="awc-file-upload-footer__progress-item">
-                            <span class="awc-file-upload-footer__progress-value">${this.textManager?.textState.uploadStatus.status} ${overallProgress.toFixed(0)}%</span>
-                            <span class="awc-file-upload-footer__progress-info">Загружены ${this._uploadedCount} из ${getAllSelectedFiles().length}</span>
-                        </div>
-                        <button 
-                            tabindex="0" 
-                            type="button" 
-                            class="awc-file-upload-footer__progress-button" 
-                            @click=${this._cancelAllUploads}
-                        > 
-                            ${cancelIcon}
-                        </button>
-                        `)}
-                    `
-                : this.isSelected
-                    ? html`
-                            <awc-button style="width: 100%" @click=${this._triggerUpload}>
-                               ${this.textManager?.textState.buttonTexts.upload} ${this.fileCount > 0 ? this.fileCount : ""}
-                            </awc-button>
-                        `
-                    : html`
-                            <div class="awc-file-upload-footer__switcher">
-                                <awc-switcher ?checked=${this._isSwitcherChecked} @change=${this._toggleLinkOrFileUploading}>${this.textManager?.textState.switcher.fileExternal}</awc-switcher>
-                                <awc-tooltip .message="${this.textManager?.textState.tooltip.fileExternal}">${questionIcon}</awc-tooltip>
-                            </div>
-                             ${getAllSelectedFiles().length ? html`
-                                <div class="awc-file-upload-footer__buttons">
-                                    <awc-button
-                                        background="gray"
-                                        size="regular"
-                                        variant="transparent"
-                                        type="button"
-                                        @click=${() => this._emitEvent("cancel-selection")}
-                                    >
-                                        ${this.textManager?.textState.buttonTexts.cancel}
-                                    </awc-button>
-                                    <awc-button 
-                                        @click=${() => this._emitEvent("confirm-selection")}
-                                    >
-                                         ${this.textManager?.textState.buttonTexts.select} ${this.fileCount > 0 ? this.fileCount : ""}
-                                    </awc-button>
-                                </div>
-                             ` : ""}
-                    `
-            }
+                ${this._getViewTemplate()}
             </div>
         `;
     }

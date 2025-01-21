@@ -137,7 +137,7 @@ export default class AwcFile extends LitElement {
                         <p class="awc-file__title">${this.heading}</p>
                         <span class="awc-file__counter">${this.counter > 0 ? this.counter : ""}</span>
                     </div>
-                    <div class="awc-file__views" @click=${this._switchingView}>
+                    <div class="awc-file__views ${this.open ? '' : 'awc-file__views--hidden'}" @click=${this._switchingView}>
                         ${VIEW_CONFIGS.map((config) => html`
                                 <awc-icon-button
                                     ?active=${this.view === config.type}
