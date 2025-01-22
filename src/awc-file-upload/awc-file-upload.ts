@@ -36,7 +36,6 @@ export default class AwcFileUpload extends LitElement {
   @state() private accountName: string | null = null;
 
   @query('awc-modal') private _modal!: HTMLElement;
-  @query('awc-dialog') private _dialog!: HTMLElement;
 
   @provide({ context: textManagerContext }) textManager = new TextManager(this);
 
@@ -49,6 +48,7 @@ export default class AwcFileUpload extends LitElement {
         modalWrapper.addEventListener("click", (e: Event) => this._showAlertIfFilesSelected(e));
 
         const dropzone = this.shadowRoot?.querySelector("awc-file-upload-dropzone") as AwcFileUploadDropZone;
+
         if (dropzone && dropzone.setModalTarget) {
           dropzone.setModalTarget(this._modal);
         }
@@ -83,7 +83,6 @@ export default class AwcFileUpload extends LitElement {
     EventsBus.autoDispatchToDOM(this, UploadEventBus, UploadEvents.UPLOAD_STATUS);
     EventsBus.autoDispatchToDOM(this, UploadEventBus, UploadEvents.UPLOAD_END);
 
-    this._initialDropzoneEvents();
     this._updateTitle();
     selectedFilesStore.subscribe(() => {
       this._refreshSelectedFiles();
@@ -123,14 +122,6 @@ export default class AwcFileUpload extends LitElement {
   private _onChangeLocalProvider() {
     const hasFilesLocalProvider = getAllSelectedFiles().filter(file => file.provider === 'local');
     if (hasFilesLocalProvider.length > 0) this._navigationManager.setView('selected');
-  }
-
-  private _initialDropzoneEvents() {
-    if(this.active) {
-      window.addEventListener("dragover", (e: DragEvent) => e.preventDefault());
-      window.addEventListener("drop", (e: DragEvent) => e.preventDefault());
-    } 
-    window.addEventListener("dragleave", () => this.active = false);
   }
 
   disconnectedCallback() {

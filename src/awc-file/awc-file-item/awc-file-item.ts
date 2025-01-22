@@ -154,14 +154,15 @@ export default class AwcFileItem extends LitElement {
 
     window.open(this.localFile, "_self", "noopener,noreferrer");
     this._onDownloadEvent(this._getFileDetails());
-    this.activeDropdown.close();
+
+    if(this.activeDropdown) this.activeDropdown.close();
   }
 
   private _triggerDeleteEvent(e: Event) {
     e.stopPropagation();
 
     this._onDeleteEvent(this._getFileDetails());
-    this.activeDropdown.close();
+    if(this.activeDropdown) this.activeDropdown.close();
   }
 
   private _togglePrivateMode(e: Event) {

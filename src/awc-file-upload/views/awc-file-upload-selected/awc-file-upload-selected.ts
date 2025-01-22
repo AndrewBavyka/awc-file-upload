@@ -47,8 +47,7 @@ export default class AwcFileUploadSelected extends LitElement {
 
     selectedFilesStore.subscribe(() => {
       this.selectedFiles = getAllSelectedFiles();
-      // this.requestUpdate();
-      console.log(this.selectedFiles)
+      this.requestUpdate();
     });
   }
 

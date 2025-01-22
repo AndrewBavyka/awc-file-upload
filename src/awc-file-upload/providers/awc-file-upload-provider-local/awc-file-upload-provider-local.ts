@@ -9,7 +9,7 @@ export const awcFileUploadProviderLocalTag = "awc-file-upload-provider-local";
 
 @customElement(awcFileUploadProviderLocalTag)
 export default class AwcFileUploadProviderLocal extends Provider {
-  name = "My device";
+  name = "Моё устройство";
   provider = "local";
 
   get icon(): SVGTemplateResult {
