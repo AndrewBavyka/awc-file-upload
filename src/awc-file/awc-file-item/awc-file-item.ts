@@ -122,7 +122,7 @@ export default class AwcFileItem extends LitElement {
         `;
 
     return html`
-    <awc-dropdown ?visible=${this.dropdownActive} class="awc-file-item__dropdown" width="210">
+    <awc-dropdown strategy="fixed" position="bottom" width="210" ?visible=${this.dropdownActive} class="awc-file-item__dropdown">
         <awc-dropdown-group ?divider=${this.showDownload && !this.externalFileLink || this.showPrivate}>
           ${this.showDownload && !this.externalFileLink
         ? html`
@@ -181,6 +181,9 @@ export default class AwcFileItem extends LitElement {
 
   private _openExternalLink(e: Event) {
     e.stopImmediatePropagation();
+
+    if(!this.externalFileLink) return;
+
     window.open(this.externalFileLink, "_blank", "noopener,noreferrer");
   }
 

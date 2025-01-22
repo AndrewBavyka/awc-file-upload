@@ -22,6 +22,7 @@ export default class AwcFileUploadFooter extends LitElement {
 
     @state() private _uploadManager = UploadManager.getInstance();
     @state() private _progressMap: { [key: string]: number } = {};
+    @state() private _progressItems: Array<{ key: string; value: number }> = [];
 
     @event("awc-file-upload-switch-mode") private _onChangeMode!: EventDispatcher<{ [key: string]: boolean }>;
     @consume({ context: textManagerContext }) textManager?: TextManager;
@@ -64,24 +65,23 @@ export default class AwcFileUploadFooter extends LitElement {
 
     private _handleUploadProgress(event: CustomEvent<UploadProgressEventDetail>) {
         const { file, progress } = event.detail;
-    
-        if (progress !== undefined) {
-            this._progressMap = {
-                ...this._progressMap,
-                [file.file.name]: progress,
-            };
-        }
+
+        if (!progress) return;
+
+        this._progressMap[file.file.name] = progress;
+        this._progressItems = Object.entries(this._progressMap).map(([key, value]) => ({ key, value }));
+        this.requestUpdate('_progressMap');
     }
 
     private _getOverallProgress(): number {
         const totalFiles = getAllSelectedFiles().length;
         if (totalFiles === 0) return 0;
-    
+
         const uploadingProgress = Object.values(this._progressMap).reduce(
             (sum, progress) => sum + progress, 0
         );
         const completedProgress = this._uploadedCount * 100;
-    
+
         return (uploadingProgress + completedProgress) / totalFiles;
     }
 
@@ -101,7 +101,7 @@ export default class AwcFileUploadFooter extends LitElement {
         super.updated(_changedProperties);
 
         if (_changedProperties.has('_progressMap')) {
-            console.log('Ok', this._progressMap);
+
         }
     }
 
@@ -117,7 +117,6 @@ export default class AwcFileUploadFooter extends LitElement {
 
     private _triggerUpload() {
         this._isUploadStart = true;
-        this.requestUpdate('');
         this._emitEvent("upload");
     }
 
@@ -134,7 +133,7 @@ export default class AwcFileUploadFooter extends LitElement {
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M7.70711 6.29289C7.31658 5.90237 6.68342 5.90237 6.29289 6.29289C5.90237 6.68342 5.90237 7.31658 6.29289 7.70711L8.58235 9.99657L6.29183 12.294C5.9019 12.6851 5.90284 13.3182 6.29395 13.7082C6.68506 14.0981 7.31823 14.0972 7.70817 13.706L9.99657 11.4108L12.2929 13.7071C12.6834 14.0976 13.3166 14.0976 13.7071 13.7071C14.0976 13.3166 14.0976 12.6834 13.7071 12.2929L11.4087 9.99445L13.6902 7.70605C14.0802 7.31494 14.0792 6.68177 13.6881 6.29184C13.297 5.9019 12.6638 5.90284 12.2739 6.29395L9.99445 8.58023L7.70711 6.29289Z" fill="white"/>
             </svg>
         `;
-
+    
         const questionIcon = svg`
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M7 6.5C7 6.22386 7.22386 6 7.5 6H8.64147C8.83948 6 9 6.16052 9 6.35853C9 6.46572 8.95204 6.56728 8.86928 6.63539L7.36424 7.87379C6.93777 8.22471 6.87652 8.85491 7.22743 9.28138C7.57835 9.70785 8.20855 9.76909 8.63502 9.41818L10.1401 8.17977C10.6845 7.73176 11 7.06364 11 6.35853C11 5.05595 9.94405 4 8.64147 4H7.5C6.11929 4 5 5.11929 5 6.5C4.98286 7.05856 5.43726 7.53125 6 7.53125C6.56274 7.53125 7.01714 7.05856 7 6.5Z" fill="#919BB6"/>
@@ -142,30 +141,24 @@ export default class AwcFileUploadFooter extends LitElement {
                 <path fill-rule="evenodd" clip-rule="evenodd" d="M8 16C3.58172 16 0 12.4183 0 8C0 3.58172 3.58172 0 8 0C12.4183 0 16 3.58172 16 8C16 12.4183 12.4183 16 8 16ZM2 8C2 11.3137 4.68629 14 8 14C11.3137 14 14 11.3137 14 8C14 4.68629 11.3137 2 8 2C4.68629 2 2 4.68629 2 8Z" fill="#919BB6"/>
             </svg>        
         `;
-
-        const uploading = this._progressMap.size > 0;
+    
         const overallProgress = this._getOverallProgress();
-
+    
         switch (this.currentView) {
             case 'selected':
-        return html`
-            ${!this._isUploadStart
-                ? html`<awc-button style="width: 100%" @click=${this._triggerUpload}>
-                    ${this.textManager?.textState.buttonTexts.upload} 
-                    ${this.fileCount > 0 ? this.fileCount : ""}
-                </awc-button>`
-                : ''
-            }
-
-            ${this._isUploadStart
-                ? html`
-                    ${Object.entries(this._progressMap).map(([fileName, progress]) => {
-                        const overallProgress = this._getOverallProgress();
-                        return html`
-                            <awc-file-upload-progress .value=${progress}></awc-file-upload-progress>
+                return html`
+                    ${!this._isUploadStart ? html`
+                        <awc-button style="width: 100%" @click=${this._triggerUpload}>
+                            ${this.textManager?.textState.buttonTexts.upload} ${this.fileCount > 0 ? this.fileCount : ""}
+                        </awc-button>
+                    ` : ''}
+    
+                    ${this._isUploadStart ? html`
+                        ${this._progressItems.map(item => html`
+                            <awc-file-upload-progress .value=${overallProgress}></awc-file-upload-progress>
                             <div class="awc-file-upload-footer__progress-item">
                                 <span class="awc-file-upload-footer__progress-value">
-                                    ${this.textManager?.textState.uploadStatus.status} ${progress.toFixed(0)}%
+                                    ${this.textManager?.textState.uploadStatus.status} ${overallProgress.toFixed(0)}%
                                 </span>
                                 <span class="awc-file-upload-footer__progress-info">
                                     Загружены ${this._uploadedCount} из ${getAllSelectedFiles().length}
@@ -176,15 +169,12 @@ export default class AwcFileUploadFooter extends LitElement {
                                 type="button" 
                                 class="awc-file-upload-footer__progress-button" 
                                 @click=${this._cancelAllUploads}
-                            > 
+                            >
                                 ${cancelIcon}
                             </button>
-                        `;
-                    })}
-                `
-                : ''
-            }
-        `;
+                        `)}
+                    ` : ''}
+                `;
             default:
                 return html`
                     <div class="awc-file-upload-footer__switcher">
@@ -219,7 +209,6 @@ export default class AwcFileUploadFooter extends LitElement {
                 `;
         }
     }
-
 
     protected render(): TemplateResult {
         return html`

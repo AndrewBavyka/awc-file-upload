@@ -44,10 +44,10 @@ export const addSelectedFile = (file: ProviderFile, provider: string, providerIc
     }
 
     // Проверка размера файла
-    if (!checkFileSize(file)) {
-        console.warn(`Cannot add file: size exceeds the maximum limit of ${state.maxFileSize} bytes.`);
-        return; 
-    }
+    // if (!checkFileSize(file)) {
+    //     console.warn(`Cannot add file: size exceeds the maximum limit of ${state.maxFileSize} bytes.`);
+    //     return; 
+    // }
 
     if (!state.selectedFiles.has(file.id)) {
         const isGlobalMode = state.globalExternalMode && provider !== 'local';

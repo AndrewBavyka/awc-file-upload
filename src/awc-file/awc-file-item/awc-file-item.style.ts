@@ -27,7 +27,7 @@ export const awcFileItemStyles = css`
         transition: background-color 0.3s ease;
     }
 
-    :host([view="grid"]) .awc-file-item__preview:hover {
+    :host([view="grid"][external-file-link]) .awc-file-item__preview:hover {
         background-color: #05237D0D;
     }
 
@@ -171,17 +171,28 @@ export const awcFileItemStyles = css`
     }
 
     /* Preview Styles */
+    :host([view="grid"][external-file-link]) .awc-file-item__preview {
+        cursor: pointer;
+    }
+
+    :host([thumbnail]) .awc-file-item__preview {
+        cursor: pointer;
+    }
+
     .awc-file-item__preview {
         display: flex;
         align-items: center;
         justify-content: center;
-        cursor: pointer;
     }
 
     .awc-file-item__preview .awc-file-item__image {
         object-fit: contain;
         width: inherit;
         height: inherit;
+    }
+
+    .awc-file-item__icon {
+        display: flex;
     }
 
     /* Info Styles */
