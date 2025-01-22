@@ -6,7 +6,6 @@ export const awcFileUploadErrorStyles = css`
         align-items: center;
         justify-content: center;
         height: 100%;
-        position: fixed;
         width: 100%;
         left: 0;
         top: 0;

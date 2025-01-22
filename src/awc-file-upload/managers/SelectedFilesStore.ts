@@ -117,6 +117,11 @@ export const getUploadLimit = (): number => {
     return state.uploadLimit;
 }
 
+export const isUploadLimit = (): boolean => {
+    const state = selectedFilesStore.get();
+    return state.selectedFiles.size !== state.uploadLimit ;
+}
+
 export const setExtraData = (extraData: Record<string, any>) => {
     const state = selectedFilesStore.get();
     selectedFilesStore.set({

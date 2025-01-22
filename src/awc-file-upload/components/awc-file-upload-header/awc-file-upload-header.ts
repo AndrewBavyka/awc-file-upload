@@ -16,6 +16,8 @@ export default class AwcFileUploadHeader extends LitElement {
 
     @consume({ context: textManagerContext }) textManager?: TextManager;
 
+    @state() isUploadLimit: boolean = false;
+
     private _handleCancel() {
         this.dispatchEvent(new CustomEvent("cancel", { bubbles: true, composed: true }));
     }
@@ -50,7 +52,7 @@ export default class AwcFileUploadHeader extends LitElement {
                 return html`
                 <button class="awc-file-upload-btn__cancel" @click=${this._handleCancel}>${this.textManager?.textState.buttonTexts.cancel}</button>
                 <div class="awc-file-upload-heading__title">${this.headerText}</div>
-                <button class="awc-file-upload-btn__add-more" @click=${this._handleAddMore}>${this.textManager?.textState.buttonTexts.addMoreFiles}</button>
+                ${this.isUploadLimit ? html` <button class="awc-file-upload-btn__add-more" @click=${this._handleAddMore}>${this.textManager?.textState.buttonTexts.addMoreFiles}</button>` : ""}
             `;
             case "list":
                 return html`

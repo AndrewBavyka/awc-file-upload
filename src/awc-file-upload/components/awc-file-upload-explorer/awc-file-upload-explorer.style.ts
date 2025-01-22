@@ -34,11 +34,11 @@ export const awcFileUploadExplorerStyles = css`
 
     .file-explorer__body {
         position: relative;
-        overflow-x: hidden;
-        overflow-y: auto;
+        overflow: hidden auto;
         min-height: 374px;
         max-height: 374px;
         box-sizing: border-box;
+        scroll-behavior: smooth;
     }
 
     .file-explorer__content--list {
@@ -46,7 +46,7 @@ export const awcFileUploadExplorerStyles = css`
         left: 0;
         height: 100%;
         width: 100%;
-        padding: 12px 0px 12px 20px;
+        padding: 20px 12px;
         box-sizing: border-box;
     }
 

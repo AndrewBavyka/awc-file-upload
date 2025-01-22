@@ -10,7 +10,7 @@ import { live } from "lit/directives/live.js";
 import { textManagerContext } from "./managers/TextManagerContext";
 import { provide } from '@lit/context';
 import { localized } from "@lit/localize";
-import { clearSelectedFiles, getAllSelectedFiles, selectedFilesStore, setExtraDataForComponent, setFileLimits, toggleExternalMode, getExtraData, getExtraDataForComponent, updateStoreState } from "./managers/SelectedFilesStore";
+import { clearSelectedFiles, getAllSelectedFiles, selectedFilesStore, setExtraDataForComponent, setFileLimits, toggleExternalMode, getExtraData, getExtraDataForComponent, updateStoreState, isUploadLimit } from "./managers/SelectedFilesStore";
 import AwcFileUploadProviderLocal from "./providers/awc-file-upload-provider-local/awc-file-upload-provider-local";
 import AwcFileUploadDropZone from "./providers/awc-file-upload-provider-local/awc-file-upload-dropzone/awc-file-upload-dropzone";
 export const awcFileUploadTag = "awc-file-upload";
@@ -38,6 +38,8 @@ export default class AwcFileUpload extends LitElement {
   @query('awc-modal') private _modal!: HTMLElement;
 
   @provide({ context: textManagerContext }) textManager = new TextManager(this);
+
+  private _isUploadLimit: boolean = false;
 
   protected updated(_changedProperties: PropertyValues): void {
     super.updated(_changedProperties);
@@ -88,6 +90,7 @@ export default class AwcFileUpload extends LitElement {
       this._refreshSelectedFiles();
       this._updateTitle();
       this._onChangeLocalProvider();
+      this._isUploadLimit = isUploadLimit();
     });
     setExtraDataForComponent(this.componentId, this.extraData);
     setFileLimits(this.uploadLimit, this.maxFileSize);
@@ -367,6 +370,7 @@ export default class AwcFileUpload extends LitElement {
     return html`
       <awc-file-upload-header
         .view=${this._navigationManager.currentView}
+        .isUploadLimit=${this._isUploadLimit}
         .provider=${this._selectedProvider}
         .accountName=${this.accountName!}
         .headerText=${this._textManager.textState.header}

@@ -25,7 +25,7 @@ export default class AwcFileUploadExplorer extends LitElement {
   private offset = 0;
   private limit = 20;
   private allItemsLoaded = false;
-  private isLoading = false;
+  @state() isLoading = false;
   private errorMessage: string | null = null;
   @state() private isGridView = false;
   private cacheManager = new CacheManager();
