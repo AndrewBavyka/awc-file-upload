@@ -27,7 +27,7 @@ export const toggleExternalMode = (isExternalMode: boolean) => {
     selectedFilesStore.setKey('externalMode', isExternalMode);
 };
 
-export const toggleGlobalExternalMode = (isGlobalMode: boolean)=> {
+export const toggleGlobalExternalMode = (isGlobalMode: boolean) => {
     selectedFilesStore.setKey('globalExternalMode', isGlobalMode);
 };
 
@@ -121,7 +121,7 @@ export const getUploadLimit = (): number => {
 
 export const isUploadLimit = (): boolean => {
     const state = selectedFilesStore.get();
-    return state.selectedFiles.size !== state.uploadLimit ;
+    return state.selectedFiles.size !== state.uploadLimit;
 }
 
 export const setExtraData = (extraData: Record<string, any>) => {
@@ -172,7 +172,13 @@ export const setLastActiveProvider = (provider: string) => {
     selectedFilesStore.setKey('lastActiveProvider', provider);
 };
 
+let previousFilesCount = 0;
 export const isLocalProviderWithFiles = (): boolean => {
     const state = selectedFilesStore.get();
-    return state.lastActiveProvider === 'local' && state.selectedFiles.size > 0;
+    const currentFilesCount = state.selectedFiles.size;
+
+    const filesAdded = currentFilesCount > previousFilesCount;
+    previousFilesCount = currentFilesCount;
+
+    return filesAdded && state.lastActiveProvider === 'local' && currentFilesCount > 0;
 }
