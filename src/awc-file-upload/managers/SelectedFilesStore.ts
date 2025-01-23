@@ -174,6 +174,5 @@ export const setLastActiveProvider = (provider: string) => {
 
 export const isLocalProviderWithFiles = (): boolean => {
     const state = selectedFilesStore.get();
-    console.log( state.lastActiveProvider === 'local')
     return state.lastActiveProvider === 'local' && state.selectedFiles.size > 0;
 }
