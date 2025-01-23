@@ -1,10 +1,8 @@
 {
   "$schema": "https://raw.githubusercontent.com/lit/lit/main/packages/localize-tools/config.schema.json",
   "sourceLocale": "en",
-  "targetLocales": ["en_US"],
-  "inputFiles": [
-    "src/**/*.{ts,js}"
-  ],
+  "targetLocales": ["ru_RU"],
+  "tsConfig": "tsconfig.json",
   "output": {
     "mode": "runtime",
     "outputDir": "./src/awc-file-upload/generated/locales",

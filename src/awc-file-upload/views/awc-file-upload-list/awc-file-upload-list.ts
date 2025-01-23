@@ -11,15 +11,12 @@ export default class AwcFileUploadList extends LitElement {
     @property({ type: Object }) provider: Provider | null = null;
     @property({type: String }) currentView: CurrentView = "list";
     @property({type: Array }) viewHistory:CurrentView[] = [];
+    @property({type: String }) currentLang: string = "en";
+
 
     protected render(): TemplateResult {
         return html`
-            <awc-file-upload-explorer .currentView=${this.currentView} .getViewHistory=${this.viewHistory} .provider=${this.provider}></awc-file-upload-explorer>
-            <!-- <awc-file-upload-view-wrapper>
-                
-            </awc-file-upload-view-wrapper> -->
-            
-            <!-- <slot></slot> -->
+            <awc-file-upload-explorer .currentLang=${this.currentLang} .currentView=${this.currentView} .getViewHistory=${this.viewHistory} .provider=${this.provider}></awc-file-upload-explorer>
         `;
     }
 

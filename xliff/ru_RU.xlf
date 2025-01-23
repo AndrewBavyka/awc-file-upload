@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+<file target-language="ru_RU" source-language="en" original="lit-localize-inputs" datatype="plaintext">
+<body>
+<trans-unit id="sb79b1d5b804c7b47">
+  <source>My device</source>
+  <target>Моё устройство</target>
+</trans-unit>
+<trans-unit id="s383261a00822ec87">
+  <source>Yandex.Disk</source>
+  <target>Яндекс.Диск</target>
+</trans-unit>
+<trans-unit id="sad7b3ee1c22c6f56">
+  <source>Google Drive</source>
+  <target>Google Drive</target>
+</trans-unit>
+<trans-unit id="s246fc982138d9ce5">
+  <source>Dropbox</source>
+  <target>Dropbox</target>
+</trans-unit>
+<trans-unit id="s1f4066f335d7b2b5">
+  <source>OneDrive</source>
+  <target>OneDrive</target>
+</trans-unit>
+<trans-unit id="s16564e19b102f152">
+  <source>Box</source>
+  <target>Box</target>
+</trans-unit>
+<trans-unit id="s96668830629e0dfc">
+  <source>Upload</source>
+  <target>Загрузить</target>
+</trans-unit>
+<trans-unit id="s2ceb11be2290bb1b">
+  <source>Cancel</source>
+  <target>Отмена</target>
+</trans-unit>
+<trans-unit id="sf8c14c7b76940e65">
+  <source>Add more</source>
+  <target>Добавить ещё</target>
+</trans-unit>
+<trans-unit id="sfc63e31ac7c956ed">
+  <source>Select</source>
+  <target>Выбрать</target>
+</trans-unit>
+<trans-unit id="sb64127e4e4f0b575">
+  <source>Log out</source>
+  <target>Выйти</target>
+</trans-unit>
+<trans-unit id="sc16e00a7a8b2fde2">
+  <source>Back</source>
+  <target>Назад</target>
+</trans-unit>
+<trans-unit id="scbd2e236eed79c0d">
+  <source>Upload as links</source>
+  <target>Загрузить как ссылки</target>
+</trans-unit>
+<trans-unit id="se21de8412bcfa692">
+  <source>Choose this option to upload files as links. This saves disk space as files will not be stored locally.</source>
+  <target>Выберите этот параметр, чтобы загружать файлы в виде ссылок. Это позволяет экономить место на диске, так как сами файлы не будут храниться локально.</target>
+</trans-unit>
+<trans-unit id="sd86377f9c3cd9256">
+  <source>Uploading: </source>
+  <target>Загрузка: </target>
+</trans-unit>
+<trans-unit id="s20acbc36b5c226e9">
+  <source>Uploaded {count} of {totalCount} files</source>
+  <target>Загружено {count} из {totalCount} файлов</target>
+</trans-unit>
+<trans-unit id="sb9bd4f5a3810b77e">
+  <source>Something went wrong</source>
+  <target>Что-то пошло не так</target>
+</trans-unit>
+<trans-unit id="s466a639c23c841b1">
+  <source>Unfortunately, there was a problem. Please try again later</source>
+  <target>К сожалению, возникла проблема. Повторите попытку позже</target>
+</trans-unit>
+<trans-unit id="s9da52d7bde996494">
+  <source>Please authorize in {provider}, then select files</source>
+  <target>Пожалуйста, авторизуйтесь в {provider}, затем выберите файлы</target>
+</trans-unit>
+<trans-unit id="s11a77291cef65fa2">
+  <source>Connect to </source>
+  <target>Подключиться к </target>
+</trans-unit>
+<trans-unit id="sf5eaa1a29802dfaf">
+  <source>Drop files here</source>
+  <target>Перетащите файлы сюда</target>
+</trans-unit>
+<trans-unit id="s6e6e4d288ea76fc4">
+  <source>Unsaved changes</source>
+  <target>Есть несохранённые изменения</target>
+</trans-unit>
+<trans-unit id="s6c64ea0431f97bb2">
+  <source>Your changes will not be saved</source>
+  <target>Внесенные изменения не сохранятся</target>
+</trans-unit>
+<trans-unit id="s091d5d07b5b33dcf">
+  <source>Ok</source>
+  <target>Ок</target>
+</trans-unit>
+<trans-unit id="s5e4c861bb08b34bd">
+  <source>Drop files, paste, select files or import from:</source>
+  <target>Перетащите файлы, вставьте, выберите файлы или импортируйте из:</target>
+</trans-unit>
+<trans-unit id="sed12af3ae308489e">
+  <source>Drop files here, browse files, or import from:</source>
+  <target>Перетащите файлы сюда, выберите файлы или импортируйте из:</target>
+</trans-unit>
+<trans-unit id="s288b1c7b6cd3fa96">
+  <source>Import from <x id="0" equiv-text="${this.textState.selectedProvider}"/></source>
+  <target>Импорт из <x id="0" equiv-text="${this.textState.selectedProvider}"/></target>
+</trans-unit>
+<trans-unit id="s82cdbed6651a6597">
+  <source><x id="0" equiv-text="${this.textState.selectedFilesCount}"/> files selected</source>
+  <target>Выбрано файлов: <x id="0" equiv-text="${this.textState.selectedFilesCount}"/></target>
+</trans-unit>
+<trans-unit id="s86cc0195462041ed">
+  <source>Please authorize in <x id="0" equiv-text="${providerName}"/>, then select files</source>
+  <target>Пожалуйста, авторизуйтесь в <x id="0" equiv-text="${providerName}"/>, затем выберите файлы</target>
+</trans-unit>
+</body>
+</file>
+</xliff>

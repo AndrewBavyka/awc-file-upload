@@ -13,7 +13,7 @@ export function formatFileSize(fileSize: number, isSiSystem: boolean = false, la
         en: isSiSystem
             ? ['B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB']
             : ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB', 'ZiB', 'YiB'],
-        ru: isSiSystem
+        ru_RU: isSiSystem
             ? ['Б', 'КБ', 'МБ', 'ГБ', 'ТБ', 'ПБ', 'ЭБ', 'ЗБ', 'ЯБ']
             : ['Б', 'КиБ', 'МиБ', 'ГиБ', 'ТиБ', 'ПиБ', 'ЭиБ', 'ЗиБ', 'ЯиБ'],
     };

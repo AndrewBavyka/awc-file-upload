@@ -1,10 +1,12 @@
 import { LitElement, SVGTemplateResult } from "lit";
-import { EventDispatcher, event } from "../../util/event";
 import { ProviderInfo, RequestOptions } from "../interfaces/ProviderInfo";
 import { ProviderData } from "../interfaces/ProviderFile";
 
 export class Provider extends LitElement implements ProviderInfo {
-    name!: string;
+    get name(): string {
+        throw new Error("Property 'name' must be implemented in the derived class.");
+    }
+
     provider!: string;
     
     protected authToken: string | null = null;

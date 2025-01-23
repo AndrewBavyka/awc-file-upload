@@ -1,11 +1,16 @@
 import { CSSResult, html, LitElement, svg, TemplateResult } from "lit";
 import { customElement } from "lit/decorators.js";
 import { awcFileUploadErrorStyles } from "./awc-file-upload-error.style";
+import { consume } from "@lit/context";
+import { TextManager } from "../../managers/TextManager";
+import { textManagerContext } from "../../managers/TextManagerContext";
 
 export const awcFileUploadErrorTag = "awc-file-upload-error";
 
 @customElement(awcFileUploadErrorTag)
 export default class AwcFileUploadError extends LitElement {
+    @consume({ context: textManagerContext }) textManager?: TextManager;
+
     protected render(): TemplateResult {
         const errorIcon = svg`
         <svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -19,12 +24,12 @@ export default class AwcFileUploadError extends LitElement {
             </clipPath>
             </defs>
         </svg>
-        `
+        `;
 
         return html`
-            <awc-empty-state size="small" head="Что-то пошло не так">
+            <awc-empty-state size="small" .head="${this.textManager?.textState.emptyState.error.header}">
                 <div slot="icon">${errorIcon}</div>
-                К сожалению, возникла проблема. Повторите попытку позже.
+                ${this.textManager?.textState.emptyState.error.description}
             </awc-empty-state>
         `;
     }

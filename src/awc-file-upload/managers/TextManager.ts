@@ -35,7 +35,26 @@ interface TextState {
             header: string;
             button: string,
         }
-    }
+    };
+    dropzone: {
+        header: string;
+    };
+    dialog: {
+        heading: string;
+        description: string;
+        buttons: {
+            ok: string;
+            cancel: string;
+        }
+    };
+    providers: {
+        local: string;
+        yandexDisk: string;
+        googleDrive: string;
+        dropbox: string;
+        oneDrive: string;
+        box: string;
+    };
 }
 
 export class TextManager implements ReactiveController {
@@ -48,32 +67,51 @@ export class TextManager implements ReactiveController {
         selectedProvider: null,
         selectedFilesCount: 0,
         buttonTexts: {
-            upload: msg('Загрузить'),
-            cancel: msg('Отмена'),
-            addMoreFiles: msg('Добавить ещё'),
-            select: msg('Выбрать'),
-            logout: msg('Выход'),
-            backward: msg('Назад'),
+            upload: msg('Upload'),
+            cancel: msg('Cancel'),
+            addMoreFiles: msg('Add more'),
+            select: msg('Select'),
+            logout: msg('Log out'),
+            backward: msg('Back'),
         },
         switcher: {
-            fileExternal: msg('Загружать как ссылки'),
+            fileExternal: msg('Upload as links'),
         },
         tooltip: {
-            fileExternal: msg('Выберите этот параметр, чтобы загружать файлы в виде ссылок. Это позволяет экономить место на диске, так как сами файлы не будут храниться локально.'),
+            fileExternal: msg('Choose this option to upload files as links. This saves disk space as files will not be stored locally.'),
         },
         uploadStatus: {
-            status: msg('Загрузка: '),
-            statusCounter: msg('Загружены {count} из {totalCount} файлов'),
+            status: msg('Uploading: '),
+            statusCounter: msg('Uploaded {count} of {totalCount} files'),
         },
         emptyState: {
             error: {
-                header: msg('Что-то пошло не так'),
-                description: msg('К сожалению, возникла проблема. Повторите попытку позже'),
+                header: msg('Something went wrong'),
+                description: msg('Unfortunately, there was a problem. Please try again later'),
             },
             auth: {
-                header: msg('Пожалуйста, авторизуйтесь в {provider}, затем выберите файлы'),
-                button: msg('Подключиться к '),
+                header: msg('Please authorize in {provider}, then select files'),
+                button: msg('Connect to '),
             }
+        },
+        dropzone: {
+            header: msg('Drop files here'),
+        },
+        dialog: {
+            heading: msg('Unsaved changes'),
+            description: msg('Your changes will not be saved'),
+            buttons: {
+                ok: msg('Ok'),
+                cancel: msg('Cancel'),
+            }
+        },
+        providers: {
+            local: msg('My device'),
+            yandexDisk: msg('Yandex.Disk'),
+            googleDrive: msg('Google Drive'),
+            dropbox: msg('Dropbox'),
+            oneDrive: msg('OneDrive'),
+            box: msg('Box'),
         },
     };
 
@@ -82,6 +120,8 @@ export class TextManager implements ReactiveController {
     }
 
     hostConnected() {
+        this._updateTexts();
+        this.host.requestUpdate();
     }
 
     hostDisconnected() { }
@@ -100,7 +140,7 @@ export class TextManager implements ReactiveController {
     private _getSubtitleText(): string {
         switch (this.textState.navigationView) {
             case 'more':
-                return msg('Перетащите файлы, вставьте, выберите файлы или импортируйте из:');
+                return msg('Drop files, paste, select files or import from:');
             default:
                 return '';
         }
@@ -109,15 +149,15 @@ export class TextManager implements ReactiveController {
     private _getHeaderText(): string {
         switch (this.textState.navigationView) {
             case 'main':
-                return msg('Перетащите файлы, вставьте, выберите файлы или импортируйте из:');
+                return msg('Drop files here, browse files, or import from:');
             case 'auth':
-                return msg(str`Импортировать из ${this.textState.selectedProvider}`);
+                return msg(str`Import from ${this.textState.selectedProvider}`);
             case 'list':
-                return msg(str`Импортировать из ${this.textState.selectedProvider}`);
+                return msg(str`Import from ${this.textState.selectedProvider}`);
             case 'selected':
-                return msg(str`${this.textState.selectedFilesCount} файлов выбрано`);
+                return msg(str`${this.textState.selectedFilesCount} files selected`);
             case 'more':
-                    return msg(`Добавить ещё`);
+                return msg('Add more');
             default:
                 return '';
         }

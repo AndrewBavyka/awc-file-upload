@@ -14,7 +14,8 @@ export default class AwcFileUploadHeader extends LitElement {
     @property({ type: String }) accountName = "";
     @property({ type: String }) headerText = "";
 
-    @consume({ context: textManagerContext }) textManager?: TextManager;
+    @consume({ context: textManagerContext, subscribe: true }) 
+    textManager?: TextManager;
 
     @state() isUploadLimit: boolean = false;
 

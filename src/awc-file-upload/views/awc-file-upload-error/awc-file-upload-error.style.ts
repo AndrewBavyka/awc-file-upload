@@ -2,6 +2,7 @@ import { css } from "lit";
 
 export const awcFileUploadErrorStyles = css`
     :host {
+        position: absolute;
         display: flex;
         align-items: center;
         justify-content: center;

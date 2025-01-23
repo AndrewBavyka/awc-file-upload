@@ -2,14 +2,21 @@ import { CSSResult, html, TemplateResult, svg, SVGTemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { awcFileUploadProviderStyles } from "../styles/awc-file-upload-provider.style";
 import { Provider } from "../Provider";
+import { TextManager } from "../../managers/TextManager";
+import { textManagerContext } from "../../managers/TextManagerContext";
+import { consume } from "@lit/context";
 
 export const awcFileUploadProviderGoogleDrivekTag = "awc-file-upload-provider-google-drive";
 
 @customElement(awcFileUploadProviderGoogleDrivekTag)
 export default class AwcFileUploadProviderGoogleDrive extends Provider {
     @property({ type: String, attribute: "provider-name", reflect: true }) providerName = "";
-   
-    name = this.providerName;
+    @consume({ context: textManagerContext, subscribe: true }) textManager!: TextManager;
+
+    get name(): string {
+        return this.textManager?.textState.providers.googleDrive || '';
+    }
+
     provider = "googledrive";
 
     get icon(): SVGTemplateResult {
@@ -29,7 +36,7 @@ export default class AwcFileUploadProviderGoogleDrive extends Provider {
         return html`
             <div tabindex="0" class="awc-file-upload-provider">
                 ${this.icon}
-                <p class="awc-file-upload-provider__name">${this.providerName}</p>
+                <p class="awc-file-upload-provider__name">${this.name}</p>
             </div>
         `;
     }

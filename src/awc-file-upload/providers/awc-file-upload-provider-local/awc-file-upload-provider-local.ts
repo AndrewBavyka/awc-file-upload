@@ -4,12 +4,20 @@ import { awcFileUploadProviderStyles } from "../styles/awc-file-upload-provider.
 import { ProviderFile } from "../../interfaces/ProviderFile";
 import { Provider } from "../Provider";
 import { addSelectedFile, setLastActiveProvider } from "../../managers/SelectedFilesStore";
+import { TextManager } from "../../managers/TextManager";
+import { textManagerContext } from "../../managers/TextManagerContext";
+import { consume } from "@lit/context";
 
 export const awcFileUploadProviderLocalTag = "awc-file-upload-provider-local";
 
 @customElement(awcFileUploadProviderLocalTag)
 export default class AwcFileUploadProviderLocal extends Provider {
-  name = "Моё устройство";
+  @consume({ context: textManagerContext, subscribe: true }) textManager!: TextManager;
+
+  get name(): string {
+    return this.textManager?.textState.providers.local || '';
+  }
+
   provider = "local";
 
   get icon(): SVGTemplateResult {

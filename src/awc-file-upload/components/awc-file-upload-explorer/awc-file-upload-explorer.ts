@@ -18,6 +18,7 @@ export default class AwcFileUploadExplorer extends LitElement {
   @property({ type: Object }) provider: Provider | null = null;
   @property({type: Array}) getViewHistory: CurrentView[] = [];
   @property({ type: String }) currentView: CurrentView = "list";
+  @property({ type: String }) currentLang: string = "en";  
 
   @state() private items: ProviderFile[] = [];
 
@@ -300,7 +301,7 @@ export default class AwcFileUploadExplorer extends LitElement {
     const itemsWithState = this._formattedCurrentListItems();
 
     return itemsWithState.map((item) => {
-      const formattedSize = item.isFolder ? '' : formatFileSize(item.size!, true, 'ru');
+      const formattedSize = item.isFolder ? '' : formatFileSize(item.size!, true, this.currentLang);
 
       return html`
           <div 

@@ -5,6 +5,7 @@ import { awcFileUploadAuthStyles } from "./awc-file-upload-auth.style";
 import { TextManager } from "../../managers/TextManager";
 import { textManagerContext } from "../../managers/TextManagerContext";
 import { consume } from "@lit/context";
+import { msg, str } from "@lit/localize";
 
 export const awcFileUploadAuthTag = "awc-file-upload-auth"
 
@@ -19,6 +20,8 @@ export default class AwcFileUploadAuth extends LitElement {
     }
 
     protected render(): TemplateResult {
+        const providerName = this.provider?.getProviderInfo().name;
+
         return html`
             <awc-file-upload-view-wrapper>
                 <awc-stack  
@@ -31,11 +34,10 @@ export default class AwcFileUploadAuth extends LitElement {
                     ${this.provider?.icon}
                     </div>
                     <p class="awc-auth-view__description">
-                        Пожалуйста, авторизуйтесь в ${this.provider?.getProviderInfo().name}, затем выберите файлы
-                    
+                        ${msg(str`Please authorize in ${providerName}, then select files`)}
                     </p>
                     <awc-button @click=${this._triggerAuth}>
-                       ${this.textManager?.textState.emptyState.auth.button} ${this.provider?.getProviderInfo().name}
+                       ${this.textManager?.textState.emptyState.auth.button} ${providerName}
                     </awc-button>
                 </awc-stack>
             </awc-file-upload-view-wrapper>

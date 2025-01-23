@@ -5,17 +5,23 @@ import { awcFileUploadProviderStyles } from "../styles/awc-file-upload-provider.
 import { ProviderData } from "../../interfaces/ProviderFile";
 import { RequestOptions } from "../../interfaces/ProviderInfo";
 import { Provider } from "../Provider";
+import { TextManager } from "../../managers/TextManager";
+import { textManagerContext } from "../../managers/TextManagerContext";
+import { consume } from "@lit/context";
 
 export const awcFileUploadProviderYandexDiskTag = "awc-file-upload-provider-yandex-disk";
 
 @customElement(awcFileUploadProviderYandexDiskTag)
 export default class AwcFileUploadProviderYandexDisk extends Provider {
-    @property({ type: String, attribute: "provider-name", reflect: true }) providerName = "Яндекс Диск";
     @property({ type: String, attribute: "auth-url", reflect: true }) authUrl = "";
     @property({ type: String, attribute: "list-url", reflect: true }) listUrl = "";
+    @consume({ context: textManagerContext, subscribe: true }) textManager!: TextManager;
 
-    name = this.providerName;
     provider = "yandex_disk";
+
+    get name(): string {
+        return this.textManager?.textState.providers.yandexDisk || '';
+    }
 
     get icon(): SVGTemplateResult {
         return svg`
@@ -66,7 +72,7 @@ export default class AwcFileUploadProviderYandexDisk extends Provider {
 
             return response.data as ProviderData;
         } catch (error) {
-            throw new Error(`Failed to fetch data from ${this.providerName}: ${error}`);
+            throw new Error(`Failed to fetch data from ${this.name}: ${error}`);
         }
     }
 
@@ -74,7 +80,7 @@ export default class AwcFileUploadProviderYandexDisk extends Provider {
         return html`
             <div tabindex="0" class="awc-file-upload-provider">
                 ${this.icon}
-                <p class="awc-file-upload-provider__name">${this.providerName}</p>
+                <p class="awc-file-upload-provider__name">${this.name}</p>
             </div>
         `;
     }

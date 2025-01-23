@@ -1,15 +1,20 @@
-import { CSSResult, html, LitElement, svg, TemplateResult } from "lit";
+import { CSSResult, html, svg, TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { AwcFileUploadDropzoneStyles } from "./awc-file-upload-dropzone.style";
 import AwcFileUploadProviderLocal from "../awc-file-upload-provider-local";
 import { setLastActiveProvider } from "../../../managers/SelectedFilesStore";
+import { TextManager } from "../../../managers/TextManager";
+import { textManagerContext } from "../../../managers/TextManagerContext";
+import { consume } from '@lit/context';
 
 export const awcFileUploadDropzone = "awc-file-upload-dropzone";
 
 @customElement(awcFileUploadDropzone)
 export default class AwcFileUploadDropZone extends AwcFileUploadProviderLocal {
-    @property({ type: String }) title = "Перетащите файлы сюда";
+    @consume({ context: textManagerContext }) textManager?: TextManager;
     @property({ type: Boolean, reflect: true }) active = false;
+   
+   
 
     connectedCallback(): void {
         super.connectedCallback();
@@ -82,7 +87,7 @@ export default class AwcFileUploadDropZone extends AwcFileUploadProviderLocal {
             <div class="awc-file-upload-dropzone">
                 <div class="awc-file-upload-dropzone__info">
                         ${uploadIcon}
-                        <p>${this.title}</p>
+                        <p>${this.textManager?.textState.dropzone.header}</p>
                 </div>
             </div>
         `;

@@ -10,10 +10,14 @@ import { live } from "lit/directives/live.js";
 import { textManagerContext } from "./managers/TextManagerContext";
 import { provide } from '@lit/context';
 import { localized } from "@lit/localize";
-import { clearSelectedFiles, getAllSelectedFiles, selectedFilesStore, setExtraDataForComponent, setFileLimits, toggleExternalMode, getExtraData, getExtraDataForComponent, updateStoreState, isUploadLimit, isLocalProviderWithFiles, setLastActiveProvider } from "./managers/SelectedFilesStore";
+import { setLocale } from "./generated/localization";
+import { clearSelectedFiles, getAllSelectedFiles, selectedFilesStore, setExtraDataForComponent, setFileLimits, getExtraDataForComponent, updateStoreState, isUploadLimit, isLocalProviderWithFiles, setLastActiveProvider } from "./managers/SelectedFilesStore";
 import AwcFileUploadProviderLocal from "./providers/awc-file-upload-provider-local/awc-file-upload-provider-local";
 import AwcFileUploadDropZone from "./providers/awc-file-upload-provider-local/awc-file-upload-dropzone/awc-file-upload-dropzone";
+import { allLocales } from "./generated/locale-codes";
+
 export const awcFileUploadTag = "awc-file-upload";
+
 @localized()
 @customElement(awcFileUploadTag)
 export default class AwcFileUpload extends LitElement {
@@ -24,14 +28,13 @@ export default class AwcFileUpload extends LitElement {
   @property({ type: Boolean, reflect: true }) dropzone = false;
   @property({ type: Boolean, reflect: true }) active = false;
   @property({ type: Object, attribute: "extra-data" }) extraData = {};
+  @property({ type: String, attribute: "locale" }) locale = "en";
 
   @state() private _showAlert: boolean = false;
   @state() private _selectedProvider: Provider | null = null;
   @state() private _navigationManager = new NavigationManager();
   @state() private _uploadManager = UploadManager.getInstance();
   @state() private _textManager = new TextManager(this);
-
-  // Временное решение
   @state() private accountName: string | null = null;
 
   @query('awc-modal') private _modal!: HTMLElement;
@@ -42,6 +45,15 @@ export default class AwcFileUpload extends LitElement {
 
   protected updated(_changedProperties: PropertyValues): void {
     super.updated(_changedProperties);
+
+    if (_changedProperties.has("locale")) {
+      if (allLocales.includes(this.locale)) {
+        setLocale(this.locale).then(() => {
+          this.textManager = new TextManager(this);
+          this.requestUpdate();
+        });
+      }
+    }
 
     if (_changedProperties.has("active") && this.active) {
       if (this._modal) {
@@ -68,8 +80,13 @@ export default class AwcFileUpload extends LitElement {
     this.componentId = `awc-file-upload-${Math.random().toString(36).substr(2, 9)}`;
   }
 
-  connectedCallback() {
+  async connectedCallback() {
     super.connectedCallback();
+
+    if (this.locale && allLocales.includes(this.locale)) {
+      await setLocale(this.locale);
+      this.requestUpdate();
+    }
 
     window.addEventListener("message", (e: MessageEvent) => this._handleAuthMessage(e));
 
@@ -256,7 +273,7 @@ export default class AwcFileUpload extends LitElement {
       case "auth":
         return html`<awc-file-upload-auth .provider=${this._selectedProvider}></awc-file-upload-auth>`;
       case "list":
-        return html`<awc-file-upload-list .currentView=${this._navigationManager.currentView} .viewHistory=${this._navigationManager.viewHistory} .provider=${this._selectedProvider}></awc-file-upload-list>`;
+        return html`<awc-file-upload-list  .currentLang=${this.locale} .currentView=${this._navigationManager.currentView} .viewHistory=${this._navigationManager.viewHistory} .provider=${this._selectedProvider}></awc-file-upload-list>`;
       case "selected":
         return html`<awc-file-upload-selected></awc-file-upload-selected>`;
       case "error":
@@ -331,8 +348,8 @@ export default class AwcFileUpload extends LitElement {
           <awc-dialog
               ?opened=${this._showAlert}
               variant="info"
-              heading="Есть несохранённые данные"
-              description="Внесенные изменения не сохранятся"
+              .heading=${this.textManager?.textState.dialog.heading}
+              .description=${this.textManager?.textState.dialog.description}
             >
               <awc-button
                 slot="awc-dialog-button"
@@ -342,7 +359,7 @@ export default class AwcFileUpload extends LitElement {
                 type="button"
                 @click=${() => { this._showAlert = false, this.close()}}
               >
-                Ок
+                ${this.textManager?.textState.dialog.buttons.ok}
               </awc-button>
               <awc-button
                 slot="awc-dialog-button"
@@ -352,7 +369,7 @@ export default class AwcFileUpload extends LitElement {
                 type="button"
                 @click=${() => { this._showAlert = false, this.open() }}
               >
-                Отменить
+                ${this.textManager?.textState.dialog.buttons.cancel}
               </awc-button>
             </awc-dialog>
       ` : ""}
