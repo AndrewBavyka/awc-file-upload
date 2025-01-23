@@ -5,7 +5,7 @@ import { awcFileUploadStyles } from "./awc-file-upload.style";
 import { TextManager } from './managers/TextManager';
 import { NavigationManager } from "./managers/NavigationManager";
 import { UploadManager } from "./managers/UploadManager";
-import { UploadEventBus, UploadEvents, EventsBus, SelectedFilesEventBus, SelectedFilesEvents, DropzoneEvents, DropzoneEventsBus, NavigationEventsBus, NavigationEvents } from "./managers/EventsBus";
+import { UploadEventBus, UploadEvents, EventsBus, DropzoneEvents, DropzoneEventsBus, NavigationEventsBus, NavigationEvents } from "./managers/EventsBus";
 import { live } from "lit/directives/live.js";
 import { textManagerContext } from "./managers/TextManagerContext";
 import { provide } from '@lit/context';
@@ -93,6 +93,7 @@ export default class AwcFileUpload extends LitElement {
         this._navigationManager.setView('selected');
       }
     });
+
     this._updateTitle();
     setExtraDataForComponent(this.componentId, this.extraData);
     setFileLimits(this.uploadLimit, this.maxFileSize);

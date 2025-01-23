@@ -2,6 +2,7 @@ import { CSSResult, html, LitElement, svg, TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
 import { AwcFileUploadDropzoneStyles } from "./awc-file-upload-dropzone.style";
 import AwcFileUploadProviderLocal from "../awc-file-upload-provider-local";
+import { setLastActiveProvider } from "../../../managers/SelectedFilesStore";
 
 export const awcFileUploadDropzone = "awc-file-upload-dropzone";
 
@@ -62,6 +63,8 @@ export default class AwcFileUploadDropZone extends AwcFileUploadProviderLocal {
     
         const files = event.dataTransfer?.files as FileList;
         if (files && files.length > 0) {
+            setLastActiveProvider(this.provider);
+
             Array.from(files).forEach((file) => {
                 this.processFile(file);
             });
