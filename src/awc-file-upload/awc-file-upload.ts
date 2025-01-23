@@ -10,7 +10,7 @@ import { live } from "lit/directives/live.js";
 import { textManagerContext } from "./managers/TextManagerContext";
 import { provide } from '@lit/context';
 import { localized } from "@lit/localize";
-import { clearSelectedFiles, getAllSelectedFiles, selectedFilesStore, setExtraDataForComponent, setFileLimits, toggleExternalMode, getExtraData, getExtraDataForComponent, updateStoreState, isUploadLimit } from "./managers/SelectedFilesStore";
+import { clearSelectedFiles, getAllSelectedFiles, selectedFilesStore, setExtraDataForComponent, setFileLimits, toggleExternalMode, getExtraData, getExtraDataForComponent, updateStoreState, isUploadLimit, isLocalProviderWithFiles, setLastActiveProvider } from "./managers/SelectedFilesStore";
 import AwcFileUploadProviderLocal from "./providers/awc-file-upload-provider-local/awc-file-upload-provider-local";
 import AwcFileUploadDropZone from "./providers/awc-file-upload-provider-local/awc-file-upload-dropzone/awc-file-upload-dropzone";
 export const awcFileUploadTag = "awc-file-upload";
@@ -26,7 +26,6 @@ export default class AwcFileUpload extends LitElement {
   @property({ type: Object, attribute: "extra-data" }) extraData = {};
 
   @state() private _showAlert: boolean = false;
-
   @state() private _selectedProvider: Provider | null = null;
   @state() private _navigationManager = new NavigationManager();
   @state() private _uploadManager = UploadManager.getInstance();
@@ -85,13 +84,16 @@ export default class AwcFileUpload extends LitElement {
     EventsBus.autoDispatchToDOM(this, UploadEventBus, UploadEvents.UPLOAD_STATUS);
     EventsBus.autoDispatchToDOM(this, UploadEventBus, UploadEvents.UPLOAD_END);
 
-    this._updateTitle();
     selectedFilesStore.subscribe(() => {
       this._refreshSelectedFiles();
       this._updateTitle();
-      this._onChangeLocalProvider();
       this._isUploadLimit = isUploadLimit();
+
+      if (isLocalProviderWithFiles()) {
+        this._navigationManager.setView('selected');
+      }
     });
+    this._updateTitle();
     setExtraDataForComponent(this.componentId, this.extraData);
     setFileLimits(this.uploadLimit, this.maxFileSize);
   }
@@ -122,16 +124,10 @@ export default class AwcFileUpload extends LitElement {
     }
   }
 
-  private _onChangeLocalProvider() {
-    const hasFilesLocalProvider = getAllSelectedFiles().filter(file => file.provider === 'local');
-    if (hasFilesLocalProvider.length > 0) this._navigationManager.setView('selected');
-  }
-
   disconnectedCallback() {
     super.disconnectedCallback();
 
     window.removeEventListener("message", (e: MessageEvent) => this._handleAuthMessage(e));
-    UploadEventBus.removeEventListener(SelectedFilesEvents.FILE_SELECTION_CHANGE, () => this._refreshSelectedFiles());
   }
 
   private _handleAuthMessage(event: MessageEvent) {
@@ -223,6 +219,8 @@ export default class AwcFileUpload extends LitElement {
     if (!provider) return;
 
     const isLocalProvider = provider.provider === 'local';
+
+    setLastActiveProvider(provider.provider);
 
     if(isLocalProvider) {
       this._selectedProvider = provider;

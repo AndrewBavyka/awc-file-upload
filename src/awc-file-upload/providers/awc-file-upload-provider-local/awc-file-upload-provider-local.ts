@@ -3,7 +3,7 @@ import { customElement, state } from "lit/decorators.js";
 import { awcFileUploadProviderStyles } from "../styles/awc-file-upload-provider.style";
 import { ProviderFile } from "../../interfaces/ProviderFile";
 import { Provider } from "../Provider";
-import { addSelectedFile } from "../../managers/SelectedFilesStore";
+import { addSelectedFile, setLastActiveProvider } from "../../managers/SelectedFilesStore";
 
 export const awcFileUploadProviderLocalTag = "awc-file-upload-provider-local";
 
@@ -69,7 +69,8 @@ export default class AwcFileUploadProviderLocal extends Provider {
 
   processFile(file: File): void {
     const providerFile = this.convertToProviderFileFormat(file);
-    addSelectedFile(providerFile, "local");
+    addSelectedFile(providerFile, this.provider);
+    setLastActiveProvider(this.provider);
 
     if (file.type.startsWith("image/")) {
       this._generateImagePreview(file, providerFile);

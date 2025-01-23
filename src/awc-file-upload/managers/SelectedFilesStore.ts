@@ -10,6 +10,7 @@ interface SelectedFilesState {
     maxFileSize: number;
     globalExternalMode: boolean; // Глобальный режим
     externalMode: boolean; // Локальный режим
+    lastActiveProvider: string | null;
 }
 
 export const selectedFilesStore: MapStore<SelectedFilesState> = map({
@@ -19,6 +20,7 @@ export const selectedFilesStore: MapStore<SelectedFilesState> = map({
     maxFileSize: 0,
     globalExternalMode: false,
     externalMode: false,
+    lastActiveProvider: null
 });
 
 export const toggleExternalMode = (isExternalMode: boolean) => {
@@ -165,3 +167,13 @@ export const toogleFileSourceMode = (fileId: string) => {
         selectedFilesStore.setKey('selectedFiles', new Map(state.selectedFiles));
     }
 };
+
+export const setLastActiveProvider = (provider: string) => {
+    selectedFilesStore.setKey('lastActiveProvider', provider);
+};
+
+export const isLocalProviderWithFiles = (): boolean => {
+    const state = selectedFilesStore.get();
+    console.log( state.lastActiveProvider === 'local')
+    return state.lastActiveProvider === 'local' && state.selectedFiles.size > 0;
+}
