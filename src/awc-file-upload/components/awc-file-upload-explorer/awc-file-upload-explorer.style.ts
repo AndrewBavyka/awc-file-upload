@@ -39,6 +39,7 @@ export const awcFileUploadExplorerStyles = css`
         max-height: 374px;
         box-sizing: border-box;
         scroll-behavior: smooth;
+        scrollbar-width: thin;
     }
 
     .file-explorer__content--list {

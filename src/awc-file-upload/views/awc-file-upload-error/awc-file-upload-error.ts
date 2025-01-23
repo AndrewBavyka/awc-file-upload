@@ -23,7 +23,6 @@ export default class AwcFileUploadError extends LitElement {
 
         return html`
             <awc-empty-state size="small" head="Что-то пошло не так">
-                <awc-icon slot="icon" type="module" size="40" name="invoice_acts"></awc-icon>
                 <div slot="icon">${errorIcon}</div>
                 К сожалению, возникла проблема. Повторите попытку позже.
             </awc-empty-state>
