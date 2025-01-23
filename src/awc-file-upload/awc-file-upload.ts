@@ -159,9 +159,9 @@ export default class AwcFileUpload extends LitElement {
   }
 
   private _confirmSelection() {
-    this._navigationManager.setView("selected");
     // Мега костыль, но правит баг с тем что если выбрать файлы а потом переключить глобальное состояние то оно не применятся.
     updateStoreState(true);
+    this._navigationManager.setView("selected");
   }
 
   private _cancel() {
