@@ -11,10 +11,8 @@ export const awcFileUploadDropzone = "awc-file-upload-dropzone";
 
 @customElement(awcFileUploadDropzone)
 export default class AwcFileUploadDropZone extends AwcFileUploadProviderLocal {
-    @consume({ context: textManagerContext }) textManager?: TextManager;
+    @consume({ context: textManagerContext, subscribe: true }) textManager?: TextManager;
     @property({ type: Boolean, reflect: true }) active = false;
-   
-   
 
     connectedCallback(): void {
         super.connectedCallback();

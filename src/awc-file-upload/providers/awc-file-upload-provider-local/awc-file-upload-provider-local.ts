@@ -12,7 +12,7 @@ export const awcFileUploadProviderLocalTag = "awc-file-upload-provider-local";
 
 @customElement(awcFileUploadProviderLocalTag)
 export default class AwcFileUploadProviderLocal extends Provider {
-  @consume({ context: textManagerContext, subscribe: true }) textManager!: TextManager;
+  @consume({ context: textManagerContext, subscribe: true }) textManager?: TextManager;
 
   get name(): string {
     return this.textManager?.textState.providers.local || '';

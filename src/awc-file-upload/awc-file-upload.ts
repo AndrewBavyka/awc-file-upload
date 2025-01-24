@@ -162,6 +162,7 @@ export default class AwcFileUpload extends LitElement {
     // Мега костыль, но правит баг с тем что если выбрать файлы а потом переключить глобальное состояние то оно не применятся.
     updateStoreState(true);
     this._navigationManager.setView("selected");
+    this.requestUpdate();
   }
 
   private _cancel() {
@@ -334,6 +335,8 @@ export default class AwcFileUpload extends LitElement {
           </div>
           ${this._renderFooter()}
         </div>
+
+        <awc-file-upload-toast></awc-file-upload-toast>
 
         ${hasDragAndDrop
         ? html`
