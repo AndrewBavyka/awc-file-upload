@@ -2,7 +2,7 @@ import { map, MapStore } from 'nanostores';
 import { SVGTemplateResult } from "lit";
 import { ProviderFile } from "../interfaces/ProviderFile";
 import { SelectedFile } from "../interfaces/SelectedFile";
-
+import AwcFileUploadToast from "../components/awc-file-upload-toast/awc-file-upload-toast";
 interface SelectedFilesState {
     selectedFiles: Map<string, SelectedFile>;
     extraData: Record<string, Record<string, any>>;
@@ -41,14 +41,31 @@ export const addSelectedFile = (file: ProviderFile, provider: string, providerIc
     // Проверка превышения лимита количества файлов
     const currentFileCount = state.selectedFiles.size;
     if (currentFileCount >= state.uploadLimit) {
-        console.warn(`Cannot add file: upload limit of ${state.uploadLimit} reached.`);
+        window.AwcToast.add({
+            variant: "info",
+            caption: `Превышен лимит файлов (${state.uploadLimit})`,
+            primaryAction: {
+                content: 'Понятно',
+                onClick: (toast) => toast.remove()
+            }
+        });
+
         return;
     }
 
     // Проверка размера файла
     // if (!checkFileSize(file)) {
-    //     console.warn(`Cannot add file: size exceeds the maximum limit of ${state.maxFileSize} bytes.`);
-    //     return; 
+    //     const toast = document.querySelector('awc-file-upload-toast') as AwcFileUploadToast;
+    //     const maxSizeMB = Math.round(state.maxFileSize / (1024 * 1024));
+    //     toast?.addToast({
+    //         variant: 'error',
+    //         caption: `Превышен максимальный размер файла (${maxSizeMB} МБ)`,
+    //         primaryAction: {
+    //             content: 'Понятно',
+    //             onClick: (toast) => toast.remove()
+    //         }
+    //     });
+    //     return;
     // }
 
     if (!state.selectedFiles.has(file.id)) {

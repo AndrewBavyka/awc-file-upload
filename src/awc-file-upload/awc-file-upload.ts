@@ -336,7 +336,6 @@ export default class AwcFileUpload extends LitElement {
           ${this._renderFooter()}
         </div>
 
-        <awc-file-upload-toast></awc-file-upload-toast>
 
         ${hasDragAndDrop
         ? html`
@@ -345,6 +344,8 @@ export default class AwcFileUpload extends LitElement {
             ></awc-file-upload-dropzone>
           `
         : ""}
+
+        <awc-file-upload-toast></awc-file-upload-toast>
       </awc-modal>
 
       ${this._showAlert ? html`
