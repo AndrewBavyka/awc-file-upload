@@ -11,10 +11,11 @@ import { textManagerContext } from "./managers/TextManagerContext";
 import { provide } from '@lit/context';
 import { localized } from "@lit/localize";
 import { setLocale } from "./generated/localization";
-import { clearSelectedFiles, getAllSelectedFiles, selectedFilesStore, setExtraDataForComponent, setFileLimits, getExtraDataForComponent, updateStoreState, isUploadLimit, isLocalProviderWithFiles, setLastActiveProvider } from "./managers/SelectedFilesStore";
+import { clearSelectedFiles, checkFileSize, getAllSelectedFiles, selectedFilesStore, setExtraDataForComponent, setFileLimits, getExtraDataForComponent, updateStoreState, isUploadLimit, isLocalProviderWithFiles, setLastActiveProvider } from "./managers/SelectedFilesStore";
 import AwcFileUploadProviderLocal from "./providers/awc-file-upload-provider-local/awc-file-upload-provider-local";
 import AwcFileUploadDropZone from "./providers/awc-file-upload-provider-local/awc-file-upload-dropzone/awc-file-upload-dropzone";
 import { allLocales } from "./generated/locale-codes";
+import { AwcFileUploadNotification } from "./components/awc-file-upload-notification/awc-file-upload-notification";
 
 export const awcFileUploadTag = "awc-file-upload";
 
@@ -50,7 +51,6 @@ export default class AwcFileUpload extends LitElement {
       if (allLocales.includes(this.locale)) {
         setLocale(this.locale).then(() => {
           this.textManager = new TextManager(this);
-          this.requestUpdate();
         });
       }
     }
@@ -108,6 +108,10 @@ export default class AwcFileUpload extends LitElement {
 
       if (isLocalProviderWithFiles()) {
         this._navigationManager.setView('selected');
+      }
+    
+      if(this._navigationManager.currentView === 'list' || this._navigationManager.currentView === 'selected') {
+        this._checkLimitsAndNotify();
       }
     });
 
@@ -336,6 +340,11 @@ export default class AwcFileUpload extends LitElement {
           ${this._renderFooter()}
         </div>
 
+        ${this._navigationManager.currentView === "main" || this._navigationManager.currentView === "more" ? 
+          html`<awc-file-upload-restrictions
+          .maxFilesCount=${this.uploadLimit}
+          .maxFileSize=${this.maxFileSize}
+        ></awc-file-upload-restrictions>` : ""} 
 
         ${hasDragAndDrop
         ? html`
@@ -345,7 +354,9 @@ export default class AwcFileUpload extends LitElement {
           `
         : ""}
 
-        <awc-file-upload-toast></awc-file-upload-toast>
+        <awc-file-upload-notification 
+        .maxFilesCount=${this.uploadLimit}
+        .maxFileSize=${this.maxFileSize}></awc-file-upload-notification>
       </awc-modal>
 
       ${this._showAlert ? html`
@@ -418,6 +429,19 @@ export default class AwcFileUpload extends LitElement {
         @upload=${this._uploadFiles}
       ></awc-file-upload-footer>
     `;
+  }
+
+  private _checkLimitsAndNotify() {
+      const selectedFile = getAllSelectedFiles();
+      const notificationElement = this.shadowRoot?.querySelector('awc-file-upload-notification') as AwcFileUploadNotification;
+      const state = selectedFilesStore.get();
+      const maxFileSize = selectedFilesStore.get().maxFileSize;
+      const maxFilesCount = state.selectedFiles.size;
+
+      if(maxFilesCount >= this.uploadLimit) {
+        notificationElement.type = 'fileUploadLimit';
+        notificationElement.showNotification();
+      }
   }
 
   static styles?: CSSResult = awcFileUploadStyles;

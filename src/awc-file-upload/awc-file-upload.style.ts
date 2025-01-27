@@ -21,4 +21,8 @@ export const awcFileUploadStyles = css`
     .awc-file-upload-body {
         min-height: calc(var(--awc-file-upload-height) - 56px);
     }
+
+    awc-file-upload-toast {
+        
+    }
 `;

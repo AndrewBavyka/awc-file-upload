@@ -9,6 +9,7 @@ import { textManagerContext } from "../../managers/TextManagerContext";
 import { TextManager } from "../../managers/TextManager";
 import { consume } from '@lit/context';
 import { CurrentView } from "../../managers/NavigationManager";
+import { msg, str } from "@lit/localize";
 
 export const awcFileUploadFooterTag = "awc-file-upload-footer";
 
@@ -161,7 +162,7 @@ export default class AwcFileUploadFooter extends LitElement {
                                     ${this.textManager?.textState.uploadStatus.status} ${overallProgress.toFixed(0)}%
                                 </span>
                                 <span class="awc-file-upload-footer__progress-info">
-                                    Загружены ${this._uploadedCount} из ${getAllSelectedFiles().length}
+                                    ${msg(str`Uploaded ${this._uploadedCount} of ${getAllSelectedFiles().length} files`)}
                                 </span>
                             </div>
                             <button 

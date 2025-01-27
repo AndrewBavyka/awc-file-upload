@@ -316,7 +316,7 @@ export default class AwcFileUploadExplorer extends LitElement {
           : html`
                   <awc-checkbox
                     tabindex="${item.isDisabled ? -1 : 0}"
-                    .checked=${item.isSelected}
+                    ?checked=${item.isSelected}
                     @click=${(e: Event) => e.preventDefault()}
                   ></awc-checkbox>
                 `}
@@ -350,7 +350,7 @@ export default class AwcFileUploadExplorer extends LitElement {
           : html`
                 <awc-checkbox
                   tabindex="${item.isDisabled ? -1 : 0}"
-                  .checked=${item.isSelected}
+                  ?checked=${item.isSelected}
                   @click=${(e: Event) => e.preventDefault()}
                 ></awc-checkbox>
                 `}

@@ -118,6 +118,22 @@
   <source>Please authorize in <x id="0" equiv-text="${providerName}"/>, then select files</source>
   <target>Пожалуйста, авторизуйтесь в <x id="0" equiv-text="${providerName}"/>, затем выберите файлы</target>
 </trans-unit>
+<trans-unit id="s5e70904afec9e177">
+  <source>Unable to upload to storage - file is going to be <x id="0" equiv-text="${this.maxFileSize}"/></source>
+  <target>Невозможно загрузить в хранилище - файл превышает <x id="0" equiv-text="${this.maxFileSize}"/></target>
+</trans-unit>
+<trans-unit id="sc6f29a006d9d4942">
+  <source>You can upload up to <x id="0" equiv-text="${this.maxFilesCount}"/> files at once</source>
+  <target>Можно загрузить до <x id="0" equiv-text="${this.maxFilesCount}"/> файлов одновременно</target>
+</trans-unit>
+<trans-unit id="sc51965a87fac0145">
+  <source>Uploaded <x id="0" equiv-text="${this._uploadedCount}"/> of <x id="1" equiv-text="${getAllSelectedFiles().length}"/> files</source>
+  <target>Загружено <x id="0" equiv-text="${this._uploadedCount}"/> из <x id="1" equiv-text="${getAllSelectedFiles().length}"/> файлов</target>
+</trans-unit>
+<trans-unit id="s66f42f6482701b7e">
+  <source>Up to <x id="0" equiv-text="${this.maxFilesCount}"/> files, <x id="1" equiv-text="${formatFileSize(this.maxFileSize, true)}"/></source>
+  <target>До <x id="0" equiv-text="${this.maxFilesCount}"/> файлов, <x id="1" equiv-text="${formatFileSize(this.maxFileSize, true)}"/></target>
+</trans-unit>
 </body>
 </file>
 </xliff>
